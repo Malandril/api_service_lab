@@ -29,4 +29,4 @@ export let postContact = (req: Request, res: Response) => {
         subject: "Contact Form",
         text: req.body.message
     };
-};²
+};
