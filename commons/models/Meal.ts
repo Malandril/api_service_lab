@@ -9,6 +9,6 @@ export class RealMeal implements Meal {
 
     constructor(name: string, price: number) {
         this.name = name;
-        this.price = price;
+        this.price = price * 100;
     }
 }
