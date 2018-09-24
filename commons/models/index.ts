@@ -1,1 +1,1 @@
-export { Meal } from "./Meal";
+export { RealMeal } from "./Meal";
