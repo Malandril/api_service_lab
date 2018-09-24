@@ -5,9 +5,7 @@ import { Request, Response } from "express";
  * Contact form page.
  */
 export let getContact = (req: Request, res: Response) => {
-  res.render("contact", {
-    title: "Contact"
-  });
+    res.json([{name: "hello world", type: "waow", id: 1}]);
 };
 
 /**
@@ -15,20 +13,20 @@ export let getContact = (req: Request, res: Response) => {
  * Send a contact form via Nodemailer.
  */
 export let postContact = (req: Request, res: Response) => {
-  req.assert("name", "Name cannot be blank").notEmpty();
-  req.assert("email", "Email is not valid").isEmail();
-  req.assert("message", "Message cannot be blank").notEmpty();
+    req.assert("name", "Name cannot be blank").notEmpty();
+    req.assert("email", "Email is not valid").isEmail();
+    req.assert("message", "Message cannot be blank").notEmpty();
 
-  const errors = req.validationErrors();
+    const errors = req.validationErrors();
 
-  if (errors) {
-    return res.redirect("/contact");
-  }
+    if (errors) {
+        return res.redirect("/contact");
+    }
 
-  const mailOptions = {
-    to: "your@email.com",
-    from: `${req.body.name} <${req.body.email}>`,
-    subject: "Contact Form",
-    text: req.body.message
-  };
-};
+    const mailOptions = {
+        to: "your@email.com",
+        from: `${req.body.name} <${req.body.email}>`,
+        subject: "Contact Form",
+        text: req.body.message
+    };
+};²

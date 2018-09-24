@@ -3,7 +3,6 @@ import compression from "compression";  // compresses requests
 import session from "express-session";
 import bodyParser from "body-parser";
 import mongo from "connect-mongo";
-import flash from "express-flash";
 import path from "path";
 import mongoose from "mongoose";
 import expressValidator from "express-validator";
@@ -32,13 +31,10 @@ mongoose.connect(mongoUrl, {useMongoClient: true}).then(
 
 // Express configuration
 app.set("port", process.env.PORT || 3000);
-app.set("views", path.join(__dirname, "../views"));
-app.set("view engine", "pug");
 app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(expressValidator());
-app.use(flash());
 
 app.use(
   express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
@@ -47,8 +43,7 @@ app.use(
 /**
  * Primary app routes.
  */
-app.get("/", homeController.index);
-app.get("/contact", contactController.getContact);
+app.get("/meals", contactController.getContact);
 app.post("/contact", contactController.postContact);
 
 /**
