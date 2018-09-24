@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
+import { RealMeal } from "uberoo-commons";
 
 /**
  * GET /contact
  * Contact form page.
  */
 export let getContact = (req: Request, res: Response) => {
-    res.json([{name: "hello world", type: "waow", id: 1}]);
+
+    res.json([new RealMeal("test", 45), {name: "hello 77", type: "waow", id: 1}]);
 };
 
 /**
