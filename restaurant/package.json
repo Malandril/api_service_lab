@@ -18,7 +18,7 @@
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "nodemon --inspect dist/server.js",
-    "prebuild": "npm install"
+    "prebuild": ""
   },
   "dependencies": {
     "async": "^2.6.1",
