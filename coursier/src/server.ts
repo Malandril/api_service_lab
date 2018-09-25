@@ -1,6 +1,6 @@
 import errorHandler from "errorhandler";
 
-import app from "./src/app";
+import app from "./app";
 
 /**
  * Error Handler. Provides full stack - remove for production
