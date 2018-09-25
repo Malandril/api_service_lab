@@ -25,7 +25,11 @@ router.get("/:mealId", getMeal);
 
 // Not sure, to be check
 const postMeal = (req: Request, res: Response) => {
-    data.push(new MealModel(req.body));
+    console.log(req);
+    const o = new MealModel({"name": req.body.name, "price": req.body.price});
+    data.push(o);
+    res.status(201).send(o);
 };
+router.post("/", postMeal);
 
 export default router;
