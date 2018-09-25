@@ -1,21 +1,48 @@
 import { Request, Response } from "express";
+import { Customer } from "../../../commons/models/Customer";
+class OrderCreation {
+    id: number;
+    customer: Customer;
+    constructor(id: number, customer: Customer) {
+        this.id = id;
+        this.customer = customer as Customer;
 
-declare var orders: {id: number, req: Request}[]; // identified order
-declare var size: number;
-size = 0;
+    }
+    public static isOrderCreation(obj: any) {
+        const errors: string[] = [];
+        if (!("id" in obj ) ) {
+            errors.push("'id' needed.");
+        }
+        if (! ("customer" in obj)) {
+            console.log("customer needed");
+        }
+        return (errors.length === 0 ? true : errors);
+    }
+}
+let orders: OrderCreation[] = []; // identified order
+let size = 0;
 
-/**
- * GET /contact
- * Contact form page.
- */
-
-
-
+orders = [];
 export let notifyOrder = (req: Request, res: Response) => {
-    req.assert("creation", "Creation timestamp cannot be empty").notEmpty();
-    size++;
-    orders.push({id: size, req: req });
-    res.json([{orderId: size}]);
+    const orderCreation = OrderCreation.isOrderCreation(req.body);
+    if (orderCreation !== true) {
+       const errors: string[] = orderCreation as string[];
+       let result: string = "";
+        for (let i = 0; i < errors.length; i++) {
+            result += errors[i];
+        }
+        res.statusCode = 412;
+        res.send(result);
+    } else {
+        const request: OrderCreation = req.body as OrderCreation;
+        console.log("Adding " + JSON.stringify(request));
+        for (const property in request ) {
+            console.log("has property " + property );
+        }
+        orders.push(request);
+        size++;
+        res.json([{orderId: size}]);
+    }
 };
 
 

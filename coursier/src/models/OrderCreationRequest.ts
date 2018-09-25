@@ -1,6 +1,6 @@
-import { CustomerImpl } from "uberoo-commons";
-
+// import { CustomerImpl } from "uberoo-commons";
+// TODO: create and use this object
 export class OrderCreationReq {
-    customer: CustomerImpl;
+    customer: string;
     creationDate: string;
 }
