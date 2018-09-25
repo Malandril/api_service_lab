@@ -8,7 +8,7 @@ export class CustomerImpl implements Customer {
     id: number;
 
 
-    constructor(id: number,address: string) {
+    constructor(id: number, address: string) {
         this.address = address;
         this.id = id;
     }
