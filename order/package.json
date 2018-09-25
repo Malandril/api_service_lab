@@ -6,11 +6,13 @@
     "type": "git",
     "url": "https://github.com/Malandril/api_service_lab"
   },
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
     "serve": "node dist/server.js",
-    "watch-node": "nodemon dist/server.js",
+    "watch-node": "nodemon dist/src/server.js",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
     "build-ts": "tsc",
@@ -18,7 +20,7 @@
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
     "serve-debug": "nodemon --inspect dist/server.js",
-    "prebuild": "npm install"
+    "prebuild": "rm-local-modules && npm install"
   },
   "dependencies": {
     "async": "^2.6.0",
@@ -33,7 +35,7 @@
     "request-promise": "^4.2.2",
     "winston": "^3.1.0",
     "rm-local-modules": "^0.0.2",
-    "uberoo-commons": "^1.0.2"
+    "uberoo-commons": "^1.0.3"
   },
   "devDependencies": {
     "@types/async": "^2.0.45",
