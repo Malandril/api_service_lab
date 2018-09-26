@@ -7,11 +7,10 @@ import mongoose from "mongoose";
 import expressValidator from "express-validator";
 
 
-// Controllers (route handlers)
-import * as homeController from "./controllers/home";
-import * as apiController from "./controllers/api";
-import * as contactController from "./controllers/contact";
 import MONGODB_URI from "./util/links";
+
+// Route handlers
+import mealRouter from "./routes/meals/router";
 
 
 // Create Express server
@@ -41,12 +40,6 @@ app.use(
 /**
  * Primary app routes.
  */
-app.get("/meals", contactController.getContact);
-app.post("/contact", contactController.postContact);
-
-/**
- * API examples routes.
- */
-app.get("/api", apiController.getApi);
+app.use("/meals", mealRouter);
 
 export default app;
