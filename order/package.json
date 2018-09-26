@@ -11,16 +11,16 @@
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
-    "serve": "node dist/src/server.js",
-    "watch-node": "nodemon dist/src/server.js",
+    "serve": "node dist/order/src/server.js",
+    "watch-node": "nodemon dist/order/src/server.js",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
-    "serve-debug": "nodemon --inspect dist/src/server.js",
-    "prebuild": "rm-local-modules && npm install"
+    "serve-debug": "nodemon --inspect dist/order/src/server.js",
+    "buildrun": "npm run build && npm run start"
   },
   "dependencies": {
     "async": "^2.6.0",
