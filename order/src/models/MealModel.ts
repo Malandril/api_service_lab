@@ -1,4 +1,4 @@
-import { Meal } from "uberoo-commons";
+import { Meal } from "../../../commons/models";
 
 export class MealModel implements Meal {
     name: string;
