@@ -1,73 +1,62 @@
 import { Request, Response } from "express";
-import { Customer } from "../../../commons/models/Customer";
-class OrderCreation {
-    id: number;
-    customer: Customer;
-    constructor(id: number, customer: Customer) {
-        this.id = id;
-        this.customer = customer as Customer;
+import { Customer } from "uberoo-commons";
+import { DeliveryStatus } from "../models/delivery-status";
+import { OrderCreation } from "../models/request/order-creation-request";
+import { DeliveryStatusRequest } from "../models/request/delivery-status-request";
 
-    }
-    public static isOrderCreation(obj: any) {
-        const errors: string[] = [];
-        if (!("id" in obj ) ) {
-            errors.push("'id' needed.");
-        }
-        if (! ("customer" in obj)) {
-            console.log("customer needed");
-        }
-        return (errors.length === 0 ? true : errors);
-    }
-}
-let orders: OrderCreation[] = []; // identified order
+let orders: DeliveryStatus[] = []; // identified order
 let size = 0;
 
 orders = [];
-export let notifyOrder = (req: Request, res: Response) => {
-    const orderCreation = OrderCreation.isOrderCreation(req.body);
-    if (orderCreation !== true) {
-       const errors: string[] = orderCreation as string[];
-       let result: string = "";
+
+function saveDeliveryCreation(request: OrderCreation) {
+    orders[size] = new DeliveryStatus(size, Date.now(), "CREATED");
+    size++;
+}
+
+function sendError(message: string, res: Response) {
+    res.statusCode = 412;
+    res.send({error: message});
+}
+
+function manageErrors(status: boolean | string[], res: Response, callIfNoError: () => void) {
+    if (status !== true) {
+        const errors: string[] = status as string[];
+        let result: string = "";
         for (let i = 0; i < errors.length; i++) {
             result += errors[i];
         }
-        res.statusCode = 412;
-        res.send(result);
+        sendError(result, res);
     } else {
+        callIfNoError();
+    }
+}
+
+export let notifyOrder = (req: Request, res: Response) => {
+    const orderCreation = OrderCreation.isOrderCreation(req.body);
+    manageErrors(orderCreation, res, function () {
         const request: OrderCreation = req.body as OrderCreation;
-        console.log("Adding " + JSON.stringify(request));
-        for (const property in request ) {
-            console.log("has property " + property );
+        console.log("Adding 2 " + JSON.stringify(request));
+        for (const property in request) {
+            console.log("has property " + property);
         }
-        orders.push(request);
-        size++;
+        saveDeliveryCreation(request);
+
         res.json([{orderId: size}]);
-    }
+    });
+};
+
+export let deliveryStatus = (req: Request, res: Response) => {
+    manageErrors(DeliveryStatusRequest.isDeliveryRequest(req.query), res, function () {
+        const request: DeliveryStatusRequest = req.body as DeliveryStatusRequest;
+        if (request.id < size) {
+            const status: DeliveryStatus = orders[request.id];
+            status.history.push({status: status.status, event: "retrieve-status"});
+            res.send({status: status.status});
+        } else {
+            sendError( "id doesn't exist", res);
+        }
+    });
 };
 
 
-export let getContact = (req: Request, res: Response) => {
-    res.json([{name: "hello world", type: "waow", id: 1}]);
-};
-
-/**
- * POST /contact
- * Send a contact form via Nodemailer.
- */
-export let postContact = (req: Request, res: Response) => {
-    req.assert("name", "Name cannot be blank").notEmpty();
-    req.assert("message", "Message cannot be blank").notEmpty();
-
-    const errors = req.validationErrors();
-
-    if (errors) {
-        return res.redirect("/contact");
-    }
-
-    const mailOptions = {
-        to: "your@email.com",
-        from: `${req.body.name} <${req.body.email}>`,
-        subject: "Contact Form",
-        text: req.body.message
-    };
-};
