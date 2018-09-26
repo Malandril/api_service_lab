@@ -40,8 +40,8 @@ app.use(
  * Primary app routes.
  */
 app.post("/meals", coursierRoute.notifyOrder);
-console.log("delivery");
-app.get("/delivery", coursierRoute.deliveryStatus);
+app.get("/deliveries/:id", coursierRoute.deliveryStatus);
+app.post("/deliveries/:id", coursierRoute.updateStatus);
 
 /**
  * API examples routes.
