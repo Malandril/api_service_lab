@@ -18,7 +18,7 @@ def treat_folder(folder, commands):
 
 
 def main():
-    folders = ["commons", "order", "restaurant"]
+    folders = ["uberoo-commons", "order", "restaurant"]
     for folder in folders:
         treat_folder(folder, [["npm", "install"], ["npm", "run", "build"]])
 
