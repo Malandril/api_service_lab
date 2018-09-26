@@ -17,7 +17,8 @@
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
-    "serve-debug": "nodemon --inspect dist/server.js"
+    "serve-debug": "nodemon --inspect dist/server.js",
+    "prebuild": ""
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -31,7 +32,8 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "winston": "^3.1.0",
-    "uberoo-commons": "Malandril/uberoo-commons"
+    "rm-local-modules": "^0.0.2",
+    "uberoo-commons": "^1.0.2"
   },
   "devDependencies": {
     "@types/async": "^2.0.45",
