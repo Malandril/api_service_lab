@@ -5,8 +5,7 @@ import { Request, Response } from "express";
  * Contact form page.
  */
 export let getContact = (req: Request, res: Response) => {
-
-    res.json([{name: "hello 77", type: "waow", id: 1}]);
+    res.json([{name: "hello world", type: "waow", id: 1}]);
 };
 
 /**

@@ -13,6 +13,7 @@ def treat_folder(folder, commands):
         print(process.stderr)
         if process.returncode != 0:
             print("build failed")
+            return
     print(f"build of {folder} succeeded in {time.time() - start} seconds")
     os.chdir("..")
 

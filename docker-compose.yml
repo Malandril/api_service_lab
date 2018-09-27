@@ -1,6 +1,9 @@
-version: '3'
+version: '3.2'
 
 services:
+  uberoo-commons:
+    build: ./commons
+    image: uberoo-commons
   order:
     build: ./order
     image: order
