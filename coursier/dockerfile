@@ -1,4 +1,4 @@
-FROM uberoo-commons
+FROM node
 RUN mkdir /test
 COPY ./dist /test/dist
 COPY ./package.json /test/
