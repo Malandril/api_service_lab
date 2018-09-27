@@ -17,8 +17,7 @@
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
-    "serve-debug": "nodemon --inspect dist/server.js",
-    "prebuild": "rm-local-modules && npm install"
+    "serve-debug": "nodemon --inspect dist/server.js"
   },
   "dependencies": {
     "async": "^2.6.1",
