@@ -3,6 +3,7 @@ import { Customer } from "uberoo-commons";
 import { DeliveryStatus } from "../models/delivery-status";
 import { OrderCreation } from "../models/request/order-creation-request";
 import { DeliveryStatusRequest } from "../models/request/delivery-status-request";
+import { DeliveryStatusPostRequest } from "../models/request/delivery-status-post-request";
 
 let orders: DeliveryStatus[] = []; // identified order
 let size = 0;
@@ -36,10 +37,6 @@ export let notifyOrder = (req: Request, res: Response) => {
     const orderCreation = OrderCreation.isOrderCreation(req.body);
     manageErrors(orderCreation, res, function () {
         const request: OrderCreation = req.body as OrderCreation;
-        console.log("Adding 2 " + JSON.stringify(request));
-        for (const property in request) {
-            console.log("has property " + property);
-        }
         saveDeliveryCreation(request);
 
         res.json([{orderId: size}]);
@@ -47,16 +44,33 @@ export let notifyOrder = (req: Request, res: Response) => {
 };
 
 export let deliveryStatus = (req: Request, res: Response) => {
-    manageErrors(DeliveryStatusRequest.isDeliveryRequest(req.query), res, function () {
-        const request: DeliveryStatusRequest = req.body as DeliveryStatusRequest;
+    manageErrors(DeliveryStatusRequest.isDeliveryRequest(req.params), res, function () {
+        const request: DeliveryStatusRequest = req.params as DeliveryStatusRequest;
         if (request.id < size) {
             const status: DeliveryStatus = orders[request.id];
             status.history.push({status: status.status, event: "retrieve-status"});
             res.send({status: status.status});
         } else {
-            sendError( "id doesn't exist", res);
+            sendError( "Delivery " + request.id + "doesn't exist", res);
         }
     });
 };
+
+
+export let updateStatus = (req: Request, res: Response) => {
+    req.body.id = req.body.id | req.params.id;
+    manageErrors(DeliveryStatusPostRequest.isDeliveryStatusPostRequest(req.body), res, function () {
+        const request: DeliveryStatusPostRequest = req.body as DeliveryStatusPostRequest;
+        if (request.id < size) {
+            const status: DeliveryStatus = orders[request.id];
+            status.status = request.status;
+            status.history.push({status: status.status, event: "update-status"});
+            res.send({status: status.status});
+        } else {
+            sendError( "Delivery " + request.id + "doesn't exist", res);
+        }
+    });
+};
+
 
 
