@@ -1,0 +1,1 @@
+export {PreparationTimeMealModel} from "./PreparationTimeMealModel";
