@@ -3,7 +3,7 @@ import { MealModel } from "../../models";
 
 const router = Router();
 
-const data: { [key: number]: MealModel; } = {0: new MealModel({"name": "Pizza", "price": 8}), 1: new MealModel({"name": "Pasta", "price": 3})};
+const data: { [key: number]: MealModel; } = {0: new MealModel({"name": "Pizza", "price": 8, "id": 0}), 1: new MealModel({"name": "Pasta", "price": 3, "id": 1})};
 let nextId = 2;
 
 /**
@@ -11,7 +11,7 @@ let nextId = 2;
  * Return the list of meals offered by Uberoo
  */
 const getMeals = (req: Request, res: Response) => {
-    res.status(200).send(data);
+    res.status(200).send(Object.keys(data).map(key => data[+key]));
 };
 router.get("/", getMeals);
 
@@ -29,13 +29,21 @@ const getMeal = (req: Request, res: Response) => {
 };
 router.get("/:mealId", getMeal);
 
+/**
+ * POST /meals
+ * Create the specified meal
+ */
 const postMeal = (req: Request, res: Response) => {
-    const o = new MealModel({"name": req.body.name, "price": +req.body.price});
+    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId});
     data[nextId++] = o;
     res.status(201).send(o);
 };
 router.post("/", postMeal);
 
+/**
+ * DELETE /meals/:mealId
+ * Delete the specified meal
+ */
 const deleteMeal = (req: Request, res: Response) => {
     const o = data[req.params.mealId];
     if (o === undefined) {
@@ -47,6 +55,22 @@ const deleteMeal = (req: Request, res: Response) => {
     }
 };
 router.delete("/:mealId", deleteMeal);
+
+/**
+ * PUT /meals/:mealId
+ * Update the specified meal
+ */
+const putMeal = (req: Request, res: Response) => {
+    const o = data[+req.params.mealId];
+    if (o === undefined) {
+        res.status(404);
+    } else {
+        o.name = req.body.name;
+        o.price = +req.body.price;
+        res.status(200).send(o);
+    }
+};
+router.put("/:mealId", putMeal);
 
 
 export default router;

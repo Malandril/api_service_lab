@@ -10,6 +10,7 @@ import MONGODB_URI from "./util/links";
 
 // Route handlers
 import mealRouter from "./routes/meals/router";
+import orderRouter from "./routes/orders/router";
 
 
 // Create Express server
@@ -40,5 +41,6 @@ app.use(
  * Primary app routes.
  */
 app.use("/meals", mealRouter);
+app.use("/orders", orderRouter);
 
 export default app;
