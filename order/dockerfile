@@ -1,0 +1,8 @@
+FROM uberoo-commons:latest
+RUN mkdir /order
+COPY ./dist /order/dist
+COPY ./package.json /order/
+WORKDIR /order
+RUN npm install --production
+EXPOSE 3000
+ENTRYPOINT [ "npm","start"]
