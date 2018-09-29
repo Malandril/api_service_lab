@@ -6,8 +6,8 @@ const {check, validationResult} = require("express-validator/check");
 const router = Router();
 
 const data: { [key: number]: MealModel; } = {
-    0: new MealModel({"name": "Pizza", "price": 8, "id": 0}),
-    1: new MealModel({"name": "Pasta", "price": 3, "id": 1})
+    0: new MealModel({"name": "Pizza", "price": 8, "id": 0, "eta": 12}),
+    1: new MealModel({"name": "Pasta", "price": 3, "id": 1, "eta": 10})
 };
 let nextId = 2;
 
@@ -43,7 +43,7 @@ const postMeal = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId});
+    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId, "eta": +req.body.eta});
     data[nextId++] = o;
     res.status(201).json(o);
 };
