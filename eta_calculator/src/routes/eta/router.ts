@@ -15,7 +15,7 @@ const postEta = (req: Request, res: Response) => {
     }
     let totalETA = 0;
     for (let i = 0; i < req.body.meals.length; i++) {
-        totalETA += req.body.meals[i].eta;
+        totalETA += +req.body.meals[i].eta;
     }
     res.status(200).json(totalETA);
 };
