@@ -1,0 +1,24 @@
+version: '3.2'
+
+services:
+  uberoo-commons:
+    build: ./commons
+    image: uberoo-commons
+  order:
+    build: ./order
+    image: order
+    container_name: order
+    expose:
+      - "8000"
+    ports:
+      - "8000:3000"
+    stdin_open: true
+  restaurant:
+    build: ./restaurant
+    image: restaurant
+    container_name: restaurant
+    expose:
+      - "8080"
+    ports:
+      - "8080:3000"
+    stdin_open: true

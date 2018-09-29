@@ -1,16 +1,15 @@
 import express from "express";
 import compression from "compression";  // compresses requests
+import session from "express-session";
 import bodyParser from "body-parser";
 import path from "path";
 import mongoose from "mongoose";
 import expressValidator from "express-validator";
 
 
+// Controllers (route handlers)
+import * as coursierRoute from "./controllers/coursier";
 import MONGODB_URI from "./util/links";
-
-// Route handlers
-import mealRouter from "./routes/meals/router";
-import orderRouter from "./routes/orders/router";
 
 
 // Create Express server
@@ -40,7 +39,12 @@ app.use(
 /**
  * Primary app routes.
  */
-app.use("/meals", mealRouter);
-app.use("/orders", orderRouter);
+app.post("/meals", coursierRoute.notifyOrder);
+app.get("/deliveries/:id", coursierRoute.deliveryStatus);
+app.post("/deliveries/:id", coursierRoute.updateStatus);
+
+/**
+ * API examples routes.
+ */
 
 export default app;

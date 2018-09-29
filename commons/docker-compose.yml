@@ -1,0 +1,5 @@
+version: "3"
+services:
+  uberoo-commons:
+    build: .
+    image: uberoo-commons
