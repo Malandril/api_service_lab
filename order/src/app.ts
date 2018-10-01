@@ -11,6 +11,7 @@ import MONGODB_URI from "./util/links";
 // Route handlers
 import mealRouter from "./routes/meals/router";
 import orderRouter from "./routes/orders/router";
+import customerRouter from "./routes/customers/router";
 
 
 // Create Express server
@@ -42,5 +43,6 @@ app.use(
  */
 app.use("/meals", mealRouter);
 app.use("/orders", orderRouter);
+app.use("/customers", customerRouter);
 
 export default app;
