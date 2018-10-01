@@ -1,8 +1,8 @@
-FROM node
-RUN mkdir /test
-COPY ./dist /test/dist
-COPY ./package.json /test/
-WORKDIR /test
+FROM uberoo-commons:latest
+RUN mkdir /coursier
+COPY ./dist /coursier/dist
+COPY ./package.json /coursier/
+WORKDIR /coursier
 RUN npm install --production
 EXPOSE 3000
 ENTRYPOINT [ "npm","start"]
