@@ -27,10 +27,10 @@
         ],
         "whitespace": [
             true,
-//            "check-branch",
+            "check-branch",
             "check-decl",
             "check-operator",
-//            "check-module",
+            "check-module",
             "check-separator",
             "check-type"
         ],
