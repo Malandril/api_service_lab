@@ -13,6 +13,15 @@ services:
     ports:
       - "8000:3000"
     stdin_open: true
+  coursier:
+    build: ./coursier
+    image: coursier
+    container_name: coursier
+    expose:
+      - "8090"
+    ports:
+      - "8090:3000"
+    stdin_open: true
   restaurant:
     build: ./restaurant
     image: restaurant
@@ -22,3 +31,5 @@ services:
     ports:
       - "8080:3000"
     stdin_open: true
+  mongo:
+    image: mongo
