@@ -1,5 +1,6 @@
 import express from "express";
 import compression from "compression";  // compresses requests
+import session from "express-session";
 import bodyParser from "body-parser";
 import path from "path";
 import mongoose from "mongoose";
@@ -9,8 +10,7 @@ import expressValidator from "express-validator";
 import MONGODB_URI from "./util/links";
 
 // Route handlers
-import mealRouter from "./routes/meals/router";
-import orderRouter from "./routes/orders/router";
+import etaRouter from "./routes/eta/router";
 
 
 // Create Express server
@@ -40,7 +40,6 @@ app.use(
 /**
  * Primary app routes.
  */
-app.use("/meals", mealRouter);
-app.use("/orders", orderRouter);
+app.use("/eta", etaRouter);
 
 export default app;
