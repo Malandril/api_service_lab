@@ -12,3 +12,4 @@ do
     fi
     cd ..
 done
+read  -n 1 -p "LOL"
