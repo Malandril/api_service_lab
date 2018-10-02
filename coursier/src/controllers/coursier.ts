@@ -5,13 +5,17 @@ import { OrderCreation } from "../models/request/order-creation-request";
 import { DeliveryStatusRequest } from "../models/request/delivery-status-request";
 import { DeliveryStatusPostRequest } from "../models/request/delivery-status-post-request";
 
+const mongoose = require("mongoose");
+
 let orders: DeliveryStatus[] = []; // identified order
 let size = 0;
 
 orders = [];
-
+const myModel = mongoose.model("DeliveryStatus");
 function saveDeliveryCreation(request: OrderCreation) {
-    orders[size] = new DeliveryStatus(size, Date.now(), "CREATED");
+    const m = new myModel({status: "CREATED", id: 14 } );
+    m.save();
+    orders[size] = undefined; // DeliveryStatus(size, Date.now(), "CREATED");
     size++;
 }
 
