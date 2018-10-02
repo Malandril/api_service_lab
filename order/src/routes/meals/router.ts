@@ -6,10 +6,11 @@ const {check, validationResult} = require("express-validator/check");
 const router = Router();
 
 const data: { [key: number]: MealModel; } = {
-    0: new MealModel({"name": "Pizza", "price": 8, "id": 0, "eta": 12}),
-    1: new MealModel({"name": "Pasta", "price": 3, "id": 1, "eta": 10})
+    0: new MealModel({"name": "Pizza", "price": 8, "id": 0, "eta": 12, "category": "Italian"}),
+    1: new MealModel({"name": "Pasta", "price": 3, "id": 1, "eta": 10, "category": "Italian"}),
+    2: new MealModel({"name": "Ramen soup", "price": 2, "id": 2, "eta": 7, "category": "Asian"})
 };
-let nextId = 2;
+let nextId = 3;
 
 /**
  * GET /meals
@@ -43,7 +44,7 @@ const postMeal = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId, "eta": +req.body.eta});
+    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId, "eta": +req.body.eta, "category": req.body.category});
     data[nextId++] = o;
     res.status(201).json(o);
 };
@@ -51,7 +52,8 @@ const postMeal = (req: Request, res: Response) => {
 function getMealValidator() {
     return [
         check("name").isString().isLength({min: 1}).withMessage("A meal needs a name"),
-        check("price").isFloat({gt: 0}).withMessage("A meal needs a price greater than 0")
+        check("price").isFloat({gt: 0}).withMessage("A meal needs a price greater than 0"),
+        check("category").isString().isLength({min: 1}).withMessage("A meal needs a category")
     ];
 }
 
