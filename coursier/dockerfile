@@ -1,8 +1,8 @@
 FROM uberoo-commons:latest
 RUN mkdir /coursier
-COPY ./dist /coursier/dist
 COPY ./package.json /coursier/
 WORKDIR /coursier
 RUN npm install --production
+COPY ./dist /coursier/dist
 EXPOSE 3000
 ENTRYPOINT [ "npm","start"]
