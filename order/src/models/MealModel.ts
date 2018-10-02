@@ -5,11 +5,15 @@ export class MealModel implements Meal {
     price: number;
     id: number;
     eta: number;
+    category: string;
+
 
     constructor(meal: Meal) {
         this.name = meal.name;
         this.price = meal.price;
         this.id = meal.id;
         this.eta = meal.eta;
+        this.category = meal.category;
     }
+
 }
