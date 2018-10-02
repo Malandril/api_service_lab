@@ -31,6 +31,15 @@ services:
     ports:
       - "8080:3000"
     stdin_open: true
+  eta_calculator:
+    build: ./eta_calculator
+    image: eta_calculator
+    container_name: eta_calculator
+    expose:
+    - "8070"
+    ports:
+    - "8070:3000"
+    stdin_open: true
   mongo:
    image: mongo
    expose:
