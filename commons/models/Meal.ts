@@ -3,4 +3,5 @@ export interface Meal {
     price: number;
     id: number;
     eta: number;
+    category: string;
 }
