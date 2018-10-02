@@ -32,4 +32,9 @@ services:
       - "8080:3000"
     stdin_open: true
   mongo:
-    image: mongo
+   image: mongo
+   expose:
+        - "27017"
+   ports:
+        - "27017:27017"
+   container_name: bdd
