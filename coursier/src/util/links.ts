@@ -1,3 +1,3 @@
-const MONGODB_URI = "mongodb://mongo:27027";
+const MONGODB_URI = "mongodb://soauser:soa@localhost:27017/";
 
 export default MONGODB_URI;
