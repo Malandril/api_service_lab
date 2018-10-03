@@ -1,8 +1,8 @@
 FROM uberoo-commons:latest
 RUN mkdir /eta_calculator
-COPY ./dist /eta_calculator/dist
 COPY ./package.json /eta_calculator/
 WORKDIR /eta_calculator
 RUN npm install --production
+COPY ./dist /eta_calculator/dist
 EXPOSE 3000
 ENTRYPOINT [ "npm","start"]
