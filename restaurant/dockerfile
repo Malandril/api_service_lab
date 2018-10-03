@@ -1,8 +1,8 @@
 FROM uberoo-commons
-RUN mkdir /test
-COPY ./dist /test/dist
+RUN mkdir /restaurant
 COPY ./package.json /test/
-WORKDIR /test
+WORKDIR /restaurant
 RUN npm install --production
+COPY ./dist /restaurant/dist
 EXPOSE 3000
 ENTRYPOINT [ "npm","start"]
