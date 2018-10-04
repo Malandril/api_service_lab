@@ -29,7 +29,7 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     console.log("order", {calculateETA: order});
     return request.post({
         url: `${eta_url}/eta`,
-        form: {calculateETA: order}
+        form: "{ \"calculateETA\": { \"id\": 0, \"client\": 23, \"meals\": [] } }"//{calculateETA: order}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
         console.log("The ETA of my order is ", body)

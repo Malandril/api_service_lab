@@ -42,6 +42,9 @@ services:
     stdin_open: true
   mongo:
    image: mongo
+   environment:
+        - MONGO_INITDB_ROOT_USERNAME=soauser
+        - MONGO_INITDB_ROOT_PASSWORD=soa
    expose:
         - "27017"
    ports:
