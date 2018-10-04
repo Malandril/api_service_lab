@@ -7,10 +7,8 @@ import mongoose from "mongoose";
 import expressValidator from "express-validator";
 
 
-// Controllers (route handlers)
-import * as homeController from "./controllers/home";
-import * as apiController from "./controllers/api";
-import * as contactController from "./controllers/contact";
+// Routers (route handlers)
+import orderToPrepareRouter from "./routes/ordersToPrepare/router";
 import MONGODB_URI from "./util/links";
 
 
@@ -38,15 +36,6 @@ app.use(
     express.static(path.join(__dirname, "public"), {maxAge: 31557600000})
 );
 
-/**
- * Primary app routes.
- */
-app.get("/meals", contactController.getContact);
-app.post("/contact", contactController.postContact);
-
-/**
- * API examples routes.
- */
-app.get("/api", apiController.getApi);
+app.use("/ordersToPrepare", orderToPrepareRouter);
 
 export default app;
