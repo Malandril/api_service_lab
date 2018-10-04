@@ -3,7 +3,6 @@
 let http = require('http');
 let url = require('url');
 let methods = require('./methods');
-let types = require('./types');
 
 let server = http.createServer(requestListener);
 const PORT = process.env.PORT || 9090;
