@@ -14,19 +14,14 @@ const postEta = (req: Request, res: Response) => {
         return res.status(422).json({errors: errors.array()});
     }
     let totalETA = 0;
-    for (let i = 0; i < req.body.meals.length; i++) {
-        totalETA += +req.body.meals[i].eta;
+    const order = req.body.order;
+    for (let i = 0; i < order.meals.length; i++) {
+        totalETA += +order.meals[i].eta;
     }
     res.status(200).json(totalETA);
 };
 
-function getETAValidator() {
-    return [
-        check("meals").isArray().isLength({min: 1}).withMessage("The request must contains at least one meal")
-    ];
-}
-
-router.post("/", getETAValidator(), postEta);
+router.post("/", postEta);
 
 
 export default router;

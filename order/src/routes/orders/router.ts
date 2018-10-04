@@ -1,5 +1,6 @@
-import { Request, Response, Router } from "express";
-import { OrderModel } from "../../models";
+import {Request, Response, Router} from "express";
+import {OrderModel} from "../../models";
+import {check, validationResult} from "express-validator/check";
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.get("/", getOrders);
  */
 const getOrder = (req: Request, res: Response) => {
     const o = data[+req.params.orderId];
+    console.log("Getting order", o);
     if (o === undefined) {
         res.status(404);
     } else {
@@ -34,11 +36,20 @@ router.get("/:orderId", getOrder);
  * Create the specified order
  */
 const postOrder = (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({errors: errors.array()});
+    }
     const o = new OrderModel({"client": req.body.client, "meals": req.body.meals, "id": nextId});
     data[nextId++] = o;
-    res.status(201).send(o);
+    console.log("adding order", o);
+    res.status(201).json(o);
 };
-router.post("/", postOrder);
+router.post("/", [
+        check("client").isInt().withMessage("An order needs a client id"),
+        check("meals").isArray(),
+    ]
+    , postOrder);
 
 /**
  * DELETE /orders/:orderId
