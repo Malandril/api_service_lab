@@ -1,6 +1,6 @@
 FROM uberoo-commons:latest
 RUN mkdir /eta_calculator
-COPY ./package.json /eta_calculator/
+COPY ./ /eta_calculator/
 WORKDIR /eta_calculator
-EXPOSE 3000
+EXPOSE 9090
 ENTRYPOINT [ "node","server.js"]
