@@ -11,7 +11,7 @@
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
-    "serve": "node dist/order/src/server.js",
+    "serve": "node dist/server.js",
     "watch-node": "nodemon dist/order/src/server.js",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
@@ -34,7 +34,7 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "rm-local-modules": "^0.0.2",
-    "uberoo-commons": "1.0.3",
+    "uberoo-commons": "file:../commons",
     "winston": "^3.1.0"
   },
   "devDependencies": {

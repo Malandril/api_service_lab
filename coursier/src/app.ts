@@ -21,17 +21,19 @@ mongoose.connect(mongoUrl, {useNewUrlParser: true}).then(
     () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
     }
 );
-const statusSchema = new mongoose.Schema({
+const newVar: SchemaDefinition = {
     id: {type: Number, unique: true},
     creation: Number,
     status: String,
     history: [{status: String, event: String}]
 
-});
+};
+const statusSchema = new mongoose.Schema(newVar);
 mongoose.model("DeliveryStatus", statusSchema );
 console.log("Model : " + statusSchema);
 
 import * as coursierRoute from "./controllers/coursier";
+import {SchemaDefinition} from "mongoose";
 // Express configuration
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
@@ -48,7 +50,7 @@ app.use(
  */
 app.post("/deliveries", coursierRoute.notifyOrder);
 app.get("/deliveries/:id", coursierRoute.deliveryStatus);
-app.post("/deliveries/:id", coursierRoute.updateStatus);
+app.put("/deliveries/:id", coursierRoute.updateStatus);
 
 /**
  * API examples routes.
