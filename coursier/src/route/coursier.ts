@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { Customer } from "uberoo-commons";
 import { DeliveryStatus } from "../models/delivery-status";
 import { OrderCreation } from "../models/request/order-creation-request";
 import { DeliveryStatusRequest } from "../models/request/delivery-status-request";

@@ -4,6 +4,7 @@ const assert = require("assert");
 let order_url = "http://localhost:8000";
 let eta_url = "http://localhost:9090";
 let coursier_url = "http://localhost:8090";
+let restaurant_url = "http://localhost:8080";
 
 
 // assumption: the client is already connected
@@ -26,6 +27,15 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     );
 }).then(function (o) {
     order = JSON.parse(o);
+    return request.post({
+        url: `${restaurant_url}/ordersToPrepare`,
+        json: order
+    }, function (error, response, body) {
+        assert(response.statusCode, 201);
+        console.log("Posted order to restaurants ", body)
+    });
+}).then(function (o) {
+    order = o;
     console.log("order", {calculateETA: order});
     return request.post({
         url: `${eta_url}/eta`,
@@ -43,18 +53,14 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         console.log("coursier response", body)
     })
 }).then(function (id) {
-    console.log(id);
-    console.log(id);
-    console.log(id.ids);
     orderId = JSON.parse(id).orderId;
-    console.log("order", order, "orderId", orderId);
+    // console.log(id);
+    console.log("orderID", orderId);
     return request.put({
         url: `${coursier_url}/deliveries/${orderId}`,
         json: {status: "OK"}
     }, function (error, response, body) {
-        if("statusCode" in response){
-            assert(response.statusCode, 200);
-        }
+        assert(response.statusCode, 200);
         console.log("Restaurant updated status")
     })
 }).then(function () {
