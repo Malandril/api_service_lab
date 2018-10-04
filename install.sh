@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
 
-for folder in */
+for folder in commons coursier order restaurant
 do
     cd ${folder}
     echo entering $folder
     if [ ./package.json ]; then
-        npm install uberoo-commons
         npm install
         npm run build
     fi

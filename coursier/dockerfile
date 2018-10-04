@@ -1,4 +1,4 @@
-FROM uberoo-commons:latest
+FROM node
 RUN mkdir /coursier
 COPY ./package.json /coursier/
 WORKDIR /coursier
