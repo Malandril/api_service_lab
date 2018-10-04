@@ -1,4 +1,4 @@
-FROM uberoo-commons:latest
+FROM node
 RUN mkdir /order
 COPY ./package.json /order/
 WORKDIR /order
