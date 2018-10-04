@@ -1,9 +1,6 @@
 version: '3.2'
 
 services:
-  uberoo-commons:
-    build: ./commons
-    image: uberoo-commons
   order:
     build: ./order
     image: order
@@ -16,6 +13,8 @@ services:
   coursier:
     build: ./coursier
     image: coursier
+    depends_on:
+      - "mongo"
     container_name: coursier
     expose:
       - "8090"
@@ -43,8 +42,8 @@ services:
   mongo:
    image: mongo
    environment:
-        - MONGO_INITDB_ROOT_USERNAME=soauser
-        - MONGO_INITDB_ROOT_PASSWORD=soa
+     - MONGO_INITDB_ROOT_USERNAME=soauser
+     - MONGO_INITDB_ROOT_PASSWORD=soa
    expose:
         - "27017"
    ports:

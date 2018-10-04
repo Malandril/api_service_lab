@@ -1,6 +1,6 @@
-FROM uberoo-commons
+FROM node
 RUN mkdir /restaurant
-COPY ./package.json /test/
+COPY ./package.json /restaurant/
 WORKDIR /restaurant
 RUN npm install --production
 COPY ./dist /restaurant/dist
