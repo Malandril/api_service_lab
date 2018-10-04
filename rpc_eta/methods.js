@@ -1,7 +1,5 @@
 'use strict';
 
-// let db = require('./db');
-
 let methods = {
     calculateETA: {
         description: `calculates the ETA for the order, and returns it`,
@@ -12,13 +10,17 @@ let methods = {
                 if (typeof (orderObj) !== 'object') {
                     throw new Error('An object was expected');
                 }
-                // you would usually do some validations here
-                // and check for required fields
                 let _orderObj = JSON.parse(JSON.stringify(orderObj));
+                if (_orderObj.meals == null){
+                    resolve('Your order must contain a list of meals.');
+                }
                 let totalETA = 0;
                 for (let i = 0; i < _orderObj.meals.length; i++) {
-                    // totalETA += db.etas.getETA(_orderObj.meals[i])
-                    totalETA += _orderObj.meals[i].eta
+                    if(_orderObj.meals[i].eta == null){
+                        resolve('This meal does not have an ETA : '+JSON.stringify(_orderObj.meals[i]));
+                    } else {
+                        totalETA += _orderObj.meals[i].eta
+                    }
                 }
                 resolve(totalETA);
             });
