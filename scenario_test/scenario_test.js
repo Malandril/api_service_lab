@@ -29,30 +29,36 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     console.log("order", {calculateETA: order});
     return request.post({
         url: `${eta_url}/eta`,
-        form: "{ \"calculateETA\": { \"id\": 0, \"client\": 23, \"meals\": [] } }"//{calculateETA: order}
+        json: {calculateETA: order}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
         console.log("The ETA of my order is ", body)
     });
 }).then(function () {
     return request.post({
-        url: `${coursier_url}/meals`,
+        url: `${coursier_url}/deliveries`,
         form: {id: order.id, customer: client}
     }, function (error, response, body) {
         assert(response.statusCode, 201);
         console.log("coursier response", body)
     })
 }).then(function (id) {
+    console.log(id);
+    console.log(id);
+    console.log(id.ids);
     orderId = JSON.parse(id).orderId;
     console.log("order", order, "orderId", orderId);
     return request.put({
         url: `${coursier_url}/deliveries/${orderId}`,
-        form: {status: "OK"}
+        json: {status: "OK"}
     }, function (error, response, body) {
-        assert(response.statusCode, 200);
+        if("statusCode" in response){
+            assert(response.statusCode, 200);
+        }
         console.log("Restaurant updated status")
     })
 }).then(function () {
+    console.log("co");
     return request.get(`${coursier_url}/deliveries/${orderId}`,
         function (error, response, body) {
             assert(response.statusCode, 200);
@@ -69,5 +75,5 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         console.log("Delivery man updated status to delivered")
     })
 });
-
+console.log("scénario fini");
 // adding order
