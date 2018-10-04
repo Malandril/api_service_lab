@@ -32,7 +32,7 @@ const statusSchema = new mongoose.Schema(newVar);
 mongoose.model("DeliveryStatus", statusSchema );
 console.log("Model : " + statusSchema);
 
-import * as coursierRoute from "./controllers/coursier";
+import * as coursierRoute from "./route/coursier";
 import {SchemaDefinition} from "mongoose";
 // Express configuration
 app.set("port", process.env.PORT || 3000);

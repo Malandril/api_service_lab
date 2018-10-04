@@ -1,17 +1,11 @@
 
 import mongoose from "mongoose";
+import {Customer} from "../../../commons/models/Customer";
 export type DeliveryStatus = mongoose.Document &{
     id: number;
     creation: number;
     status: string;
     history: {status: string, event: string}[];
+    customer: Customer;
 
-    /*
-    constructor(id: number, creation: number, status: string) {
-        this.id = id;
-        this.creation = creation;
-        this.status = status;
-        this.history = [];
-    }
-    */
 };
