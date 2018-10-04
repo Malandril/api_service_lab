@@ -32,7 +32,6 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "rm-local-modules": "^0.0.2",
-    "uberoo-commons": "file:../commons",
     "winston": "^3.1.0"
   },
   "devDependencies": {
