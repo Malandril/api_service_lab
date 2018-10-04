@@ -2,7 +2,7 @@ const request = require("request-promise");
 const assert = require("assert");
 
 let order_url = "http://localhost:8000";
-let eta_url = "http://localhost:8070";
+let eta_url = "http://localhost:9090";
 let coursier_url = "http://localhost:8090";
 
 
@@ -26,13 +26,13 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     );
 }).then(function (o) {
     order = JSON.parse(o);
-    console.log("order", {order: order});
+    console.log("order", {calculateETA: order});
     return request.post({
         url: `${eta_url}/eta`,
-        form: {order: order}
+        form: {calculateETA: order}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
-        console.log("eta", body)
+        console.log("The ETA of my order is ", body)
     });
 }).then(function () {
     return request.post({
@@ -56,7 +56,7 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     return request.get(`${coursier_url}/deliveries/${orderId}`,
         function (error, response, body) {
             assert(response.statusCode, 200);
-            console.log("Delevery man notified of order status", body);
+            console.log("Delivery man notified of order status", body);
             assert(body.status, "OK");
         })
 }).then(function (status) {
