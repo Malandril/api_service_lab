@@ -17,7 +17,12 @@ let nextId = 3;
  * Return the list of meals offered by Uberoo
  */
 const getMeals = (req: Request, res: Response) => {
-    res.status(200).send(Object.keys(data).map(key => data[+key]));
+    let meals = Object.keys(data).map(key => data[+key]);
+    if (req.query.category) {
+        meals = meals.filter(value => value.category.toLowerCase() === req.query.category.toLowerCase());
+    }
+    res.status(200).send(meals);
+
 };
 router.get("/", getMeals);
 
@@ -44,7 +49,13 @@ const postMeal = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId, "eta": +req.body.eta, "category": req.body.category});
+    const o = new MealModel({
+        "name": req.body.name,
+        "price": +req.body.price,
+        "id": nextId,
+        "eta": +req.body.eta,
+        "category": req.body.category
+    });
     data[nextId++] = o;
     res.status(201).json(o);
 };
