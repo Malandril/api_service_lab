@@ -39,7 +39,7 @@ export let notifyOrder = (req: Request, res: Response) => {
         const request: OrderCreation = req.body as OrderCreation;
         saveDeliveryCreation(request);
 
-        res.json([{orderId: request.id}]);
+        res.json({orderId: request.id});
     });
 };
 
@@ -59,6 +59,7 @@ export let deliveryStatus = (req: Request, res: Response) => {
 
 export let updateStatus = (req: Request, res: Response) => {
     req.body.id = req.body.id | req.params.id;
+    console.log("Receive", req.body);
     manageErrors(DeliveryStatusPostRequest.isDeliveryStatusPostRequest(req.body), res, function () {
         const request: DeliveryStatusPostRequest = req.body as DeliveryStatusPostRequest;
         const mongoQuery: DocumentQuery<DeliveryStatus| null, DeliveryStatus>  = myModel.findOne({idDelivery: request.id});
