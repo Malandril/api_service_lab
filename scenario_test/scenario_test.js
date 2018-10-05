@@ -71,7 +71,7 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
             console.log("Delivery man notified of order status", body);
             /* Delivery man notified of order status {"status":"OK"} value :  undefined */
             var res = JSON.parse(body);
-            console.log(res.status,res.status == "OK",res["status"]);
+            console.log(res.status,res.status === "OK",res["status"]);
 
             assert(res.status, "OK");
         })

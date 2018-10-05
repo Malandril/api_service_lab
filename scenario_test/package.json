@@ -4,13 +4,13 @@
   "description": "",
   "main": "scenario_test.js",
   "scripts": {
-    "start": "node scenario_test.js"
+    "start": "node scenario_test.js",
+    "build": " "
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "request": "^2.88.0",
-    "request-promise": "^4.2.2",
-    "uberoo-commons": "^1.0.3"
+    "request-promise": "^4.2.2"
   }
 }
