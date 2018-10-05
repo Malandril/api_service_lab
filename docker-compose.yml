@@ -4,6 +4,8 @@ services:
   order:
     build: ./order
     image: order
+    depends_on:
+    - "mongo"
     container_name: order
     expose:
       - "8000"

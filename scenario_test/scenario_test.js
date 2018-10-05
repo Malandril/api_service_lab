@@ -16,7 +16,7 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
     assert(response.statusCode, 200);
     console.log("meals", body);
 }).then(function (meals) {
-    let order = {client: client.id, meals: JSON.parse(meals)};
+    let order = {client: client, meals: JSON.parse(meals)};
     return request.post({
             url: `${order_url}/orders`,
             form: order

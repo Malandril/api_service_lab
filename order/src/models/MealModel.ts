@@ -1,4 +1,4 @@
-import { Meal } from "../../../commons/models";
+import { Meal } from "uberoo-commons";
 import {Schema, Document, model, Model} from "mongoose";
 
 export interface IMealModel extends Meal, Document {}
