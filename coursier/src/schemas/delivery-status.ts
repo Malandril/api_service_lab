@@ -6,7 +6,7 @@ export interface IDeliveryStatusModel extends IDeliveryStatus, Document {
 }
 
 export let DeliveryStatusSchema: Schema = new Schema({
-    idDelivery: Number,
+    id: Number,
     creation: Date,
     status: String,
     history: [{status: String, event: String}]

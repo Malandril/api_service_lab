@@ -48,7 +48,7 @@ export let deliveryStatus = (req: Request, res: Response) => {
         myModel.findOne({id: request.id}, function (err, deliStatus: DeliveryStatus) {
             if (err) return  sendError( "Delivery " + request.id + "doesn't exist", res);
             console.log("Status :%s\n ", deliStatus);
-            res.send({status: deliStatus});
+            res.send({status: deliStatus.status});
         });
     });
 };
@@ -59,7 +59,7 @@ export let updateStatus = (req: Request, res: Response) => {
     console.log("Receive", req.body);
     manageErrors(DeliveryStatusPostRequest.isDeliveryStatusPostRequest(req.body), res, function () {
         const request: DeliveryStatusPostRequest = req.body as DeliveryStatusPostRequest;
-        const mongoQuery: DocumentQuery<DeliveryStatus| null, DeliveryStatus>  = myModel.findOne({id: request.id}, function (err, deliStatus: DeliveryStatus) {
+        myModel.findOne({id: request.id}, function (err, deliStatus: DeliveryStatus) {
             if (err) return console.log(err);
             console.log("Status :%s\n ", deliStatus.status);
             deliStatus.status = request.status;
