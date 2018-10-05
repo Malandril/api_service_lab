@@ -3,9 +3,9 @@ import compression from "compression";  // compresses requests
 import session from "express-session";
 import bodyParser from "body-parser";
 import path from "path";
+
 const mongoose = require("mongoose");
 import expressValidator from "express-validator";
-
 
 
 // Controllers (route handlers)
@@ -17,7 +17,7 @@ const app = express();
 
 // Connect to MongoDB
 const mongoUrl = MONGODB_URI;
-mongoose.connect(mongoUrl, {useNewUrlParser: true}).then(
+mongoose.connect(mongoUrl, {useNewUrlParser: true, reconnectTries: 5, reconnectInterval: 1000}).then(
     () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
     }
 );
@@ -29,7 +29,7 @@ const newVar: SchemaDefinition = {
 
 };
 const statusSchema = new mongoose.Schema(newVar);
-mongoose.model("DeliveryStatus", statusSchema );
+mongoose.model("DeliveryStatus", statusSchema);
 console.log("Model : " + statusSchema);
 
 import * as coursierRoute from "./route/coursier";
