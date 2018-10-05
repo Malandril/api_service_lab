@@ -1,14 +1,16 @@
-import { IMealModel } from "./MealModel";
-import { Order } from "../../../commons/models";
+import {Order} from "../../../commons/models";
+import {Schema, Document, model, Model} from "mongoose";
 
-export class OrderModel implements Order {
-    id: number;
-    client: number;
-    meals: IMealModel[];
+export interface IOrderModel extends Order, Document {}
 
-    constructor(order: Order) {
-        this.id = order.id;
-        this.client = order.client;
-        // this.meals = order.meals;
-    }
-}
+export let OrderSchema: Schema = new Schema({
+    client: { type: Schema.Types.ObjectId, ref: "Client" },
+    meals: [{ type: Schema.Types.ObjectId, ref: "Meal" }]
+});
+
+OrderSchema.pre("save", function (next) {
+    console.log("Save " + this);
+    next();
+});
+
+export const OrderModel: Model<IOrderModel> = model<IOrderModel>("Order", OrderSchema);
