@@ -1,5 +1,5 @@
 export interface IDeliveryStatus {
-    idDelivery: number;
+    idStatus: number;
     creation: Date;
     status: string;
     history: {status: string, event: string}[];

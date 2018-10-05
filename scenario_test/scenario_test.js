@@ -69,7 +69,11 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         function (error, response, body) {
             assert(response.statusCode, 200);
             console.log("Delivery man notified of order status", body);
-            assert(body.status, "OK");
+            /* Delivery man notified of order status {"status":"OK"} value :  undefined */
+            var res = JSON.parse(body);
+            console.log(res.status,res.status == "OK",res["status"]);
+
+            assert(res.status, "OK");
         })
 }).then(function (status) {
     status = JSON.parse(status);
@@ -81,5 +85,4 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         console.log("Delivery man updated status to delivered")
     })
 });
-console.log("scénario fini");
 // adding order
