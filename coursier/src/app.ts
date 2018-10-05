@@ -16,11 +16,28 @@ import {DeliveryStatus} from "./models/delivery-status";
 const app = express();
 
 // Connect to MongoDB
+const MAX_TRIES = 5;
+let tries = 0;
 const mongoUrl = MONGODB_URI;
-mongoose.connect(mongoUrl, {useNewUrlParser: true, reconnectTries: 5, reconnectInterval: 1000}).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
+const connectWithRetry = () => mongoose.connect(mongoUrl, {
+    useNewUrlParser: true,
+    reconnectTries: 5,
+    autoReconnect: true,
+    reconnectInterval: 10000,
+    connectTimeoutMS: 10000
+}).catch(reason => {
+    if (tries < MAX_TRIES) {
+        console.log("MongoDB connection unsuccessful, retry after 1 second.");
+        tries++;
+        setTimeout(connectWithRetry, 1000);
+    } else {
+        console.log("Could not connect to MongoDB");
+        throw reason;
     }
-);
+
+});
+connectWithRetry();
+
 const newVar: SchemaDefinition = {
     id: {type: Number, unique: true},
     creation: Number,
