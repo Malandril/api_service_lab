@@ -1,4 +1,4 @@
-import {Order} from "../../../commons/models";
+import {Order} from "uberoo-commons";
 import {Schema, Document, model, Model} from "mongoose";
 
 export interface IOrderModel extends Order, Document {}
