@@ -51,9 +51,6 @@ const Customer: SchemaDefinition = {
     name: String,
     phone: String
 };
-
-mongoose.model("Order", Order);
-mongoose.model("Customer", Customer);
 const newVar: SchemaDefinition = {
     id: {type: Number, unique: true},
     creation: Number,
@@ -63,6 +60,9 @@ const newVar: SchemaDefinition = {
     history: [{status: String, event: String}]
 
 };
+mongoose.model("Order", new mongoose.Schema(Order));
+mongoose.model("Customer", new mongoose.Schema(Customer));
+
 const statusSchema = new mongoose.Schema(newVar);
 mongoose.model("DeliveryStatus", statusSchema);
 console.log("Model : " + statusSchema);
