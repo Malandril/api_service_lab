@@ -7,82 +7,83 @@ let coursier_url = "http://localhost:8090";
 let restaurant_url = "http://localhost:8080";
 
 
-// assumption: the client is already connected
+// Assumption: the client is already connected
 var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762"};
 var order = null;
 
 var orderId = null;
+console.log("### Bob browses the food catalogue for Asian food ###");
 request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, response, body) {
     assert(response.statusCode, 200);
-    console.log("meals", body);
+    console.log("Asian meals available : ", body);
 }).then(function (meals) {
+    console.log("### Bob orders a ramen soup ###");
     let order = {client: client, meals: JSON.parse(meals)};
     return request.post({
             url: `${order_url}/orders`,
             form: order
         }, function (error, response, body) {
             assert(response.statusCode, 201);
-            console.log("ordered", body);
+            console.log("Bob's order is : ", body);
         }
     );
 }).then(function (o) {
+    console.log("### Bob's order is sent to the asian restaurant ###");
     order = JSON.parse(o);
     return request.post({
         url: `${restaurant_url}/ordersToPrepare`,
         json: order
     }, function (error, response, body) {
         assert(response.statusCode, 201);
-        console.log("Posted order to restaurants ", body)
+        console.log("The posted order to the restaurant is : ", body)
     });
 }).then(function (o) {
+    console.log("### The system estimates the ETA for Bob's order ###");
     order = o;
-    console.log("order", {calculateETA: order});
     return request.post({
         url: `${eta_url}/eta`,
         json: {calculateETA: order}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
-        console.log("The ETA of my order is ", body)
+        const eta_value = JSON.parse(body).calculateETA;
+        console.log("The ETA of Bob's order is  ", eta_value, " minutes")
     });
 }).then(function () {
+    console.log("### The delivery man is assigned to the delivery of Bob's order ###");
     return request.post({
         url: `${coursier_url}/deliveries`,
         form: {id: order.id, customer: client}
     }, function (error, response, body) {
         assert(response.statusCode, 201);
-        console.log("coursier response", body)
+        console.log("The delivery man's response is ", body)
     })
 }).then(function (id) {
+    console.log("### The restaurant informs the delivery man that Bob's order is ready to be delivered ###");
     orderId = JSON.parse(id).orderId;
-    // console.log(id);
-    console.log("orderID", orderId);
     return request.put({
         url: `${coursier_url}/deliveries/${orderId}`,
         json: {status: "OK"}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
-        console.log("Restaurant updated status")
+        console.log("The restaurant has updated the status of the delivery")
     })
 }).then(function () {
-    console.log("co");
+    console.log("### The delivery man gets the update that Bob's order is ready to be delivered ###");
     return request.get(`${coursier_url}/deliveries/${orderId}`,
         function (error, response, body) {
             assert(response.statusCode, 200);
-            console.log("Delivery man notified of order status", body);
-            /* Delivery man notified of order status {"status":"OK"} value :  undefined */
             var res = JSON.parse(body);
-            console.log(res.status,res.status === "OK",res["status"]);
-
             assert(res.status, "OK");
+            console.log("The delivery man is notified that the order status is now ", res.status, "to be delivered");
         })
 }).then(function (status) {
+    console.log("### The delivery man updates the status of the delivery to delivered when Bob got his ramen soup ###");
     status = JSON.parse(status);
     return request.put({
         url: `${coursier_url}/deliveries/${status.id}`,
         form: {status: "Delivered"}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
-        console.log("Delivery man updated status to delivered")
+        console.log("The delivery man updates the status to delivered")
     })
 });
-// adding order
