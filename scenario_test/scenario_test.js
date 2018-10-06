@@ -8,14 +8,23 @@ let restaurant_url = "http://localhost:8080";
 
 
 // Assumption: the client is already connected
-var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762"};
+var client = null;
 var order = null;
-
 var orderId = null;
-console.log("### Bob browses the food catalogue for Asian food ###");
-request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, response, body) {
+
+console.log("### Registering Bob ###");
+request.post({
+    url: `${order_url}/customers`,
+    json: {address: "742 Evergreen Terrace", name: "Bob", phone: "0608724762"}
+}, (error, response, body) => {
     assert(response.statusCode, 200);
-    console.log("Asian meals available : ", body);
+    console.log("Bob is registered " + body)
+}).then((c) => {
+    client = JSON.parse(c);
+    console.log("### Bob browses the food catalogue for Asian food ###");
+    return request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, response, body) {
+        assert(response.statusCode, 200);
+        console.log("Asian meals available : ", body);
 }).then(function (meals) {
     console.log("### Bob orders a ramen soup ###");
     let order = {client: client, meals: JSON.parse(meals)};
