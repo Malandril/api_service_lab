@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import path from "path";
 
 const mongoose = require("mongoose");
+
+import {Schema, Document, model, Model} from "mongoose";
+
 import expressValidator from "express-validator";
 
 
@@ -38,9 +41,24 @@ const connectWithRetry = () => mongoose.connect(mongoUrl, {
 });
 connectWithRetry();
 
+const Order: SchemaDefinition = {
+    id: String
+};
+
+const Customer: SchemaDefinition = {
+    id: String,
+    address: String,
+    name: String,
+    phone: String
+};
+
+mongoose.model("Order", Order);
+mongoose.model("Customer", Customer);
 const newVar: SchemaDefinition = {
     id: {type: Number, unique: true},
     creation: Number,
+    order: {type: Schema.Types.ObjectId, ref: "Order"},
+    customer: {type: Schema.Types.ObjectId, ref: "Customer"},
     status: String,
     history: [{status: String, event: String}]
 
@@ -50,7 +68,7 @@ mongoose.model("DeliveryStatus", statusSchema);
 console.log("Model : " + statusSchema);
 
 import * as coursierRoute from "./route/coursier";
-import {SchemaDefinition} from "mongoose";
+import {SchemaDefinition, Types} from "mongoose";
 // Express configuration
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
