@@ -1,6 +1,6 @@
 
 import mongoose from "mongoose";
-import {Customer} from "uberoo-commons";
+import {Customer} from "./customer";
 export type DeliveryStatus = mongoose.Document &{
     id: number;
     creation: number;

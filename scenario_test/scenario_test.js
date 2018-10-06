@@ -20,7 +20,8 @@ request.post({
     assert(response.statusCode, 200);
     console.log("Bob is registered " + body);
 }).then((c) => {
-    client = JSON.parse(c);
+  //  console.log(c);
+    client = c;
     console.log("### Bob browses the food catalogue for Asian food ###");
     return request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, response, body) {
         assert(response.statusCode, 200);
