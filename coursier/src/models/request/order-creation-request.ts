@@ -1,18 +1,19 @@
 import { Customer } from "../customer";
+import { Order } from "../order";
 
 export class OrderCreation {
-    id: number;
+    order: Order;
     customer: Customer;
-    constructor(id: number, customer: Customer) {
-        this.id = id;
+    constructor(order: Order, customer: Customer) {
+        this.order = order;
         this.customer = customer as Customer;
 
     }
     public static isOrderCreation(obj: any) {
         const errors: string[] = [];
-        if (!("id" in obj ) ) {
+        /* if (!("id" in obj ) ) {
             errors.push("'id' needed.");
-        }
+        } */
         if (! ("customer" in obj)) {
             console.log("customer needed");
         }
