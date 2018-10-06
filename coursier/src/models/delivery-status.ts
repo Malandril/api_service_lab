@@ -1,8 +1,13 @@
 
 import mongoose from "mongoose";
 import {Customer} from "./customer";
+import {Order} from "./order";
+
+
+
+
 export type DeliveryStatus = mongoose.Document &{
-    id: number;
+    order: Order;
     creation: number;
     status: string;
     history: {status: string, event: string}[];
