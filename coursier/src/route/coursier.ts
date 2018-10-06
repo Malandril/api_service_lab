@@ -8,6 +8,8 @@ import {DocumentQuery} from "mongoose";
 const mongoose = require("mongoose");
 const util = require("util");
 
+const OrderModel = mongoose.model("Order");
+const CustomerModel = mongoose.model("Customer");
 const myModel = mongoose.model("DeliveryStatus");
 function saveDeliveryCreation(request: OrderCreation) {
 
@@ -36,9 +38,11 @@ export let notifyOrder = (req: Request, res: Response) => {
     const orderCreation = OrderCreation.isOrderCreation(req.body);
     console.log("isOrderCreation :" , util.inspect(orderCreation, false, null, true /* enable colors */));
     manageErrors(orderCreation, res, function () {
+        const custo = new CustomerModel({id: req.body.customer.id, name: req.body.customer, address: req.body.customer.address, phone: req.body.customer.phone});
+        const order = new OrderModel({id: req.body.order.id});
+        const m = new myModel({ status: "CREATED", order: order, customer: custo, creation: new Date(), history: [] });
 
-        const m = new myModel({status: "CREATED", order: req.body.order, customer: req.body.customer, creation: new Date(), history: []} );
-
+        console.log("Insert" + util.inspect(m, false, null, true /* enable colors */));
 
         myModel.create(m).then((order) => {
             console.log( "order created :", util.inspect(order, false, null, true /* enable colors */));
