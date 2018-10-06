@@ -11,6 +11,7 @@ var client = null;
 var order = null;
 var orderId = null;
 var meals = null;
+var delivery = null;
 
 console.log("### Registering Bob ###");
 request.post({
@@ -75,12 +76,13 @@ request.post({
         console.log("The delivery man's response is ", body);
 
     })
-}).then(function (id) {
-    console.log("### The restaurant informs the delivery man that Bob's order is ready to be delivered ###",id);
-    orderId = JSON.parse(id).orderId;
+}).then(function (ds) {
+    console.log("### The restaurant informs the delivery man that Bob's order is ready to be delivered ###", ds);
+    delivery = JSON.parse(ds);
+    delivery.status = "OK";
     return request.put({
-        url: `${coursier_url}/deliveries/${orderId}`,
-        json: {status: "OK"}
+        url: `${coursier_url}/deliveries/${delivery._id}`,
+        json: delivery
     }, function (error, response, body) {
         if(error){
             console.log(error);
@@ -91,9 +93,8 @@ request.post({
         console.log("The restaurant has updated the status of the delivery")
     })
 }).then(function (rr) {
-    console.log("resp put",rr);
     console.log("### The delivery man gets the update that Bob's order is ready to be delivered ###");
-    return request.get(`${coursier_url}/deliveries/${orderId}`,
+    return request.get(`${coursier_url}/deliveries/${delivery._id}`,
         function (error, response, body) {
             console.log("body :",body);
             assert(response.statusCode, 200);
@@ -103,12 +104,19 @@ request.post({
         })
 }).then(function (status) {
     console.log("### The delivery man updates the status of the delivery to delivered when Bob got his ramen soup ###");
-    status = JSON.parse(status);
+    delivery.status = "DELIVERED";
     return request.put({
-        url: `${coursier_url}/deliveries/${status.id}`,
-        form: {status: "Delivered"}
+        url: `${coursier_url}/deliveries/${delivery._id}`,
+        json: delivery
     }, function (error, response, body) {
+        if(error){
+            console.log(error);
+        }else{
+            console.log(body);
+        }
         assert(response.statusCode, 200);
-        console.log("The delivery man updates the status to delivered")
+        console.log("The restaurant has updated the status of the delivery")
     })
+}).then(() => {
+    console.log("Scenario runned successfully :)")
 });
