@@ -15,8 +15,11 @@ before_install:
  - chmod +x docker-compose
  - sudo mv docker-compose /usr/local/bin
  - ./install.sh
- - docker-compose -d
+ - docker-compose -d up
  - sleep 60 # Wait for all the services to be up
 
 script:
  - node ./scenario_test/scenario_test.js
+
+notifications:
+ email: false
