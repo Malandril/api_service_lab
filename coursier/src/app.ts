@@ -27,9 +27,9 @@ const connectWithRetry = () => mongoose.connect(mongoUrl, {
     connectTimeoutMS: 10000
 }).catch(reason => {
     if (tries < MAX_TRIES) {
-        console.log("MongoDB connection unsuccessful, retry after 1 second.");
+        console.log("MongoDB connection unsuccessful, retry after 2 seconds.");
         tries++;
-        setTimeout(connectWithRetry, 1000);
+        setTimeout(connectWithRetry, 2000);
     } else {
         console.log("Could not connect to MongoDB");
         throw reason;
