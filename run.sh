@@ -22,11 +22,14 @@ for url in "${arr[@]}";do
 done
 cd scenario_test
 npm start
-if [ $? -ne 0 ]
-then
-    echo "Test failed"
-    docker-compose down
-    exit 1
-fi
+echo "exit code " $?
+#if [ $? -ne 0 ]
+#then
+#    echo "Test failed"
+#    docker-compose down
+#    read  -n 1 -p "Press any key to exit"
+#    exit 1
+#fi
 docker-compose down
-echo "Test succeeded"
+#echo "Test succeeded"
+read  -n 1 -p "Press any key to exit"
