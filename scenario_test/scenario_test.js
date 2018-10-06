@@ -29,7 +29,7 @@ request.post({
     });
 }).then(function (meals) {
     console.log("### Bob orders a ramen soup ###");
-    let order = {client: client, meals: JSON.parse(meals)};
+    let order = {client: client.id, meals: JSON.parse(meals)};
     return request.post({
             url: `${order_url}/orders`,
             form: order
@@ -50,13 +50,19 @@ request.post({
     });
 }).then(function (o) {
     console.log("### The system estimates the ETA for Bob's order ###");
+    console.log(o);
     order = o;
     return request.post({
         url: `${eta_url}/eta`,
         json: {calculateETA: order}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
-        const eta_value = JSON.parse(body).calculateETA;
+        let eta_value;
+        try{
+            eta_value= JSON.parse(body).calculateETA;
+        }catch (error){
+            eta_value = body.calculateETA;
+        }
         console.log("The ETA of Bob's order is  ", eta_value, " minutes")
     });
 }).then(function () {
