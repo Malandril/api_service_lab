@@ -7,10 +7,10 @@ let coursier_url = "http://localhost:8090";
 let restaurant_url = "http://localhost:8080";
 
 
-// Assumption: the client is already connected
 var client = null;
 var order = null;
 var orderId = null;
+var meals = null;
 
 console.log("### Registering Bob ###");
 request.post({
@@ -18,18 +18,18 @@ request.post({
     json: {address: "742 Evergreen Terrace", name: "Bob", phone: "0608724762"}
 }, (error, response, body) => {
     assert(response.statusCode, 200);
-    console.log("Bob is registered " + body);
+    console.log("Bob is registered " + JSON.stringify(body));
 }).then((c) => {
-  //  console.log(c);
     client = c;
     console.log("### Bob browses the food catalogue for Asian food ###");
     return request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, response, body) {
         assert(response.statusCode, 200);
         console.log("Asian meals available : ", body);
     });
-}).then(function (meals) {
+}).then(function (m) {
+    meals = JSON.parse(m);
     console.log("### Bob orders a ramen soup ###");
-    let order = {client: client.id, meals: JSON.parse(meals)};
+    let order = {client: client, meals: meals};
     return request.post({
             url: `${order_url}/orders`,
             form: order
@@ -54,12 +54,12 @@ request.post({
     order = o;
     return request.post({
         url: `${eta_url}/eta`,
-        json: {calculateETA: order}
+        json: {calculateETA: {"meals": meals}}
     }, function (error, response, body) {
         assert(response.statusCode, 200);
         let eta_value;
         try{
-            eta_value= JSON.parse(body).calculateETA;
+            eta_value= body.calculateETA;
         }catch (error){
             eta_value = body.calculateETA;
         }
@@ -69,7 +69,7 @@ request.post({
     console.log("### The delivery man is assigned to the delivery of Bob's order ###");
     return request.post({
         url: `${coursier_url}/deliveries`,
-        form: {id: order.id, customer: client}
+        form: {id: order._id, customer: client}
     }, function (error, response, body) {
         assert(response.statusCode, 201);
         console.log("The delivery man's response is ", body)
