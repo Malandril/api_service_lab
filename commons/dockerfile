@@ -1,7 +1,0 @@
-FROM node
-RUN mkdir /commons
-COPY ./* /commons/
-WORKDIR /commons
-RUN npm install --production
-EXPOSE 3000
-ENTRYPOINT [ "npm","start"]

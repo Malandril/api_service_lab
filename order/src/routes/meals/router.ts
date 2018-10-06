@@ -1,22 +1,21 @@
 import {Request, Response, Router} from "express";
 import {MealModel} from "../../models";
+import {IMealModel} from "../../models/MealModel";
 
 const {check, validationResult} = require("express-validator/check");
 
 const router = Router();
 
-const data: { [key: number]: MealModel; } = {
-    0: new MealModel({"name": "Pizza", "price": 8, "id": 0, "eta": 12}),
-    1: new MealModel({"name": "Pasta", "price": 3, "id": 1, "eta": 10})
-};
-let nextId = 2;
 
 /**
  * GET /meals
  * Return the list of meals offered by Uberoo
  */
 const getMeals = (req: Request, res: Response) => {
-    res.status(200).send(Object.keys(data).map(key => data[+key]));
+    MealModel.find().then((meals: IMealModel[]) => {
+        res.status(200).json(meals);
+    });
+
 };
 router.get("/", getMeals);
 
@@ -25,12 +24,19 @@ router.get("/", getMeals);
  * Return the specified meal
  */
 const getMeal = (req: Request, res: Response) => {
-    const o = data[+req.params.mealId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        res.status(200).send(o);
-    }
+    MealModel.findById(req.params.mealId).exec((err, meal) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!meal) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("GET: " + meal);
+        res.status(200).json(meal);
+    });
 };
 router.get("/:mealId", getMeal);
 
@@ -43,15 +49,23 @@ const postMeal = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new MealModel({"name": req.body.name, "price": +req.body.price, "id": nextId, "eta": +req.body.eta});
-    data[nextId++] = o;
-    res.status(201).json(o);
+    const m = new MealModel();
+    m.name = req.body.name;
+    m.price = req.body.price;
+    m.eta = req.body.eta;
+    m.category = req.body.category;
+
+    MealModel.create(m).then((meal) => {
+        console.log("POST: " + meal);
+        res.status(201).json(meal);
+    });
 };
 
 function getMealValidator() {
     return [
         check("name").isString().isLength({min: 1}).withMessage("A meal needs a name"),
-        check("price").isFloat({gt: 0}).withMessage("A meal needs a price greater than 0")
+        check("price").isFloat({gt: 0}).withMessage("A meal needs a price greater than 0"),
+        check("category").isString().isLength({min: 1}).withMessage("A meal needs a category")
     ];
 }
 
@@ -62,14 +76,19 @@ router.post("/", getMealValidator(), postMeal);
  * Delete the specified meal
  */
 const deleteMeal = (req: Request, res: Response) => {
-    const o = data[req.params.mealId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        delete data[req.params.mealId];
-        res.status(200).send(o);
-
-    }
+    MealModel.findByIdAndRemove(req.params.mealId).exec((err, meal) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!meal) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("DELETE: " + meal);
+        res.status(200).json(meal);
+    });
 };
 router.delete("/:mealId", deleteMeal);
 
@@ -78,18 +97,19 @@ router.delete("/:mealId", deleteMeal);
  * Update the specified meal
  */
 const putMeal = (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({errors: errors.array()});
-    }
-    const o = data[+req.params.mealId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        o.name = req.body.name;
-        o.price = +req.body.price;
-        res.status(200).send(o);
-    }
+    MealModel.findByIdAndUpdate(req.params.mealId, req.body).exec((err, meal) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!meal) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("PUT: " + meal);
+        res.status(200).json(meal);
+    });
 };
 router.put("/:mealId", getMealValidator(), putMeal);
 

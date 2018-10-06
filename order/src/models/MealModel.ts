@@ -1,15 +1,18 @@
-import { Meal } from "../../../commons/models";
+import { Meal } from "uberoo-commons";
+import {Schema, Document, model, Model} from "mongoose";
 
-export class MealModel implements Meal {
-    name: string;
-    price: number;
-    id: number;
-    eta: number;
+export interface IMealModel extends Meal, Document {}
 
-    constructor(meal: Meal) {
-        this.name = meal.name;
-        this.price = meal.price;
-        this.id = meal.id;
-        this.eta = meal.eta;
-    }
-}
+export let MealSchema: Schema = new Schema({
+    name: String,
+    price: Number,
+    eta: Number,
+    category: String
+});
+
+MealSchema.pre("save", function (next) {
+  console.log("Save " + this);
+  next();
+});
+
+export const MealModel: Model<IMealModel> = model<IMealModel>("Meal", MealSchema);

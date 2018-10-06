@@ -9,7 +9,7 @@
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
-    "serve": "node dist/server.js",
+    "serve": "node dist/src/server.js",
     "watch-node": "nodemon dist/server.js",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
@@ -17,7 +17,8 @@
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
     "debug": "npm run build && npm run watch-debug",
-    "serve-debug": "nodemon --inspect dist/server.js"
+    "serve-debug": "nodemon --inspect dist/src/server.js",
+    "buildrun": "npm run build && npm run start"
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -31,7 +32,7 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "rm-local-modules": "^0.0.2",
-    "uberoo-commons": "file:../commons",
+    "uberoo-commons": "^1.0.5",
     "winston": "^3.1.0"
   },
   "devDependencies": {
