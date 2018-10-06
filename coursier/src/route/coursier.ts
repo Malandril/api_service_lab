@@ -1,19 +1,8 @@
 import { Request, Response } from "express";
-import { DeliveryStatus } from "../models/delivery-status";
-import { OrderCreation } from "../models/request/order-creation-request";
-import { DeliveryStatusRequest } from "../models/request/delivery-status-request";
-import { DeliveryStatusPostRequest } from "../models/request/delivery-status-post-request";
-import {DocumentQuery} from "mongoose";
+import {DeliveryStatusModel} from "../models";
+import {IDeliveryStatusModel} from "../models/delivery-status";
 
-const mongoose = require("mongoose");
 const util = require("util");
-
-const OrderModel = mongoose.model("Order");
-const CustomerModel = mongoose.model("Customer");
-const myModel = mongoose.model("DeliveryStatus");
-function saveDeliveryCreation(request: OrderCreation) {
-
-}
 
 function sendError(message: string, res: Response) {
     res.statusCode = 412;
@@ -34,53 +23,72 @@ function manageErrors(status: boolean | string[], res: Response, callIfNoError: 
 }
 
 export let notifyOrder = (req: Request, res: Response) => {
-    console.log("coursier notifyOrder received :" + util.inspect(req.body, false, null, true /* enable colors */));
-    const orderCreation = OrderCreation.isOrderCreation(req.body);
-    console.log("isOrderCreation :" , util.inspect(orderCreation, false, null, true /* enable colors */));
-    manageErrors(orderCreation, res, function () {
-        const custo = new CustomerModel({id: req.body.customer.id, name: req.body.customer, address: req.body.customer.address, phone: req.body.customer.phone});
-        const order = new OrderModel({id: req.body.order.id});
-        const m = new myModel({ status: "CREATED", order: order, customer: custo, creation: new Date(), history: [] });
+    console.log("coursier notifyOrder received :" + util.inspect(req.body, false, undefined, true /* enable colors */));
 
-        console.log("Insert" + util.inspect(m, false, null, true /* enable colors */));
+    /*const customer = new CustomerModel({name: req.body.customer, address: req.body.customer.address, phone: req.body.customer.phone});
+    const meals = [];
 
-        myModel.create(m).then((order) => {
-            console.log( "order created :", util.inspect(order, false, null, true /* enable colors */));
-            res.json({orderId: order._id});
-        });
+    req.body.meals.forEach(meal => {
+        const m = new MealModel();
+        m.name = meal.name;
+        m.price = meal.price;
+        m.eta = meal.eta;
+        m.category = meal.category;
+        meals.push(m);
+    });*/
 
+    const ds = new DeliveryStatusModel({ status: "CREATED", order: {client: req.body.client, meals: req.body.meals}, creation: new Date(), history: [] });
 
+    DeliveryStatusModel.create(ds).then((deliveryStatus) => {
+        console.log( "order created :", util.inspect({client: req.body.client, meals: req.body.meals}   , false, undefined, true /* enable colors */));
+        console.log("POST: " + deliveryStatus);
+        res.status(201).json(deliveryStatus);
+    });
+
+};
+
+export const getDeliveries = (req: Request, res: Response) => {
+    DeliveryStatusModel.find().then((deliveries: IDeliveryStatusModel[]) => {
+        res.status(200).json(deliveries);
     });
 };
 
 export let deliveryStatus = (req: Request, res: Response) => {
     console.log("coursier deliveryStatus received :" + req);
-    manageErrors(DeliveryStatusRequest.isDeliveryRequest(req.params), res, function () {
-        const request: DeliveryStatusRequest = req.params as DeliveryStatusRequest;
-        myModel.findOne({order: {id:  request.id}}, function (err, deliStatus: DeliveryStatus) {
-            if (err) return  sendError( "Delivery " + request.id + "doesn't exist", res);
-            console.log("Status :%s\n ", deliStatus);
-            res.send({status: deliStatus.status});
-        });
+    DeliveryStatusModel.findById(req.params.id).exec((err, ds) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!ds) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("GET: " + ds);
+        res.status(200).json(ds);
     });
 };
 
 
 export let updateStatus = (req: Request, res: Response) => {
     console.log("coursier updateStatus received :" + req);
-    req.body.id = req.body.id | req.params.id;
-    console.log("Receive", req.body);
-    manageErrors(DeliveryStatusPostRequest.isDeliveryStatusPostRequest(req.body), res, function () {
-        const request: DeliveryStatusPostRequest = req.body as DeliveryStatusPostRequest;
-        myModel.findOne({order: {id:  request.id}}, function (err, deliStatus: DeliveryStatus) {
-            if (err) return console.log(err);
-            console.log("Status :%s\n ", deliStatus.status);
-            deliStatus.status = request.status;
-            deliStatus.history.push({status: deliStatus.status, event: "update-status"});
-            deliStatus.save();
-            res.send({status: deliStatus.status});
-        });
+
+    DeliveryStatusModel.findByIdAndUpdate(req.params.id, req.body).exec((err, ds) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!ds) {
+            res.sendStatus(404);
+            return;
+        }
+        ds.history.push({status: ds.status, event: "update-status"});
+        console.log("PUT: " + ds);
+        res.status(200).json(ds);
     });
+
 };
 
 
