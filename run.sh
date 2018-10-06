@@ -17,19 +17,16 @@ for url in "${arr[@]}";do
     else
         echo "Failed can't access" ${url}
         docker-compose down
-        exit -2
+        exit 2
     fi
 done
 cd scenario_test
 npm start
-echo "exit code " $?
-#if [ $? -ne 0 ]
-#then
-#    echo "Test failed"
-#    docker-compose down
-#    read  -n 1 -p "Press any key to exit"
-#    exit 1
-#fi
+if [ $? -ne 0 ]
+then
+    echo "Test failed"
+    docker-compose down
+    exit 1
+fi
 docker-compose down
-#echo "Test succeeded"
-read  -n 1 -p "Press any key to exit"
+echo "Test succeeded"
