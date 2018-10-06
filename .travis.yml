@@ -1,0 +1,14 @@
+sudo: required
+
+language: node
+
+env:
+ - docker
+
+before_install:
+ - ./install.sh
+ - docker-compose -d
+ - sleep 60 # Wait for all the services to be up
+
+script:
+ - node ./scenario_test/scenario_test.js
