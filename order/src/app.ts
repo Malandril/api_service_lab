@@ -11,21 +11,34 @@ import MONGODB_URI from "./util/links";
 // Route handlers
 import mealRouter from "./routes/meals/router";
 import orderRouter from "./routes/orders/router";
+import customerRouter from "./routes/customers/router";
 
 
 // Create Express server
 const app = express();
 
 // Connect to MongoDB
+const MAX_TRIES = 5;
+let tries = 0;
 const mongoUrl = MONGODB_URI;
-mongoose.connect(mongoUrl, {useNewUrlParser: true}).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
-    },
-).catch(err => {
-    console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
-    // process.exit();
-});
+const connectWithRetry = () => mongoose.connect(mongoUrl, {
+    useNewUrlParser: true,
+    reconnectTries: 5,
+    autoReconnect: true,
+    reconnectInterval: 2000,
+    connectTimeoutMS: 10000
+}).catch(reason => {
+    if (tries < MAX_TRIES) {
+        console.log("MongoDB connection unsuccessful, retry after 2 seconds.");
+        tries++;
+        setTimeout(connectWithRetry, 2000);
+    } else {
+        console.log("Could not connect to MongoDB");
+        throw reason;
+    }
 
+});
+connectWithRetry();
 // Express configuration
 app.set("port", process.env.PORT || 3000);
 app.use(compression());
@@ -42,5 +55,40 @@ app.use(
  */
 app.use("/meals", mealRouter);
 app.use("/orders", orderRouter);
+app.use("/customers", customerRouter);
+
+/** Seed meal database if empty */
+import getMeals from "./routes/meals/router";
+import {MealModel} from "./models";
+import {IMealModel} from "./models/MealModel";
+MealModel.find().then((meals: IMealModel[]) => {
+    if (meals.length === 0) {
+        const m1 = new MealModel();
+        m1.name = "Pizza";
+        m1.price = 8;
+        m1.eta = 5;
+        m1.category = "Italian";
+
+        const m2 = new MealModel();
+        m2.name = "Ramen soup";
+        m2.price = 4;
+        m2.eta = 2;
+        m2.category = "Asian";
+
+        const m3 = new MealModel();
+        m3.name = "Nems";
+        m3.price = 6;
+        m3.eta = 4;
+        m3.category = "Asian";
+
+        const m4 = new MealModel();
+        m4.name = "Sushis";
+        m4.price = 9;
+        m4.eta = 4;
+        m4.category = "Asian";
+
+        MealModel.create([m1, m2, m3, m4]);
+    }
+});
 
 export default app;

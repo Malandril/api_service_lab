@@ -1,12 +1,11 @@
 version: '3.2'
 
 services:
-  uberoo-commons:
-    build: ./commons
-    image: uberoo-commons
   order:
     build: ./order
     image: order
+    depends_on:
+    - "mongo"
     container_name: order
     expose:
       - "8000"
@@ -16,6 +15,8 @@ services:
   coursier:
     build: ./coursier
     image: coursier
+    depends_on:
+      - "mongo"
     container_name: coursier
     expose:
       - "8090"
@@ -31,5 +32,22 @@ services:
     ports:
       - "8080:3000"
     stdin_open: true
+  eta_calculator:
+    build: ./eta_calculator
+    image: eta_calculator
+    container_name: eta_calculator
+    expose:
+    - "9090"
+    ports:
+    - "9090:9090"
+    stdin_open: true
   mongo:
-    image: mongo
+   image: mongo
+   environment:
+     - MONGO_INITDB_ROOT_USERNAME=soauser
+     - MONGO_INITDB_ROOT_PASSWORD=soa
+   expose:
+        - "27017"
+   ports:
+        - "27017:27017"
+   container_name: bdd
