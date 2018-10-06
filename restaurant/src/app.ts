@@ -23,7 +23,7 @@ const connectWithRetry = () => mongoose.connect(mongoUrl, {
     useNewUrlParser: true,
     reconnectTries: 5,
     autoReconnect: true,
-    reconnectInterval: 10000,
+    reconnectInterval: 1000,
     connectTimeoutMS: 10000
 }).catch(reason => {
     if (tries < MAX_TRIES) {
@@ -36,6 +36,7 @@ const connectWithRetry = () => mongoose.connect(mongoUrl, {
     }
 
 });
+connectWithRetry();
 
 // Express configuration
 app.set("port", process.env.PORT || 3000);
