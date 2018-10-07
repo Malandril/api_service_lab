@@ -12,7 +12,9 @@ const router = Router();
  * Return the list of meals offered by Uberoo
  */
 const getMeals = (req: Request, res: Response) => {
-    MealModel.find({ category: { $regex : new RegExp(req.params.category, "i") } }).then((meals: IMealModel[]) => {
+    const category = req.query.category;
+    console.log("Query for category: " + category);
+    MealModel.find({ category: { $regex : new RegExp(category, "i") } }).then((meals: IMealModel[]) => {
         res.status(200).json(meals);
     });
 
