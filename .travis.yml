@@ -17,9 +17,10 @@ before_install:
  - chmod +x install.sh
  - chmod +x run.sh
  - ./install.sh
+ - docker-compose build
 
 script:
- - ./run.sh
+ - ./travis.sh
 
 notifications:
  email: false

@@ -11,4 +11,3 @@ do
     fi
     cd ..
 done
-docker-compose build
