@@ -16,6 +16,7 @@ before_install:
  - sudo mv docker-compose /usr/local/bin
  - chmod +x install.sh
  - chmod +x run.sh
+ - chmod +x travis.sh
  - ./install.sh
  - docker-compose build
 
