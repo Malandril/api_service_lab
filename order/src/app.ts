@@ -88,16 +88,6 @@ MealModel.find().then((meals: IMealModel[]) => {
         m4.category = "Asian";
 
         MealModel.create([m1, m2, m3, m4]);
-
-        for (let i = 0; i < 26; i++) {
-            const m = new MealModel();
-            m.name = "Sushis";
-            m.price = 9;
-            m.eta = 4;
-            m.category = "Asian";
-
-            MealModel.create(m);
-        }
     }
 });
 
