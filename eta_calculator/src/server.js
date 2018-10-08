@@ -3,11 +3,61 @@
 let http = require('http');
 let url = require('url');
 let methods = require('./methods');
+const { Kafka, logLevel } = require('kafkajs');
 
-let server = http.createServer(requestListener);
+//let server = http.createServer(requestListener);
 const PORT = process.env.PORT || 9090;
 
-let routes = {
+const kafka = new Kafka({
+    logLevel: logLevel.INFO,
+    brokers: ['localhost:9092'],
+    clientId: 'eta_calculator',
+});
+
+const topic = 'eta_calculator';
+const consumer = kafka.consumer({ groupId: 'eta_calculator' });
+
+const run = async () => {
+    await consumer.connect();
+    await consumer.subscribe({ topic });
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
+            console.log(`- ${prefix} ${message.key}#${message.value}`)
+        },
+    })
+};
+
+
+run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
+
+const errorTypes = ['unhandledRejection', 'uncaughtException'];
+const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
+
+errorTypes.map(type => {
+    process.on(type, async e => {
+        try {
+            console.log(`process.on ${type}`);
+            console.error(e);
+            await consumer.disconnect();
+            process.exit(0)
+        } catch (_) {
+            process.exit(1)
+        }
+    })
+});
+
+signalTraps.map(type => {
+    process.once(type, async () => {
+        try {
+            await consumer.disconnect()
+        } finally {
+            process.kill(process.pid, type)
+        }
+    })
+});
+
+/*let routes = {
     '/eta': function (body) {
         return new Promise((resolve, reject) => {
             if (!body) {
@@ -87,4 +137,4 @@ function requestListener(request, response) {
     })
 }
 
-server.listen(PORT);
+server.listen(PORT);*/

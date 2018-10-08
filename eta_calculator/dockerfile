@@ -1,6 +1,8 @@
 FROM node
 RUN mkdir /eta_calculator
-COPY ./ /eta_calculator/
+COPY ./package.json /eta_calculator/
 WORKDIR /eta_calculator
+RUN npm install --production
+COPY ./src /eta_calculator
 EXPOSE 9090
 ENTRYPOINT [ "node","server.js"]
