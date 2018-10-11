@@ -1,5 +1,5 @@
 export class DeliveryStatusPostRequest {
-    id: number;
+    id: string;
     status: string;
     public static isDeliveryStatusPostRequest(obj: any) {
         const errors: string[] = [];

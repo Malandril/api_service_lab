@@ -31,8 +31,8 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         url: `${restaurant_url}/ordersToPrepare`,
         json: order
     }, function (error, response, body) {
-        assert(response.statusCode, 201);
         console.log("Posted order to restaurants ", body)
+        assert(response.statusCode, 201);
     });
 }).then(function (o) {
     order = o;
@@ -41,8 +41,8 @@ request({url: `${order_url}/meals`, qs: {category: "Asian"}}, function (error, r
         url: `${eta_url}/eta`,
         json: {calculateETA: order}
     }, function (error, response, body) {
-        assert(response.statusCode, 200);
         console.log("The ETA of my order is ", body)
+        assert(response.statusCode, 200);
     });
 }).then(function () {
     return request.post({
