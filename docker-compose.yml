@@ -49,3 +49,10 @@ services:
    ports:
         - "27017:27017"
    container_name: bdd
+  kafka:
+    image: spotify/kafka
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+    environment:
+      ADVERTISED_PORT: 9092

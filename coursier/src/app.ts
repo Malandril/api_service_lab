@@ -9,14 +9,15 @@ import expressValidator from "express-validator";
 
 
 // Controllers (route handlers)
-import MONGODB_URI from "./util/links";
+const links = require("./util/links");
 import {DeliveryStatus} from "./models/delivery-status";
+const { Kafka, logLevel } = require("kafkajs");
 
 // Create Express server
 const app = express();
 
 // Connect to MongoDB
-const mongoUrl = MONGODB_URI;
+const mongoUrl = links.mongo;
 mongoose.connect(mongoUrl, {useNewUrlParser: true}).then(
     () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
     }
@@ -44,6 +45,32 @@ app.use(expressValidator());
 app.use(
     express.static(path.join(__dirname, "public"), {maxAge: 31557600000})
 );
+const kafka = new Kafka({
+    logLevel: logLevel.INFO,
+    brokers: [links.kafka],
+    clientId: "",
+});
+
+
+
+const topics = ["order_cooked", "nearby_order", "finalise_order" ];
+const consumer = kafka.consumer({ groupId: "eta_calculator" });
+const producer = kafka.producer();
+const run = async () => {
+    await producer.connect();
+    await consumer.connect();
+    await consumer.subscribe(topics);
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
+            console.log(`- ${prefix} ${message.key}#${message.value}`);
+           coursierRoute.routeMessage(topic, partition, message, producer);
+
+        },
+    });
+};
+
+
 
 /**
  * Primary app routes.
