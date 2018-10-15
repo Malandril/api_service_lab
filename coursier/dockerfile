@@ -1,8 +1,8 @@
 FROM node
-RUN mkdir /coursier
-COPY ./package.json /coursier/
-WORKDIR /coursier
+RUN mkdir /eta_calculator
+COPY ./package.json /eta_calculator/
+WORKDIR /eta_calculator
 RUN npm install --production
-COPY ./dist /coursier/dist
-EXPOSE 3000
-ENTRYPOINT [ "npm","start"]
+COPY ./src /eta_calculator
+EXPOSE 9090
+ENTRYPOINT [ "node","server.ts"]
