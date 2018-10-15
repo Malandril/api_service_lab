@@ -9,3 +9,9 @@ services:
       ADVERTISED_HOST: 127.0.0.1
       ADVERTISED_PORT: 9092
       TOPICS:
+  mongocoursier:
+   image: mongo
+   expose:
+        - "27016"
+   ports:
+        - "27016:27017"

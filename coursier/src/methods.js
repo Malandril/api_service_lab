@@ -4,6 +4,17 @@ let methods = {
     routeByTopic: function (topic, message) {
         console.log(topic + "message" + message);
     },
+    addOrder : function (txt, db) {
+        console.log("added : " +util.inspect(txt, {showHidden: false, depth: null}) )
+        var msg = JSON.parse(txt);
+        if(!("order" in msg) || !("meals" in msg.order)){
+            console.log("Error : Not enough data")
+        }else{
+            db.collection('orders').insertOne(msg, function(err, r) {
+               console.log("added : "+ err +util.inspect(r, {showHidden: false, depth: null}) )
+            });
+        }
+    },
     getOrderedToBeDelivered: function (msg, producer) {
         console.log(util.inspect(msg, {showHidden: false, depth: null}));
         msg = JSON.parse(msg);
