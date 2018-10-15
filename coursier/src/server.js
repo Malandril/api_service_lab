@@ -18,6 +18,7 @@ const kafka = new Kafka({
 });
 const getDeliverableOrders = kafka.consumer({ groupId: 'get_ordered_to_be_delivered' });
 const finaliseOrder = kafka.consumer({ groupId: 'finalise_order' });
+const deleteOrder = kafka.consumer({ groupId: 'order_delivered' });
 const producer = kafka.producer();
 
 const run = async () => {
@@ -25,13 +26,21 @@ const run = async () => {
     await getDeliverableOrders.connect();
     await getDeliverableOrders.subscribe({topic:"get_ordered_to_be_delivered"});
 
+    await deleteOrder.connect();
+    await deleteOrder.subscribe({topic:"order_delivered"});
+    await deleteOrder.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            methods.deleteOrder(message.value.toString(),mongoHelper.db);
+        }
+    });
+
     await finaliseOrder.connect();
     await finaliseOrder.subscribe({topic:"finalise_order"});
     await getDeliverableOrders.run({
         eachMessage: async ({ topic, partition, message }) => {
-            methods.getOrderedToBeDelivered(message.value.toString(),producer);
-            }
-        });
+            methods.getOrderedToBeDelivered(message.value.toString(),producer,mongoHelper.db);
+        }
+    });
 
     await finaliseOrder.run({
         eachMessage: async({topic, partition, message}) => {
