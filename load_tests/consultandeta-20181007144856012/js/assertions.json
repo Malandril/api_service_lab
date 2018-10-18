@@ -1,0 +1,10 @@
+{
+  "simulation": "default.ConsultAndETA",
+  "simulationId": "consultandeta",
+  "start": 1538923736012,
+  "description": "",
+  "scenarios": ["Consult meals"],
+  "assertions": [
+
+  ]
+}

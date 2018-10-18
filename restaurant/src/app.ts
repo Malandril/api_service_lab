@@ -16,14 +16,27 @@ import MONGODB_URI from "./util/links";
 const app = express();
 
 // Connect to MongoDB
+const MAX_TRIES = 5;
+let tries = 0;
 const mongoUrl = MONGODB_URI;
-mongoose.connect(mongoUrl, {useNewUrlParser: true}).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
-    },
-).catch(err => {
-    console.log("MongoDB connection error. Please make sure MongoDB is running. " + err);
-    // process.exit();
+const connectWithRetry = () => mongoose.connect(mongoUrl, {
+    useNewUrlParser: true,
+    reconnectTries: 5,
+    autoReconnect: true,
+    reconnectInterval: 2000,
+    connectTimeoutMS: 10000
+}).catch(reason => {
+    if (tries < MAX_TRIES) {
+        console.log("MongoDB connection unsuccessful, retry after 2 seconds.");
+        tries++;
+        setTimeout(connectWithRetry, 2000);
+    } else {
+        console.log("Could not connect to MongoDB");
+        throw reason;
+    }
+
 });
+connectWithRetry();
 
 // Express configuration
 app.set("port", process.env.PORT || 3000);

@@ -1,18 +1,21 @@
 import {Request, Response, Router} from "express";
 import {OrderModel} from "../../models";
-import {check, validationResult} from "express-validator/check";
+import {IOrderModel} from "../../models/OrderModel";
+
+const {check, validationResult} = require("express-validator/check");
 
 const router = Router();
 
-const data: { [key: number]: OrderModel; } = {};
-let nextId = 0;
 
 /**
  * GET /orders
  * Return the list of orders offered by Uberoo
  */
 const getOrders = (req: Request, res: Response) => {
-    res.status(200).send(Object.keys(data).map(key => data[+key]));
+    OrderModel.find().then((orders: IOrderModel[]) => {
+        res.status(200).json(orders);
+    });
+
 };
 router.get("/", getOrders);
 
@@ -21,13 +24,19 @@ router.get("/", getOrders);
  * Return the specified order
  */
 const getOrder = (req: Request, res: Response) => {
-    const o = data[+req.params.orderId];
-    console.log("Getting order", o);
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        res.status(200).send(o);
-    }
+    OrderModel.findById(req.params.orderId).exec((err, order) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!order) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("GET: " + order);
+        res.status(200).json(order);
+    });
 };
 router.get("/:orderId", getOrder);
 
@@ -40,30 +49,43 @@ const postOrder = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new OrderModel({"client": req.body.client, "meals": req.body.meals, "id": nextId});
-    data[nextId++] = o;
-    console.log("adding order", o);
-    res.status(201).json(o);
+    const m = new OrderModel();
+    m.client = req.body.client;
+    m.meals = req.body.meals;
+
+    OrderModel.create(m).then((order) => {
+        console.log("POST: " + order);
+        res.status(201).json(order);
+    });
 };
-router.post("/", [
-        check("client").isInt().withMessage("An order needs a client id"),
+
+function getOrderValidator() {
+    return [
+        check("client").exists().withMessage("An order needs a client id"),
         check("meals").isArray(),
-    ]
-    , postOrder);
+    ];
+}
+
+router.post("/", getOrderValidator(), postOrder);
 
 /**
  * DELETE /orders/:orderId
  * Delete the specified order
  */
 const deleteOrder = (req: Request, res: Response) => {
-    const o = data[req.params.orderId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        delete data[req.params.orderId];
-        res.status(200).send(o);
-
-    }
+    OrderModel.findByIdAndRemove(req.params.orderId).exec((err, order) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!order) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("DELETE: " + order);
+        res.status(200).json(order);
+    });
 };
 router.delete("/:orderId", deleteOrder);
 
@@ -72,16 +94,21 @@ router.delete("/:orderId", deleteOrder);
  * Update the specified order
  */
 const putOrder = (req: Request, res: Response) => {
-    const o = data[+req.params.orderId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        o.client = req.body.client;
-        o.meals = req.body.meals;
-        res.status(200).send(o);
-    }
+    OrderModel.findByIdAndUpdate(req.params.orderId, req.body).exec((err, order) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!order) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("PUT: " + order);
+        res.status(200).json(order);
+    });
 };
-router.put("/:orderId", putOrder);
+router.put("/:orderId", getOrderValidator(), putOrder);
 
 
 export default router;

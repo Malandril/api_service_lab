@@ -1,13 +1,16 @@
-import { Meal, Order } from "../../../commons/models";
+import {Schema, Document, model, Model} from "mongoose";
+import {Order} from "uberoo-commons";
 
-export class OrderToPrepareModel implements Order {
-    id: number;
-    client: number;
-    meals: Meal[];
+export interface IOrderToPrepareModel extends Order, Document {}
 
-    constructor(order: Order) {
-        this.id = order.id;
-        this.client = order.client;
-        this.meals = order.meals;
-    }
-}
+export let OrderToPrepareSchema: Schema = new Schema({
+    client: { type: Schema.Types.ObjectId, ref: "Client" },
+    meals: [{ type: Schema.Types.ObjectId, ref: "Meal" }]
+});
+
+OrderToPrepareSchema.pre("save", function (next) {
+    console.log("Save " + this);
+    next();
+});
+
+export const OrderToPrepareModel: Model<IOrderToPrepareModel> = model<IOrderToPrepareModel>("OrderToPrepare", OrderToPrepareSchema);
