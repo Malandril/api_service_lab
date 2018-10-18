@@ -13,14 +13,14 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'delivery_man_account',
 });
-const orderDelivered = kafka.consumer({groupId: 'order_delivered'});
+const submitOrder = kafka.consumer({groupId: 'submit_order'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
-    await orderDelivered.connect();
-    await orderDelivered.subscribe({topic: "submit_order"});
-    await orderDelivered.run({
+    await submitOrder.connect();
+    await submitOrder.subscribe({topic: "submit_order"});
+    await submitOrder.run({
         eachMessage: async ({topic, partition, message}) => {
             methods.submitOrder(message.value.toString(), mongoHelper.db, producer);
         }
@@ -37,7 +37,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await orderDelivered.disconnect();
+            await submitOrder.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -48,7 +48,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await orderDelivered.disconnect();
+            await submitOrder.disconnect();
         } finally {
             process.kill(process.pid, type)
         }
