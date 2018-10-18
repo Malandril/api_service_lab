@@ -11,31 +11,21 @@ const PORT = process.env.PORT || 9090;
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
     brokers: ["kafka:9092"],
+    // connectionTimeout: 3000,
     clientId: 'eta_calculator',
 });
-let i = 0;
-const topic = 'eta_calculator';
-const consumer = kafka.consumer({ groupId: 'eta_calculator' });
+const createOrderRequest = kafka.consumer({ groupId: 'create_order_request' });
 const producer = kafka.producer();
+
 const run = async () => {
     await producer.connect();
-    await consumer.connect();
-    await consumer.subscribe({ topic });
-    await consumer.run({
+    await createOrderRequest.connect();
+    await createOrderRequest.subscribe({topic:"create_order_request"});
+    await createOrderRequest.run({
         eachMessage: async ({ topic, partition, message }) => {
-            const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
-            console.log(`- ${prefix} ${message.key}#${message.value}`);
-            if(i < 1000){
-                await producer.send({
-                    topic: 'eta_calculator',
-                    messages: [
-                        { key: 'lol', value: (i++) }
-                    ],
-                })
-            }
-
-        },
-    })
+            methods.calculateETA(message.value.toString(), producer);
+        }
+    });
 };
 
 run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
@@ -48,7 +38,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await consumer.disconnect();
+            await createOrderRequest.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -59,7 +49,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await consumer.disconnect();
+            await createOrderRequest.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
