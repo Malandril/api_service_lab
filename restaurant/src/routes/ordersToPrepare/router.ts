@@ -1,76 +1,114 @@
-import { Request, Response, Router } from "express";
-import { OrderToPrepareModel } from "../../models";
+import {Request, Response, Router} from "express";
+import {OrderToPrepareModel} from "../../models";
+import {IOrderToPrepareModel} from "../../models/OrderToPrepareModel";
+
+const {check, validationResult} = require("express-validator/check");
 
 const router = Router();
 
-const data: { [key: number]: OrderToPrepareModel; } = {};
-let nextId = 0;
 
 /**
- * GET /ordersToPrepare
- * Return the list of orderToPrepareId offered by Uberoo
+ * GET /orderToPrepares
+ * Return the list of orderToPrepares offered by Uberoo
  */
 const getOrderToPrepares = (req: Request, res: Response) => {
-    res.status(200).send(Object.keys(data).map(key => data[+key]));
+    OrderToPrepareModel.find().then((orderToPrepares: IOrderToPrepareModel[]) => {
+        res.status(200).json(orderToPrepares);
+    });
+
 };
 router.get("/", getOrderToPrepares);
 
 /**
- * GET /ordersToPrepare/:orderToPrepareId
- * Return the specified order-to-prepare
+ * GET /orderToPrepares/:orderToPrepareId
+ * Return the specified orderToPrepare
  */
 const getOrderToPrepare = (req: Request, res: Response) => {
-    const o = data[+req.params.orderToPrepareId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        res.status(200).send(o);
-    }
+    OrderToPrepareModel.findById(req.params.orderToPrepareId).exec((err, orderToPrepare) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!orderToPrepare) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("GET: " + orderToPrepare);
+        res.status(200).json(orderToPrepare);
+    });
 };
 router.get("/:orderToPrepareId", getOrderToPrepare);
 
 /**
- * POST /ordersToPrepare
- * Create the specified order-to-prepare
+ * POST /orderToPrepares
+ * Create the specified orderToPrepare
  */
 const postOrderToPrepare = (req: Request, res: Response) => {
-    const o = new OrderToPrepareModel({"client": req.body.client, "meals": req.body.meals, "id": nextId});
-    data[nextId++] = o;
-    res.status(201).send(o);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({errors: errors.array()});
+    }
+    const m = new OrderToPrepareModel();
+    m.client = req.body.client;
+    m.meals = req.body.meals;
+
+    OrderToPrepareModel.create(m).then((orderToPrepare) => {
+        console.log("POST: " + orderToPrepare);
+        res.status(201).json(orderToPrepare);
+    });
 };
-router.post("/", postOrderToPrepare);
+
+function getOrderToPrepareValidator() {
+    return [
+        check("client").exists().withMessage("An orderToPrepare needs a client id"),
+        check("meals").isArray(),
+    ];
+}
+
+router.post("/", getOrderToPrepareValidator(), postOrderToPrepare);
 
 /**
- * DELETE /ordersToPrepare/:orderToPrepareId
- * Delete the specified order-to-prepare
+ * DELETE /orderToPrepares/:orderToPrepareId
+ * Delete the specified orderToPrepare
  */
 const deleteOrderToPrepare = (req: Request, res: Response) => {
-    const o = data[req.params.orderToPrepareId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        delete data[req.params.orderToPrepareId];
-        res.status(200).send(o);
-
-    }
+    OrderToPrepareModel.findByIdAndRemove(req.params.orderToPrepareId).exec((err, orderToPrepare) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!orderToPrepare) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("DELETE: " + orderToPrepare);
+        res.status(200).json(orderToPrepare);
+    });
 };
 router.delete("/:orderToPrepareId", deleteOrderToPrepare);
 
 /**
- * PUT /ordersToPrepare/:orderToPrepareId
- * Update the specified order-to-prepare
+ * PUT /orderToPrepares/:orderToPrepareId
+ * Update the specified orderToPrepare
  */
 const putOrderToPrepare = (req: Request, res: Response) => {
-    const o = data[+req.params.orderToPrepareId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        o.client = req.body.client;
-        o.meals = req.body.meals;
-        res.status(200).send(o);
-    }
+    OrderToPrepareModel.findByIdAndUpdate(req.params.orderToPrepareId, req.body).exec((err, orderToPrepare) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!orderToPrepare) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("PUT: " + orderToPrepare);
+        res.status(200).json(orderToPrepare);
+    });
 };
-router.put("/:orderToPrepareId", putOrderToPrepare);
+router.put("/:orderToPrepareId", getOrderToPrepareValidator(), putOrderToPrepare);
 
 
 export default router;
