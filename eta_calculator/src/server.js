@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 9090;
 
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
-    brokers: ["kafka:9092"],
+    brokers: ["localhost:9092"],
     // connectionTimeout: 3000,
     clientId: 'eta_calculator',
 });
