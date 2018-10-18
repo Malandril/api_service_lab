@@ -60,6 +60,12 @@ services:
     - "27018"
     ports:
     - "27018:27017"
+  mongo_payment:
+    image: mongo
+    expose:
+    - "27019"
+    ports:
+    - "27019:27017"
   kafka:
     image: spotify/kafka
     ports:
@@ -74,4 +80,12 @@ services:
     - "mongo_delivery_man"
     - "kafka"
     container_name: delivery_man_account
+    stdin_open: true
+  payment:
+    build: ./payment
+    image: payment
+    depends_on:
+    - "mongo_payment"
+    - "kafka"
+    container_name: payment
     stdin_open: true

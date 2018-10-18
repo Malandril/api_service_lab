@@ -5,7 +5,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj) {
-        obj.client = new MongoClient("mongodb://localhost:27019/" , { useNewUrlParser: true });
+        obj.client = new MongoClient("mongodb://mongo_payment:27019/" , { useNewUrlParser: true });
         obj.client.connect(function(err) {
             console.log("Connected successfully to server");
             console.log(err);
