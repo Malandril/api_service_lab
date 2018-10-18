@@ -4,4 +4,4 @@ COPY ./package.json /coursier/
 WORKDIR /coursier
 RUN npm install --production
 COPY ./src /coursier
-ENTRYPOINT [ "node","server.ts"]
+ENTRYPOINT [ "node","server.js"]
