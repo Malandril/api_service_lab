@@ -54,6 +54,12 @@ services:
         - "27016"
    ports:
         - "27016:27017"
+  mongo_delivery_man:
+    image: mongo
+    expose:
+    - "27018"
+    ports:
+    - "27018:27017"
   kafka:
     image: spotify/kafka
     ports:
@@ -61,3 +67,11 @@ services:
       - "9092:9092"
     environment:
       ADVERTISED_PORT: 9092
+  delivery_man_account:
+    build: ./delivery_man_account
+    image: delivery_man_account
+    depends_on:
+    - "mongo_delivery_man"
+    - "kafka"
+    container_name: delivery_man_account
+    stdin_open: true
