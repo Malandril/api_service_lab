@@ -14,12 +14,23 @@ services:
     build: ./coursier
     image: coursier
     depends_on:
-      - "mongo"
+    - "mongo"
     container_name: coursier
     expose:
-      - "8090"
+    - "8090"
     ports:
-      - "8090:3000"
+    - "8090:3000"
+    stdin_open: true
+  coursierws:
+    build: ./coursier-ws
+    image: coursier-ws
+    depends_on:
+    - "kafka"
+    container_name: coursierws
+    expose:
+    - "8099"
+    ports:
+    - "8099:3000"
     stdin_open: true
   restaurant:
     build: ./restaurant
