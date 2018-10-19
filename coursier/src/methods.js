@@ -17,6 +17,14 @@ let methods = {
         if("coursier" in msg &&"address" in msg.coursier){
             var id = msg.coursier.address.split(" ");
             var orders = [];
+            orders.push({id: 12,
+                restaurant: {
+                    address:"1337 Rue du code"
+                },
+                customer: {
+                    address:"12 Rue du code"
+                },
+                mustBePayed: true});
             db.collection('orders').find({}).limit(10).each(function(err, doc) {
                 if(doc){
 
@@ -28,7 +36,11 @@ let methods = {
                     console.log("send event to list_orders_to_be_delivered" + JSON.stringify(resp) );
                     producer.send({
                         topic:"list_orders_to_be_delivered",
-                        messages: [{key:"", value: resp}]
+                        messages: [{key:"", value: JSON.stringify(resp)}]
+                    });
+                    producer.send({
+                        topic:"list_orders_to_be_delivered",
+                        messages: [{key:"", value: JSON.stringify(resp)}]
                     });
                 }
             });
