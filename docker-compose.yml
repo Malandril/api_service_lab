@@ -73,6 +73,8 @@ services:
       - "9092:9092"
     environment:
       ADVERTISED_PORT: 9092
+      ADVERTISED_HOST: "kafka"
+      AUTO_CREATE_TOPICS: "true"
   delivery_man_account:
     build: ./delivery_man_account
     image: delivery_man_account

@@ -15,3 +15,15 @@ services:
         - "27016"
    ports:
         - "27016:27017"
+  mongo_delivery_man:
+    image: mongo
+    expose:
+    - "27018"
+    ports:
+    - "27018:27017"
+  mongo_payment:
+    image: mongo
+    expose:
+    - "27019"
+    ports:
+    - "27019:27017"

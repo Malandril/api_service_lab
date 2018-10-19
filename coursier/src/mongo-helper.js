@@ -8,7 +8,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj) {
-        obj.client = new MongoClient("mongodb://localhost:27016/", {useNewUrlParser: true});
+        obj.client = new MongoClient("mongodb://mongocoursier:27017/", {useNewUrlParser: true});
         let count = 0;
 
         let connectWithRetry = function () {
