@@ -30,7 +30,6 @@ const run = async () => {
 
     await listResponse.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("eachMessage " + topic + " " + message);
             if (!queue.isEmpty()) {
                 queue.dequeue()(message);
             } else {
