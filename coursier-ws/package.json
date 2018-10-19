@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Malandril/api_service_lab#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "kafkajs": "^1.4.1",
     "queue-fifo": "^0.2.5"

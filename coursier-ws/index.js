@@ -1,11 +1,16 @@
 const express = require('express');
+const bodyParser = require("body-parser");
 const util = require('util');
 const app = express();
 const port = 3000;
 const {Kafka, logLevel} = require('kafkajs');
 
-var Queue = require('queue-fifo');
-var queue = new Queue();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+
+const Queue = require('queue-fifo');
+const queue = new Queue();
 
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
@@ -14,7 +19,6 @@ const kafka = new Kafka({
     clientId: 'coursierws',
 });
 
-const log = true;
 
 const listResponse = kafka.consumer({groupId: 'list_orders_to_be_delivered'});
 const producer = kafka.producer();
@@ -26,11 +30,11 @@ const run = async () => {
 
     await listResponse.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("eachMessage " + topic+ " " + message);
+            console.log("eachMessage " + topic + " " + message);
             if (!queue.isEmpty()) {
                 queue.dequeue()(message);
             } else {
-                console.log("Unable to process list_orders_to_be_delivered response: " + util.inspect(message))
+                console.log("Unable to process list_orders_to_be_delivered response: " + message.value)
             }
         }
     });
@@ -68,13 +72,13 @@ signalTraps.map(type => {
 app.get('/deliveries/', (req, res) => {
     console.log("Received : " + util.inspect(req.query));
     if (!("id" in req.query)) {
-            res.send("Attribute 'id' needed");
-            return;
+        res.send("Attribute 'id' needed");
+        return;
     }
     const coursierId = req.query.id;
     if (!("address" in req.query)) {
-            res.send("Attribute 'address' needed");
-            return;
+        res.send("Attribute 'address' needed");
+        return;
     }
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
@@ -99,5 +103,55 @@ app.get('/deliveries/', (req, res) => {
 
 
 });
+
+app.post('/deliveries/', (req, res) => {
+    res.send(util.inspect(req.body));
+    if (!("orderId" in req.body)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.body.orderId;
+    if (!("coursierId" in req.body)) {
+        res.send("Attribute 'coursierId' needed");
+        return;
+    }
+    const coursierId = req.body.orderId;
+
+    let value = JSON.stringify({
+        coursierId: coursierId,
+        orderId: orderId
+    });
+    console.log("Send : assign_delivery " + util.inspect(value));
+    producer.send({
+        topic: "assign_delivery",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+
+});
+
+
+app.put('/deliveries/', (req, res) => {
+    if (!("orderId" in req.body)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.body.orderId;
+    let value = JSON.stringify({order: {
+        id: orderId
+        }
+    });
+    console.log("Send : order_delivered " + util.inspect(value));
+    producer.send({
+        topic: "order_delivered",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+
+});
+
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
