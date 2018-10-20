@@ -52,6 +52,17 @@ services:
     ports:
     - "8098:3000"
     stdin_open: true
+  customerws:
+    build: ./customer-ws
+    image: customer-ws
+    depends_on:
+    - "kafka"
+    container_name: customerws
+    expose:
+    - "8097"
+    ports:
+    - "8097:3000"
+    stdin_open: true
   eta_calculator:
     build: ./eta_calculator
     image: eta_calculator
