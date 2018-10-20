@@ -99,7 +99,7 @@ app.get('/orders/', (req, res) => {
         console.log("unqueue : " + msg.value);
         let result = "";
         if (msg.value.orders != null){
-            const orders = message.value.orders;
+            const orders = msg.value.orders;
             for (let i = 0; i < orders.length; i++) {
                 result += "Order with ID "+orders[i].id+" :\n";
                 if (orders[i].meals == null || orders[i].meals.length === 0){
