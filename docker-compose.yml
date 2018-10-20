@@ -41,6 +41,17 @@ services:
     ports:
       - "8080:3000"
     stdin_open: true
+  restaurantws:
+    build: ./restaurant-ws
+    image: restaurant-ws
+    depends_on:
+    - "kafka"
+    container_name: restaurantws
+    expose:
+    - "8098"
+    ports:
+    - "8098:3000"
+    stdin_open: true
   eta_calculator:
     build: ./eta_calculator
     image: eta_calculator
