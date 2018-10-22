@@ -2,10 +2,54 @@ import {Request, Response, Router} from "express";
 import {OrderModel} from "../../models";
 import {check, validationResult} from "express-validator/check";
 
+const { Kafka, logLevel } = require('kafkajs');
+
+
+const kafka = new Kafka({
+    logLevel: logLevel.INFO,
+    brokers: ["kafka:9092"],
+    connectionTimeout: 3000,
+    clientId: 'order',
+});
+
 const router = Router();
 
 const data: { [key: number]: OrderModel; } = {};
 let nextId = 0;
+
+
+
+const submitOrder = kafka.consumer({ groupId: 'submit_order' });
+const paymentFailed = kafka.consumer({ groupId: 'payment_failed' });
+const paymentSucceeded = kafka.consumer({ groupId: 'payment_succeeded' });
+const paymentNotNeeded = kafka.consumer({ groupId: 'payment_not_needed' });
+const createOrderRequest = kafka.consumer({ groupId: 'create_order_request' });
+const assignDelivery = kafka.consumer({ groupId: 'assign_delivery' });
+const mealCooked = kafka.consumer({ groupId: 'meal_cooked' });
+const orderDelivered = kafka.consumer({ groupId: 'order_delivered' });
+const consumers = [submitOrder, paymentFailed, paymentSucceeded, paymentNotNeeded, createOrderRequest, assignDelivery, mealCooked, orderDelivered];
+const producer = kafka.producer();
+
+const TOPICS = Object.freeze({"create_order":1, "finalise_order":2});
+const run = async () => {
+    await producer.connect();
+    await consumers.forEach(function (consumer) {
+        consumer.connect();
+        consumer.connect(consumer.groupId);
+    });
+    /*
+    await finaliseOrder.run({
+        eachMessage: async({topic, partition, message}) => {
+            console.log(util.inspect(message.value.toString(), {showHidden: false, depth: null}));
+            console.log((util.inspect(mongoHelper)));
+            methods.addOrder(message.value.toString(),mongoHelper.db);
+        }
+    })
+    */
+
+
+};
+
 
 /**
  * GET /orders
