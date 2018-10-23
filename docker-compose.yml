@@ -33,7 +33,7 @@ services:
     - "8099:3000"
     stdin_open: true
   restaurant:
-    build: ./restaurant
+    build: restaurant_old
     image: restaurant
     container_name: restaurant
     expose:

@@ -3,6 +3,5 @@ RUN mkdir /restaurant
 COPY ./package.json /restaurant/
 WORKDIR /restaurant
 RUN npm install --production
-COPY ./dist /restaurant/dist
-EXPOSE 3000
-ENTRYPOINT [ "npm","start"]
+COPY ./src /restaurant
+ENTRYPOINT [ "node","server.js"]
