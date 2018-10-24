@@ -20,32 +20,24 @@ const kafka = new Kafka({
 });
 
 
-const toDoMeals = kafka.consumer({groupId: 'todo_meals'});
-const OrderDelivered = kafka.consumer({groupId: 'order_delivered'});
+const consumer = kafka.consumer({groupId: 'restaurant_consumer'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
-    await toDoMeals.connect();
-    await toDoMeals.subscribe({topic: "todo_meals"});
+    await consumer.connect();
+    await consumer.subscribe({topic: "todo_meals"});
+    await consumer.subscribe({topic: "order_delivered"});
+    await consumer.subscribe({topic: "statistics"});
     await toDoMeals.run({
         eachMessage: async ({topic, partition, message}) => {
             if (!queue.isEmpty()) {
                 queue.dequeue()(message);
             } else {
-                console.log("Unable to process todo_meals response: " + message.value)
+                console.log("Unable to process "+topic+" response: " + message.value)
             }
         }
     });
-
-    await OrderDelivered.connect();
-    await OrderDelivered.subscribe({topic: "order_delivered"});
-    await OrderDelivered.run({
-        eachMessage: async ({topic, partition, message}) => {
-            console.log("Order with ID "+message.value.order.id+" has been delivered !");
-        }
-    });
-
 };
 
 run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
@@ -97,22 +89,7 @@ app.get('/orders/', (req, res) => {
     });
     queue.enqueue(function (msg) {
         console.log("unqueue : " + msg.value);
-        let result = "";
-        if (msg.value.orders != null){
-            const orders = msg.value.orders;
-            for (let i = 0; i < orders.length; i++) {
-                result += "Order with ID "+orders[i].id+" :\n";
-                if (orders[i].meals == null || orders[i].meals.length === 0){
-                    result += "   No meal for this order\n";
-                } else {
-                    let meals = orders[i].meals;
-                    for (let j = 0; j < meals.length; j++) {
-                        result += "   - "+meals.name+"\n";
-                    }
-                }
-            }
-        }
-        res.send(result);
+        res.send(msg.value.toString());
     })
 
 
@@ -125,7 +102,7 @@ app.put('/orders/', (req, res) => {
     }
     const orderId = req.body.orderId;
     let value = JSON.stringify({order: {
-        id: orderId
+            id: orderId
         }
     });
     console.log("Send meal_cooked : " + util.inspect(value));
@@ -135,7 +112,54 @@ app.put('/orders/', (req, res) => {
             key: "", value: value
         }]
     });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
+});
 
+app.get('/statistics/', (req, res) => {
+    if (!("restaurantId" in req.body)) {
+        res.send("Attribute 'restaurantId' needed");
+        return;
+    }
+    const restaurantId = req.body.restaurantId;
+    let value = JSON.stringify({
+        restaurantId: restaurantId
+    });
+    console.log("Send get_statistics : " + util.inspect(value));
+    producer.send({
+        topic: "get_statistics",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
+});
+
+app.get('/feedbacks/', (req, res) => {
+    if (!("restaurantId" in req.body)) {
+        res.send("Attribute 'restaurantId' needed");
+        return;
+    }
+    const restaurantId = req.body.restaurantId;
+    let value = JSON.stringify({
+        restaurantId: restaurantId
+    });
+    console.log("Send list_feedback : " + util.inspect(value));
+    producer.send({
+        topic: "list_feedback",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
 });
 
 
