@@ -207,6 +207,29 @@ app.post('/feedbacks/', (req, res) => {
     })
 });
 
+app.get('/geolocation/', (req, res) => {
+    console.log("Received : " + util.inspect(req.query));
+    if (!("orderId" in req.query)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.query.orderId;
+    console.log("Parsed : orderId=" + orderId);
+    let value = JSON.stringify({
+        orderId: orderId
+    });
+    console.log("Send get_coursier_geoloc : " + util.inspect(value));
+    producer.send({
+        topic: "get_coursier_geoloc",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
+});
 
 
 app.listen(port, () => console.log(`Gateway Customer listening on port ${port}!`));
