@@ -29,7 +29,7 @@ const run = async () => {
     await consumer.subscribe({topic: "todo_meals"});
     await consumer.subscribe({topic: "order_delivered"});
     await consumer.subscribe({topic: "statistics"});
-    await toDoMeals.run({
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             if (!queue.isEmpty()) {
                 queue.dequeue()(message);
