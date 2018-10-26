@@ -1,4 +1,4 @@
-import { Customer } from "uberoo-commons";
+import { Customer } from "./Customer";
 
 export class CustomerModel implements Customer {
     id: number;

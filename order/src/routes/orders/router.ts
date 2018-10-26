@@ -2,8 +2,6 @@ import {Request, Response, Router} from "express";
 import {OrderModel} from "../../models";
 import {check, validationResult} from "express-validator/check";
 
-const router = Router();
-
 const data: { [key: number]: OrderModel; } = {};
 let nextId = 0;
 
@@ -14,7 +12,6 @@ let nextId = 0;
 const getOrders = (req: Request, res: Response) => {
     res.status(200).send(Object.keys(data).map(key => data[+key]));
 };
-router.get("/", getOrders);
 
 /**
  * GET /orders/:orderId
@@ -29,7 +26,8 @@ const getOrder = (req: Request, res: Response) => {
         res.status(200).send(o);
     }
 };
-router.get("/:orderId", getOrder);
+// route
+// r.get("/:orderId", getOrder);
 
 /**
  * POST /orders
@@ -45,11 +43,13 @@ const postOrder = (req: Request, res: Response) => {
     console.log("adding order", o);
     res.status(201).json(o);
 };
-router.post("/", [
+/*router.post("/", [
         check("client").isInt().withMessage("An order needs a client id"),
         check("meals").isArray(),
     ]
     , postOrder);
+
+    */
 
 /**
  * DELETE /orders/:orderId
@@ -65,7 +65,7 @@ const deleteOrder = (req: Request, res: Response) => {
 
     }
 };
-router.delete("/:orderId", deleteOrder);
+// router.delete("/:orderId", deleteOrder);
 
 /**
  * PUT /orders/:orderId
@@ -81,7 +81,10 @@ const putOrder = (req: Request, res: Response) => {
         res.status(200).send(o);
     }
 };
-router.put("/:orderId", putOrder);
+// router.put("/:orderId", putOrder);
 
 
-export default router;
+module.exports = {
+    putOrder: putOrder,
+    postOrder: postOrder
+};
