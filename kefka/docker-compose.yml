@@ -6,24 +6,19 @@ services:
       - "2181:2181"
       - "9092:9092"
     environment:
-      ADVERTISED_HOST: 127.0.0.1
+      ADVERTISED_HOST: "kafka"
       ADVERTISED_PORT: 9092
       TOPICS:
-  mongocoursier:
+
+  order:
+    build: ../order
+    depends_on:
+      - "kafka"
+      - "mongoorder"
+  mongoorder:
    image: mongo
-   expose:
-        - "27016"
    ports:
-        - "27016:27017"
-  mongo_delivery_man:
-    image: mongo
-    expose:
-    - "27018"
-    ports:
-    - "27018:27017"
-  mongo_payment:
-    image: mongo
-    expose:
-    - "27019"
-    ports:
-    - "27019:27017"
+    - "27017"
+   expose:
+    - "27917"
+ 
