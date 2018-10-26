@@ -12,7 +12,7 @@ mongoHelper.initialize(mongoHelper);
 
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
-    brokers: ["192.168.99.100:9092"],
+    brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'restaurant',
 });
