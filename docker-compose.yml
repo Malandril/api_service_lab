@@ -5,6 +5,8 @@ services:
     build: ./order
     image: order
     container_name: order
+    depends_on:
+    - "kafka"
     expose:
       - "8000"
     ports:

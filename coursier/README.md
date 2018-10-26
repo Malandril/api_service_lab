@@ -34,7 +34,8 @@
 # Create Order in coursier persistence
 
 kafka-console-producer --topic finalise_order --broker-list=localhost:9092
->{"order": {"id": "uuid","meals": [{"id": 34,"name": "Mac fist","eta": 4,"price": 1.0,"restaurant": {"id": 12,"name": "mac do","address": "4 Privet Drive"}}],"customer": {"name": "Mario","address": "3 Privet Drive"}}}
+>
+{"order": {"id": "uuid","meals": [{"id": 34,"name": "Mac fist","eta": 4,"price": 1.0,"restaurant": {"id": 12,"name": "mac do","address": "4 Privet Drive"}}],"customer": {"name": "Mario","address": "3 Privet Drive"}}}
 
 # List Orders as Coursier
 
