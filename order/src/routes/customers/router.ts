@@ -1,21 +1,21 @@
-import { Request, Response, Router } from "express";
-import { CustomerModel } from "../../models";
+import {Request, Response, Router} from "express";
+import {CustomerModel} from "../../models";
+import {ICustomerModel} from "../../models/CustomerModel";
 
 const {check, validationResult} = require("express-validator/check");
 
 const router = Router();
 
-const data: { [key: number]: CustomerModel; } = {
-    0: new CustomerModel({"id": 0, "name": "Clara", "address": "4 Private Drive", "phone": "04.44.44.44"}),
-};
-let nextId = 1;
 
 /**
  * GET /customers
  * Return the list of customers offered by Uberoo
  */
 const getCustomers = (req: Request, res: Response) => {
-    res.status(200).send(Object.keys(data).map(key => data[+key]));
+    CustomerModel.find().then((customers: ICustomerModel[]) => {
+        res.status(200).json(customers);
+    });
+
 };
 router.get("/", getCustomers);
 
@@ -24,12 +24,19 @@ router.get("/", getCustomers);
  * Return the specified customer
  */
 const getCustomer = (req: Request, res: Response) => {
-    const o = data[+req.params.customerId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        res.status(200).send(o);
-    }
+    CustomerModel.findById(req.params.customerId).exec((err, customer) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!customer) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("GET: " + customer);
+        res.status(200).json(customer);
+    });
 };
 router.get("/:customerId", getCustomer);
 
@@ -42,16 +49,22 @@ const postCustomer = (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         return res.status(422).json({errors: errors.array()});
     }
-    const o = new CustomerModel({"name": req.body.name, "address": req.body.address, "phone": "04.44.44.44", "id": nextId});
-    data[nextId++] = o;
-    res.status(201).json(o);
+    const m = new CustomerModel();
+    m.name = req.body.name;
+    m.address = req.body.address;
+    m.phone = req.body.phone;
+
+    CustomerModel.create(m).then((customer) => {
+        console.log("POST: " + customer);
+        res.status(201).json(customer);
+    });
 };
 
 function getCustomerValidator() {
     return [
         check("name").isString().isLength({min: 1}).withMessage("A customer needs a name"),
         check("address").isString().isLength({min: 1}).withMessage("A customer needs an address"),
-        check("phone").isString().isLength({min: 1}).withMessage("A customer needs an phone")
+        check("phone").isString().isLength({min: 1}).withMessage("A customer needs a phone"),
     ];
 }
 
@@ -62,14 +75,19 @@ router.post("/", getCustomerValidator(), postCustomer);
  * Delete the specified customer
  */
 const deleteCustomer = (req: Request, res: Response) => {
-    const o = data[req.params.customerId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        delete data[req.params.customerId];
-        res.status(200).send(o);
-
-    }
+    CustomerModel.findByIdAndRemove(req.params.customerId).exec((err, customer) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!customer) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("DELETE: " + customer);
+        res.status(200).json(customer);
+    });
 };
 router.delete("/:customerId", deleteCustomer);
 
@@ -78,19 +96,19 @@ router.delete("/:customerId", deleteCustomer);
  * Update the specified customer
  */
 const putCustomer = (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({errors: errors.array()});
-    }
-    const o = data[+req.params.customerId];
-    if (o === undefined) {
-        res.status(404);
-    } else {
-        o.name = req.body.name;
-        o.address = req.body.address;
-        o.phone = req.body.phone;
-        res.status(200).send(o);
-    }
+    CustomerModel.findByIdAndUpdate(req.params.customerId, req.body).exec((err, customer) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(400);
+            return;
+        }
+        if (!customer) {
+            res.sendStatus(404);
+            return;
+        }
+        console.log("PUT: " + customer);
+        res.status(200).json(customer);
+    });
 };
 router.put("/:customerId", getCustomerValidator(), putCustomer);
 

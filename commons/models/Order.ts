@@ -1,7 +1,7 @@
 import { Meal } from "./Meal";
+import {Customer} from "./Customer";
 
 export interface Order {
-    id: number;
-    client: number;
+    client: Customer;
     meals: Meal[];
 }
