@@ -1,25 +1,26 @@
 version: '3.2'
 
 services:
-  order:
-    build: ./order
-    image: order
-    container_name: order
-    expose:
-      - "8000"
-    ports:
-      - "8000:3000"
-    stdin_open: true
+  # order:
+  #   build: ./order
+  #   image: order
+  #   container_name: order
+  #   stdin_open: true
   coursier:
     build: ./coursier
     image: coursier
     depends_on:
-    - "mongo"
+    - "mongo_coursier"
+    - "kafka"
     container_name: coursier
-    expose:
-    - "8090"
-    ports:
-    - "8090:3000"
+    stdin_open: true
+  restaurant:
+    build: ./restaurant
+    image: restaurant
+    container_name: restaurant
+    depends_on:
+    - "mongo_restaurant"
+    - "kafka"    
     stdin_open: true
   coursierws:
     build: ./coursier-ws
@@ -31,15 +32,6 @@ services:
     - "8099"
     ports:
     - "8099:3000"
-    stdin_open: true
-  restaurant:
-    build: restaurant_old
-    image: restaurant
-    container_name: restaurant
-    expose:
-      - "8080"
-    ports:
-      - "8080:3000"
     stdin_open: true
   restaurantws:
     build: ./restaurant-ws
@@ -67,38 +59,17 @@ services:
     build: ./eta_calculator
     image: eta_calculator
     container_name: eta_calculator
-    expose:
-    - "9090"
-    ports:
-    - "9090:9090"
+    depends_on:
+      - "kafka"
     stdin_open: true
-  mongo:
+  mongo_coursier:
    image: mongo
-   environment:
-     - MONGO_INITDB_ROOT_USERNAME=soauser
-     - MONGO_INITDB_ROOT_PASSWORD=soa
-   expose:
-        - "27017"
-   ports:
-        - "27017:27017"
-  mongocoursier:
-   image: mongo
-   expose:
-        - "27016"
-   ports:
-        - "27016:27017"
   mongo_delivery_man:
     image: mongo
-    expose:
-    - "27018"
-    ports:
-    - "27018:27017"
+  mongo_restaurant:
+    image: mongo
   mongo_payment:
     image: mongo
-    expose:
-    - "27019"
-    ports:
-    - "27019:27017"
   kafka:
     image: spotify/kafka
     ports:

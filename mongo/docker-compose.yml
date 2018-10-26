@@ -1,0 +1,13 @@
+version: '3.2'
+
+services:
+  mongo:
+   image: mongo
+   environment:
+     - MONGO_INITDB_ROOT_USERNAME=soauser
+     - MONGO_INITDB_ROOT_PASSWORD=soa
+   expose:
+        - "27017"
+   ports:
+        - "27017:27017"
+   container_name: bdd

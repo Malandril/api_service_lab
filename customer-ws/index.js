@@ -20,30 +20,23 @@ const kafka = new Kafka({
 });
 
 
-const mealsListed = kafka.consumer({groupId: 'meals_listed'});
-const etaResult = kafka.consumer({groupId: 'eta_result'});
+const consumer = kafka.consumer({groupId: 'customer_consumer'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
-    await mealsListed.connect();
-    await mealsListed.subscribe({topic: "meals_listed"});
-    await mealsListed.run({
+    await consumer.connect();
+    await consumer.subscribe({topic: "meals_listed"});
+    await consumer.subscribe({topic: "eta_result"});
+    await consumer.subscribe({topic: "get_coursier_geoloc"});
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             console.log("eachMessage " + topic + " " + message);
             if (!queue.isEmpty()) {
                 queue.dequeue()(message);
             } else {
-                console.log("Unable to process list_orders_to_be_delivered response: " + message.value)
+                console.log("Unable to process "+ topic +" response: " + message.value)
             }
-        }
-    });
-
-    await etaResult.connect();
-    await etaResult.subscribe({topic: "eta_result"});
-    await etaResult.run({
-        eachMessage: async ({topic, partition, message}) => {
-            console.log("The ETA of your order is " + message.value);
         }
     });
 };
@@ -103,17 +96,8 @@ app.get('/meals/', (req, res) => {
     });
     queue.enqueue(function (msg) {
         console.log("unqueue : " + msg.value);
-        let result = "";
-        if (msg.value.meals != null){
-            const meals = msg.value.meals;
-            for (let i = 0; i < meals.length; i++) {
-                result += "- "+meals[i].name+" of the restaurant "+meals[i].restaurant.name+" : Price "+meals[i].price+"\n";
-            }
-        }
-        res.send(result);
+        res.send(msg.value.toString());
     })
-
-
 });
 
 app.post('/orders/', (req, res) => {
@@ -140,7 +124,10 @@ app.post('/orders/', (req, res) => {
             key: "", value: value
         }]
     });
-
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
 });
 
 
@@ -173,9 +160,76 @@ app.put('/orders/', (req, res) => {
             key: "", value: value
         }]
     });
-
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
 });
 
+app.post('/feedbacks/', (req, res) => {
+    res.send(util.inspect(req.body));
+    if (!("mealId" in req.body)) {
+        res.send("Attribute 'mealId' needed");
+        return;
+    }
+    const mealId = req.body.mealId;
+    if (!("customerId" in req.body)) {
+        res.send("Attribute 'customerId' needed");
+        return;
+    }
+    const customerId = req.body.customerId;
+    if (!("rating" in req.body)) {
+        res.send("Attribute 'rating' needed");
+        return;
+    }
+    const rating = req.body.rating;
+    if (!("description" in req.body)) {
+        res.send("Attribute 'description' needed");
+        return;
+    }
+    const description = req.body.description;
+    let value = JSON.stringify({
+        mealId: mealId,
+        rating: rating,
+        customerId: customerId,
+        desc: description
+    });
+    console.log("Send add_feeback " + util.inspect(value));
+    producer.send({
+        topic: "add_feeback",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
+});
+
+app.get('/geolocation/', (req, res) => {
+    console.log("Received : " + util.inspect(req.query));
+    if (!("orderId" in req.query)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.query.orderId;
+    console.log("Parsed : orderId=" + orderId);
+    let value = JSON.stringify({
+        orderId: orderId
+    });
+    console.log("Send get_coursier_geoloc : " + util.inspect(value));
+    producer.send({
+        topic: "get_coursier_geoloc",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    queue.enqueue(function (msg) {
+        console.log("unqueue : " + msg.value);
+        res.send(msg.value.toString());
+    })
+});
 
 
 app.listen(port, () => console.log(`Gateway Customer listening on port ${port}!`));
