@@ -6,9 +6,15 @@ services:
       - "2181:2181"
       - "9092:9092"
     environment:
-      ADVERTISED_HOST: 127.0.0.1
+      ADVERTISED_HOST: 192.168.99.100
       ADVERTISED_PORT: 9092
       TOPICS:
+  mongorestaurant:
+    image: mongo
+    expose:
+    - "27015"
+    ports:
+    - "27015:27017"
   mongocoursier:
    image: mongo
    expose:

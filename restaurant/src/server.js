@@ -12,9 +12,9 @@ mongoHelper.initialize(mongoHelper);
 
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
-    brokers: ["kafka:9092"],
+    brokers: ["192.168.99.100:9092"],
     connectionTimeout: 3000,
-    clientId: 'coursier',
+    clientId: 'restaurant',
 });
 const finaliseOrder = kafka.consumer({groupId: 'finalise_order'});
 const getTodoMeals = kafka.consumer({groupId: 'get_todo_meals'});
@@ -33,7 +33,7 @@ const run = async () => {
     });
 
     await getTodoMeals.connect();
-    await getTodoMeals.subscribe({topic: "finalise_order"});
+    await getTodoMeals.subscribe({topic: "get_todo_meals"});
     await getTodoMeals.run({
         eachMessage: async ({topic, partition, message}) => {
             methods.getTodoMeals(message.value.toString(), producer, mongoHelper.db);
