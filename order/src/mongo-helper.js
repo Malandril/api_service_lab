@@ -1,6 +1,3 @@
-/**
- * Created by Hasaghi on 15/10/2018.
- */
 const MongoClient = require('mongodb').MongoClient;
 const MAX_RETRY = 5;
 
@@ -8,7 +5,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj) {
-        obj.client = new MongoClient("mongodb://mongo_coursier:27017/", {useNewUrlParser: true});
+        obj.client = new MongoClient("mongodb://mongo_order:27017/", {useNewUrlParser: true});
         let count = 0;
 
         let connectWithRetry = function () {
@@ -20,7 +17,7 @@ module.exports = {
                     }
                     console.log('Failed to connect to mongo on startup - retrying in 5 sec');
                     count++;
-                    setTimeout(connectWithRetry, 5000);
+                    setTimeout(connectWithRetry, 15000);
                 } else {
                     console.log("Connected successfully to server");
                     obj.db = obj.client.db("coursier");

@@ -3,6 +3,5 @@ RUN mkdir /order
 COPY ./package.json /order/
 WORKDIR /order
 RUN npm install --production
-COPY ./dist /order/dist
-EXPOSE 3000
-ENTRYPOINT [ "npm","start"]
+COPY ./src /order
+ENTRYPOINT [ "node","server.js"]

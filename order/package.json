@@ -1,5 +1,5 @@
 {
-  "name": "restaurant",
+  "name": "order",
   "version": "1.0.0",
   "description": "",
   "main": "src/server.js",
