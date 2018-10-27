@@ -1,9 +1,8 @@
 'use strict';
 const util = require('util');
 let methods = {
-    addOrder : function (txt, db) {
+    addOrder : function (msg, db) {
         console.log("added : " +util.inspect(txt, {showHidden: false, depth: null}) )
-        var msg = JSON.parse(txt);
         if(!("order" in msg) || !("meals" in msg.order)){
             console.log("Error : Not enough data")
         }else{
@@ -13,7 +12,6 @@ let methods = {
         }
     },
     getOrderedToBeDelivered: function (msg, producer, db) {
-        msg = JSON.parse(msg);
         if("coursier" in msg &&"address" in msg.coursier){
             var id = msg.coursier.address.split(" ");
             var orders = [];
@@ -49,16 +47,29 @@ let methods = {
             console.log("Error : Not enough data : need {coursier:{id}}");
         }
         console.log(msg);
-
-        
     },
 
     deleteOrder: function (msg, db) {
-        msg = JSON.parse(msg);
         db.collection('orders').deleteOne(msg, function(err, r) {
             console.log("deleted : "  + r);
         });
+    },
+
+    updateLocalisation: function (msg, db) {
+        db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
+    },
+    getLocalisation: function (msg, db, producer) {
+        db.collection('tracks').findOne({"orderId" : msg.orderId}, function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            producer.send({
+                topic:"order_tracker",
+                messages: [{key:"", value: JSON.stringify(result)}]
+            });
+        });
     }
+
+
 };
 
 module.exports = methods;

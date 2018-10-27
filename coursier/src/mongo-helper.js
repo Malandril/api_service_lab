@@ -27,10 +27,11 @@ module.exports = {
 
 
                     obj.db.createCollection("orders", {"capped": true, "size": 100000, "max": 5000},
-                        function (err, results) {
-                            console.log("Collection created." + err + results);
-                            //client.close();
-                        }
+                        function (err, results) { }
+                    );
+
+                    obj.db.createCollection("tracks", {"capped": true, "size": 100000, "max": 5000},
+                        function (err, results) {}
                     );
                 }
             });

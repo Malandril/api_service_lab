@@ -19,7 +19,7 @@ def treat_folder(folder, commands):
 
 
 def main():
-    folders = ["commons", "order", "restaurant"]
+    folders = ["coursier", "coursier-ws", "customer-ws", "delivery_man_account", "eta_calculator", "payment", "order", "restaurant", "restaurant-ws"]
     for folder in folders:
         treat_folder(folder, [["npm", "install"]])
 

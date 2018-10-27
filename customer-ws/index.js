@@ -11,9 +11,10 @@ app.use(bodyParser.json());
 
 const Queue = require('queue-fifo');
 const queue = new Queue();
+const geoloQueue = new Queue();
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'customerws',
@@ -28,15 +29,29 @@ const run = async () => {
     await consumer.connect();
     await consumer.subscribe({topic: "meals_listed"});
     await consumer.subscribe({topic: "eta_result"});
-    await consumer.subscribe({topic: "get_coursier_geoloc"});
+    await consumer.subscribe({topic: "order_tracker"});
+    //await consumer.subscribe({topic: "get_coursier_geoloc"}); <- ????
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("eachMessage " + topic + " " + message);
-            if (!queue.isEmpty()) {
-                queue.dequeue()(message);
-            } else {
-                console.log("Unable to process "+ topic +" response: " + message.value)
+            console.log("receive :"+ message.value.toString());
+            switch (topic){
+                case "order_tracker":
+                    if (!geoloQueue.isEmpty()) {
+                        geoloQueue.dequeue()(message);
+                    } else {
+                        console.log("Unable to process "+ topic +" response: " + message.value)
+                    }
+                    break;
+                default:
+                    console.log("eachMessage " + topic + " " + message);
+                    if (!queue.isEmpty()) {
+                        queue.dequeue()(message);
+                    } else {
+                        console.log("Unable to process "+ topic +" response: " + message.value)
+                    }
+                    break;
             }
+
         }
     });
 };
@@ -61,7 +76,6 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await listResponse.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
@@ -207,13 +221,8 @@ app.post('/feedbacks/', (req, res) => {
     })
 });
 
-app.get('/geolocation/', (req, res) => {
-    console.log("Received : " + util.inspect(req.query));
-    if (!("orderId" in req.query)) {
-        res.send("Attribute 'orderId' needed");
-        return;
-    }
-    const orderId = req.query.orderId;
+app.get('/geolocation/:orderId', (req, res) => {
+    const orderId = req.params.orderId;
     console.log("Parsed : orderId=" + orderId);
     let value = JSON.stringify({
         orderId: orderId
@@ -225,7 +234,7 @@ app.get('/geolocation/', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
+    geoloQueue.enqueue(function (msg) {
         console.log("unqueue : " + msg.value);
         res.send(msg.value.toString());
     })

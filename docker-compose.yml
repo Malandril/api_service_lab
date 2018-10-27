@@ -67,14 +67,24 @@ services:
     stdin_open: true
   mongo_coursier:
    image: mongo
+   logging:
+       driver: none
   mongo_delivery_man:
     image: mongo
+    logging:
+        driver: none
   mongo_restaurant:
     image: mongo
+    logging:
+        driver: none
   mongo_payment:
     image: mongo
+    logging:
+        driver: none
   mongo_order:
-   image: mongo 
+   image: mongo
+   logging:
+       driver: none
   kafka:
     image: spotify/kafka
     ports:
