@@ -1,0 +1,16 @@
+{
+  "name": "catalog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "kafkajs": "^1.4.1",
+    "mongodb": "^3.1.8"
+  },
+  "author": "",
+  "license": "ISC"
+}
