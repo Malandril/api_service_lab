@@ -163,6 +163,11 @@ app.put('/geolocation/', (req, res) => {
         return;
     }
     const coursierId = req.body.coursierId;
+    if (!("orderId" in req.body)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.body.orderId;
     if (!("geolocation" in req.body)) {
         res.send("Attribute 'geolocation' needed");
         return;
@@ -170,6 +175,7 @@ app.put('/geolocation/', (req, res) => {
     const geolocation = req.body.geolocation;
     let value = JSON.stringify({
         timestamp: timestamp,
+        orderId: orderId,
         coursierId: coursierId,
         geoloc: geolocation
     });

@@ -17,41 +17,38 @@ const kafka = new Kafka({
     clientId: 'coursier',
 });
 
-const getDeliverableOrders = kafka.consumer({ groupId: 'get_ordered_to_be_delivered' });
-const finaliseOrder = kafka.consumer({ groupId: 'finalise_order' });
-const deleteOrder = kafka.consumer({ groupId: 'order_delivered' });
+const consumer = kafka.consumer({ groupId: 'coursier_consumer' });
 const producer = kafka.producer();
-
+const consumers = ["order_delivered","finalise_order","get_ordered_to_be_delivered","update_geoloc","get_coursier_geoloc"];
 const run = async () => {
     await producer.connect();
-    await getDeliverableOrders.connect();
-    await getDeliverableOrders.subscribe({topic:"get_ordered_to_be_delivered"});
-
-    await deleteOrder.connect();
-    await deleteOrder.subscribe({topic:"order_delivered"});
-    await deleteOrder.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            methods.deleteOrder(message.value.toString(),mongoHelper.db);
-        }
+    await consumer.connect();
+    await consumers.forEach(function (c) {
+        consumer.subscribe({topic: c});
     });
 
-    await finaliseOrder.connect();
-    await finaliseOrder.subscribe({topic:"finalise_order"});
-    await getDeliverableOrders.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            methods.getOrderedToBeDelivered(message.value.toString(),producer,mongoHelper.db);
-        }
-    });
-
-    await finaliseOrder.run({
-        eachMessage: async({topic, partition, message}) => {
-            console.log(util.inspect(message.value.toString(), {showHidden: false, depth: null}));
-            console.log((util.inspect(mongoHelper)));
-            methods.addOrder(message.value.toString(),mongoHelper.db);
-        }
-    })
-
-
+    consumer.run({
+        eachMessage: async ({topic, partition, message}) => {
+            var data = JSON.parse(message.value.toString());
+            console.log(data);
+            switch (topic){
+                case "get_ordered_to_be_delivered":
+                    methods.getOrderedToBeDelivered(data,producer,mongoHelper.db);
+                    break;
+                case "finalise_order":
+                    methods.addOrder(data, mongoHelper.db);
+                    break;
+                case "order_delivered":
+                    methods.deleteOrder(data, mongoHelper.db);
+                    break;
+                case "update_geoloc":
+                    methods.updateLocalisation(data, mongoHelper.db);
+                    break;
+                case "get_coursier_geoloc":
+                    methods.getLocalisation(data, mongoHelper.db, producer);
+            }
+        }}
+    );
 };
 
 run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
