@@ -5,7 +5,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj) {
-        obj.client = new MongoClient("mongodb://mongoorder:27017/", {useNewUrlParser: true});
+        obj.client = new MongoClient("mongodb://mongo_order:27017/", {useNewUrlParser: true});
         let count = 0;
 
         let connectWithRetry = function () {
