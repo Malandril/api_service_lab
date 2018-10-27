@@ -7,6 +7,7 @@ services:
     container_name: order
     depends_on:
     - "kafka"
+    - "mongo_order"
     stdin_open: true
   coursier:
     build: ./coursier
@@ -72,6 +73,8 @@ services:
     image: mongo
   mongo_payment:
     image: mongo
+  mongo_order:
+   image: mongo 
   kafka:
     image: spotify/kafka
     ports:
