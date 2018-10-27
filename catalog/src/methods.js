@@ -46,11 +46,11 @@ let methods = {
                     });
                 });
     },
-    addFeedback : function (msg_string, db) {
+    addFeedback : function (msg_string, producer, db) {
         var msg = JSON.parse(msg_string);
         console.log("addFeedback: " + msg_string);
 
-        if (!("mealId" in msg && "rating" in msg.order && "customerId" in msg.order && "desc" in msg.order)) {
+        if (!("mealId" in msg && "rating" in msg && "customerId" in msg && "desc" in msg)) {
             console.log("Error : Malformed feedback");
             return;
         }
