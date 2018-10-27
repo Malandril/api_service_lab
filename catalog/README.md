@@ -72,7 +72,7 @@
 
 
 #### List available meals
-kafka-console-producer --topic list_meals --broker-list=192.168.99.100:9092
+kafka-console-producer --topic list_meals --broker-list=kafka:9092
 >{}
 >{"restaurant": ["MacDo"]}
 >{"name": "BigMac", "Whopper"}

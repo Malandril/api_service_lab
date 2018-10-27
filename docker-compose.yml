@@ -110,3 +110,11 @@ services:
     - "kafka"
     container_name: payment
     stdin_open: true
+  catalog:
+    build: ./catalog
+    image: catalog
+    depends_on:
+    - "mongo_restaurant"
+    - "kafka"
+    container_name: catalog
+    stdin_open: true
