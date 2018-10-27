@@ -1,91 +1,60 @@
 'use strict';
 const util = require('util');
 let methods = {
-    createOrder: function (txt, db, producer) {
-        var message = JSON.parse(txt);
-        message.events = [{event: "creation",time: message.timestamp}];
-        db.collection('orders').insertOne(message, function(err, r) {
-            if(err){
-                console.log(util.inspect(err));
-            }else{
-                console.log("Created " + r["insertedId"]+ " " + util.inspect(r));
-                producer.send({
-                    topic:"create_order",
-                    messages: [{key:"", value: JSON.stringify({orderId: r["insertedId"]})}]
+        createOrder: function (message, db, producer) {
+            message.events = [{event: "creation", time: message.timestamp}];
+            db.collection('orders').insertOne(message, function (err, r) {
+                if (err) {
+                    console.log(util.inspect(err));
+                } else {
+                    console.log("Create order " + r["insertedId"]);
+                    producer.send({
+                        topic: "create_order",
+                        messages: [{key: "", value: JSON.stringify({orderId: r["insertedId"]})}]
+                    });
+                }
+            });
+        },
+        submitOrder: function (message, dbHelper, producer) {
+            dbHelper.addEvent(message.order.id, {
+                event: "submit",
+                time: message.timestamp,
+                onlinePayment: ( "creditCard" in message.order)
+            });
+            producer.send({
+                topic: "finalise_order",
+                messages: [{key: "", value: JSON.stringify(message)}]
+            });
+        },
+        processPaymentResult: function (succeed, message, dbHelper) {
+            dbHelper.addEvent(message.order.id, {
+                event: "payment",
+                time: Math.round(new Date().getTime() / 1000),
+                succeed: succeed
+            });
+        },
+        logDeliveyAssignation: function (msg, dbHelper) {
+            dbHelper.addEvent(msg.orderId, {event: "coursier_select", time: msg.timestamp, coursier: msg.coursierId})
+        },
+        logMealCooked: function (msg, dbHelper) {
+            dbHelper.addEvent(msg.order.id, {event: "cooked", time: msg.time_stamp});
+        },
+        validateFinishOrder: function (msg, dbHelper) {
+            console.log("Id = " + msg.order.id);
+            dbHelper.addEvent(msg.order.id, {event: "delivered", time: msg.time_stamp});
+            dbHelper.db.collection('orders')
+                .find({"_id": msg.order.id})
+                .forEach((err, res) => {
+                    console.log(res);
+                        if (err) {
+                            console.log(err);
+                        }
+                        else {
+                            console.log(res);
+                        }
                 });
-            }
-        });        
-    },
-    submitOrder: function (txt, db, producer) {
-     var message = JSON.parse(txt);
-     var id = message.order.id;
-        db.collection('orders').findOneAndUpdate(
-            {"_id": id},
-            {$push: {"events": {event:"submit",time: message.timestamp}}}
-        );
-        producer.send({
-            topic:"finalise_order",
-            messages: [{key:"", value: JSON.stringify(txt) }]
-        });
-    },
- addOrder : function (txt, db) {
-    console.log("added : " +util.inspect(txt, {showHidden: false, depth: null}) )
-    var msg = JSON.parse(txt);
-    if(!("order" in msg) || !("meals" in msg.order)){
-        console.log("Error : Not enough data")
-    }else{
-        db.collection('orders').insertOne(msg, function(err, r) {
-         console.log("added : "+ r );
-     });
+        }
     }
-},
-getOrderedToBeDelivered: function (msg, producer, db) {
-    msg = JSON.parse(msg);
-    if("coursier" in msg &&"address" in msg.coursier){
-        var id = msg.coursier.address.split(" ");
-        var orders = [];
-        orders.push({id: 12,
-            restaurant: {
-                address:"1337 Rue du code"
-            },
-            customer: {
-                address:"12 Rue du code"
-            },
-            mustBePayed: true});
-        db.collection('orders').find({}).limit(10).each(function(err, doc) {
-            if(doc){
-
-                orders.push(doc);
-            }else{
-                let resp = {
-                    orders:  orders
-                };
-                console.log("send event to list_orders_to_be_delivered" + JSON.stringify(resp) );
-                producer.send({
-                    topic:"list_orders_to_be_delivered",
-                    messages: [{key:"", value: JSON.stringify(resp)}]
-                });
-                producer.send({
-                    topic:"list_orders_to_be_delivered",
-                    messages: [{key:"", value: JSON.stringify(resp)}]
-                });
-            }
-        });
-
-    }else{
-        console.log("Error : Not enough data : need {coursier:{id}}");
-    }
-    console.log(msg);
-
-
-},
-
-deleteOrder: function (msg, db) {
-    msg = JSON.parse(msg);
-    db.collection('orders').deleteOne(msg, function(err, r) {
-        console.log("deleted : "  + r);
-    });
-}
-};
+;
 
 module.exports = methods;
