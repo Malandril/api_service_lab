@@ -19,19 +19,15 @@ let methods = {
     submitOrder: function (txt, db, producer) {
      var message = JSON.parse(txt);
      var id = message.order.id;
-     var isFound = false;
-      db.collection('orders').findOne({"_id":id},function(err,order) {
-        if(err){
-            console.log("err"+util.inspect(err));
-            console.log("order "+util.inspect(order));
-        }else{
-            console.log("order "+util.inspect(order));
-            message.events = value.events;
-            message.events.push({event:"submit",time: message.timestamp});
-            db.collection('orders').save(message);
-        }
-    });
- },
+        db.collection('orders').findOneAndUpdate(
+            {"_id": id},
+            {$push: {"events": {event:"submit",time: message.timestamp}}}
+        );
+        producer.send({
+            topic:"finalise_order",
+            messages: [{key:"", value: JSON.stringify(txt) }]
+        });
+    },
  addOrder : function (txt, db) {
     console.log("added : " +util.inspect(txt, {showHidden: false, depth: null}) )
     var msg = JSON.parse(txt);
