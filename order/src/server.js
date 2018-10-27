@@ -11,14 +11,14 @@ mongoHelper.initialize(mongoHelper);
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.INFO,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'order',
 });
 
 const producer = kafka.producer();
-const consumer = kafka.consumer({groupId:"order_consumer"});
+const consumer = kafka.consumer({groupId:"order_consumer_test"});
 const consumers = ["submit_order", "payment_failed", "payment_succeeded", "payment_not_needed", "create_order_request", "assign_delivery", "meal_cooked", "order_delivered"];
 const TOPICS = ["create_order", "finalise_order"];
 
@@ -31,16 +31,37 @@ const run = async () => {
 
     consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("Read :" + topic + util.inspect(message.value.toString()));
+            var data = JSON.parse(message.value.toString());
+            console.log("Read :" + topic + util.inspect(data));
+
             switch(topic){
                 case "create_order_request":
-                    methods.createOrder(message.value.toString(),mongoHelper.db, producer);
+                    methods.createOrder(data,mongoHelper.db, producer);
                     break;
                 case "submit_order":
-                    methods.submitOrder(message.value.toString(), mongoHelper.db, producer);
+                    methods.submitOrder(data, mongoHelper, producer);
+                    break;
+                case "payment_succeeded":
+                    methods.processPaymentResult(true, data, mongoHelper);
+                    break;
+                case "payment_failed":
+                    methods.processPaymentResult(false, data, mongoHelper);
+                    break;
+                case "payment_not_needed":
+                    //do nothing
+                    break;
+                case "assign_delivery":
+                    methods.logDeliveyAssignation(data,mongoHelper);
+                    break;
+                case "meal_cooked":
+                    methods.logMealCooked(data,mongoHelper);
+                    break;
+                case "order_delivered":
+                    methods.validateFinishOrder(data, mongoHelper);
                     break;
                 default:
                     console.log("Unimplemented topic :" + topic);
+                    break;
             }
         }
     });

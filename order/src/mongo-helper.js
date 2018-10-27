@@ -20,7 +20,7 @@ module.exports = {
                     setTimeout(connectWithRetry, 15000);
                 } else {
                     console.log("Connected successfully to server");
-                    obj.db = obj.client.db("coursier");
+                    obj.db = obj.client.db("orders");
 
 
                     obj.db.createCollection("orders", {"capped": true, "size": 100000, "max": 5000},
@@ -33,5 +33,11 @@ module.exports = {
             });
         };
         connectWithRetry()
+    },
+    addEvent: function (orderId, eventToPush) {
+        this.db.collection('orders').findOneAndUpdate(
+            {"_id": orderId},
+            {$push: {"events": eventToPush}}
+        );
     }
 }
