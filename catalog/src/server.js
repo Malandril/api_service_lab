@@ -87,9 +87,10 @@ const run = async () => {
     await producer.connect();
 
     await listMeals.connect();
-    await listMeals.subscribe({topic: "finalise_order"});
+    await listMeals.subscribe({topic: "list_meals"});
     await listMeals.run({
         eachMessage: async ({topic, partition, message}) => {
+            console.log(topic,message.value.toString());
             methods.listMeals(message.value.toString(), producer, mongoHelper.db);
         }
     });

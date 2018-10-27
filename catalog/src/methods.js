@@ -48,7 +48,7 @@ let methods = {
     },
     addFeedback : function (msg_string, db) {
         var msg = JSON.parse(msg_string);
-        console.log("finaliseOrder: " + msg_string);
+        console.log("addFeedback: " + msg_string);
 
         if (!("mealId" in msg && "rating" in msg.order && "customerId" in msg.order && "desc" in msg.order)) {
             console.log("Error : Malformed feedback");
