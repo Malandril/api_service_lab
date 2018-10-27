@@ -152,6 +152,37 @@ app.put('/deliveries/', (req, res) => {
 
 });
 
+app.put('/geolocation/', (req, res) => {
+    if (!("timestamp" in req.body)) {
+        res.send("Attribute 'timestamp' needed");
+        return;
+    }
+    const timestamp = req.body.timestamp;
+    if (!("coursierId" in req.body)) {
+        res.send("Attribute 'coursierId' needed");
+        return;
+    }
+    const coursierId = req.body.coursierId;
+    if (!("geolocation" in req.body)) {
+        res.send("Attribute 'geolocation' needed");
+        return;
+    }
+    const geolocation = req.body.geolocation;
+    let value = JSON.stringify({
+        timestamp: timestamp,
+        coursierId: coursierId,
+        geoloc: geolocation
+    });
+    console.log("Send : update_geoloc " + util.inspect(value));
+    producer.send({
+        topic: "update_geoloc",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+
+});
+
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

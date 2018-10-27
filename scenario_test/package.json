@@ -2,16 +2,15 @@
   "name": "scenario_test",
   "version": "1.0.0",
   "description": "",
-  "main": "scenario_test.js",
+  "main": "kafka_test.js",
   "scripts": {
-    "start": "node scenario_test.js"
+    "start": "node kafka_test.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "request": "^2.88.0",
     "kafkajs": "^1.4.1",
-    "request-promise": "^4.2.2",
-    "uberoo-commons": "^1.0.3"
+    "request-promise": "^4.2.2"
   }
 }
