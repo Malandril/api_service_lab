@@ -5,7 +5,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj, seed_function) {
-        obj.client = new MongoClient("mongodb://mongo_restaurant:27017/", {useNewUrlParser: true});
+        obj.client = new MongoClient("mongodb://mongo_catalog:27017/", {useNewUrlParser: true});
         let count = 0;
 
         let connectWithRetry = function () {
@@ -23,14 +23,14 @@ module.exports = {
                     obj.db = obj.client.db("catalog");
 
 
-                    obj.db.createCollection("meals", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("meals", {},
                         function (err, results) {
                             console.log("Collection created." + err + results);
+                            seed_function(obj.db);
                             //client.close();
                         }
                     );
 
-                    seed_function(obj.db);
                 }
             });
         };
