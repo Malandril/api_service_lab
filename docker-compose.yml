@@ -85,6 +85,10 @@ services:
    image: mongo
    logging:
        driver: none
+  mongo_statistics:
+    image: mongo
+    logging:
+      driver: none
   kafka:
     image: spotify/kafka
     ports:
