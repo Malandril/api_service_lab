@@ -30,7 +30,6 @@ const run = async () => {
     await consumer.subscribe({topic: "meals_listed"});
     await consumer.subscribe({topic: "eta_result"});
     await consumer.subscribe({topic: "order_tracker"});
-    //await consumer.subscribe({topic: "get_coursier_geoloc"}); <- ????
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             console.log("receive :"+ message.value.toString());
@@ -145,21 +144,20 @@ app.post('/orders/', (req, res) => {
 });
 
 
-app.put('/orders/', (req, res) => {
-    if (!("order" in req.body)) {
-        res.send("Attribute 'order' needed");
-        return;
-    }
-    const orderContent = req.body.order.order;
-    if (!("creditCard" in req.body)) {
-        res.send("Attribute 'creditCard' needed");
-        return;
-    }
-    const creditCard = req.body.order.creditCard;
+app.put('/orders/:orderId', (req, res) => {
+    const orderId = req.body.orderId;
+    const meals = req.body.meals;
+    const customer = req.body.customer;
+    const creditCard = req.body.creditCard;
     let value = "";
     if (creditCard != null) {
         value = JSON.stringify({
-            order: orderContent,
+            timestamp: Date.now(),
+            order: {
+                id: orderId,
+                meals: meals,
+                customer: customer
+            },
             creditCard: creditCard
         });
     } else {
