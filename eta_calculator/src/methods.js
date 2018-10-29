@@ -15,12 +15,13 @@ let methods = {
                 }
             }
             let response = {
-                eta:  totalETA
+                eta:  totalETA,
+                sessionId: _orderObj.sessionId
             };
             console.log("Send event eta_result : " + JSON.stringify(response));
             producer.send({
                 topic:"eta_result",
-                messages: [{key:"", value: response}]
+                messages: [{key:"", value: JSON.stringify(response)}]
             });
         }
     }
