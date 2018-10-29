@@ -9,7 +9,7 @@ let methods = {
                 } else {
                     let messageResult = JSON.stringify({
                         orderId: r["insertedId"],
-                        sessionId: message.sessionId
+                        requestId: message.requestId
                     });
 
                     producer.send({

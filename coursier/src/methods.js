@@ -29,13 +29,10 @@ let methods = {
                     orders.push(doc);
                 }else{
                     let resp = {
+                        requestId: msg.requestId,
                         orders:  orders
                     };
                     console.log("send event to list_orders_to_be_delivered" + JSON.stringify(resp) );
-                    producer.send({
-                        topic:"list_orders_to_be_delivered",
-                        messages: [{key:"", value: JSON.stringify(resp)}]
-                    });
                     producer.send({
                         topic:"list_orders_to_be_delivered",
                         messages: [{key:"", value: JSON.stringify(resp)}]
