@@ -84,16 +84,19 @@ signalTraps.map(type => {
 
 app.get('/meals/', (req, res) => {
     console.log("Received : " + util.inspect(req.query));
-    if (!("categories" in req.query)) {
-        res.send("Attribute 'categories' needed");
+    var categories = [];
+    var restaurants = [];
+    if ("categories" in req.query || "restaurants" in req.query) {
+        if ("categories" in req.query) {
+            categories = req.query.categories;
+        }
+        if ("restaurants" in req.query) {
+            restaurants = req.query.restaurants;
+        }
+    } else {
+        res.send("Attribute 'categories' or 'restaurants' needed");
         return;
     }
-    const categories = req.query.categories;
-    if (!("restaurants" in req.query)) {
-        res.send("Attribute 'restaurants' needed");
-        return;
-    }
-    const restaurants = req.query.restaurants;
     console.log("Parsed : categories=" + categories + ", restaurants=" + restaurants);
 
     let value = JSON.stringify({
