@@ -8,13 +8,71 @@ let restaurant_url = "http://localhost:8080";
 
 
 // assumption: the client is already connected
-var client = { id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762" };
+var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762"};
 var order = null;
-
+var coursierId = 18;
 var orderId = null;
-request({ url: `${customer_ws}/meals`, qs: { category: "Asian" } }, function (error, response, body) {
+function coursierAction(orderId) {
+    new Promise(
+        function (resolve, reject) {
+            request({url: `${coursier_url}/deliveries`, qs: {id: coursierId, address:"3 Rue principale"}}, function (error, response, body) {
+            }).then(function (res) {
+                console.log(res);
+            });
+                resolve(phone); // fulfilled
+
+
+        })
+            .then(function () {
+
+            });
+}
+function restaurantAction() {
+
+}
+request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {
     assert(response.statusCode, 200);
-    console.log("meals", body);
 }).then(function (meals) {
-    console.log(meals)
-})
+    let parse = JSON.parse(meals);
+    var data = parse.meals[0];
+
+    console.log("Meals returned : " + parse.meals.length);
+    order = {
+        meals: [data],
+        customer: {
+            name: "Bob",
+            address: "3 Privet Drive",
+        }
+    };
+    request({
+        url: `${customer_ws}/orders/`,
+        method: 'POST',
+        body: order,
+        json: true
+    }).then(function (resp) {
+        console.log("The ETA of Bob's order is  ", resp.eta, " minutes");
+
+        var finalisation = {
+            orderId: resp.orderId,
+            customer: order.customer,
+            meals: order.meals,
+            creditCard: {
+                name: "Bob",
+                number: 551512348989,
+                ccv: 775,
+                limit: "07/19"
+            }
+        };
+        request({
+            url: `${customer_ws}/orders/${resp.orderId}`,
+            method: 'PUT',
+            body: finalisation,
+            json: true
+        }).then(function (resp) {
+            console.log("resp"+resp);
+            console.log("Ok, deux process à partir de maintenant: ");
+            coursierAction();
+            restaurantAction();
+        });
+    });
+});
