@@ -69,6 +69,10 @@ services:
    image: mongo
    logging:
        driver: none
+  mongo_catalog:
+    image: mongo
+    logging:
+      driver: none
   mongo_delivery_man:
     image: mongo
     logging:
