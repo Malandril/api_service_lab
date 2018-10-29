@@ -4,6 +4,7 @@ const util = require('util');
 const app = express();
 const port = 3000;
 const {Kafka, logLevel} = require('kafkajs');
+const uuidv4 = require('uuid/v4');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -23,6 +24,7 @@ const kafka = new Kafka({
 const listResponse = kafka.consumer({groupId: 'list_orders_to_be_delivered'});
 const producer = kafka.producer();
 
+const openConnections = new Map();
 const run = async () => {
     await producer.connect();
     await listResponse.connect();
@@ -30,11 +32,9 @@ const run = async () => {
 
     await listResponse.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("eachMessage " + topic + " " + message);
-            if (!queue.isEmpty()) {
-                queue.dequeue()(message);
-            } else {
-                console.log("Unable to process list_orders_to_be_delivered response: " + message.value)
+            const data = JSON.parse(message.value.toString());
+            if(openConnections.get(data.requestId).checkValidity(data)){
+                openConnections.delete(data.requestId);
             }
         }
     });
@@ -83,7 +83,9 @@ app.get('/deliveries/', (req, res) => {
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
 
+    const uuid  = uuidv4();
     let value = JSON.stringify({
+        requestId: uuid,
         coursier: {
             id: coursierId,
             address: address
@@ -96,6 +98,15 @@ app.get('/deliveries/', (req, res) => {
             key: "", value: value
         }]
     });
+
+    openConnections.set(uuid,{
+        res: res,
+        checkValidity: function (data) {
+            delete data.requestId;
+            res.send(data);
+            return true;
+        }
+    })
     queue.enqueue(function (msg) {
         console.log("unqueue : " + msg.value);
         res.send(msg.value.toString());

@@ -30,7 +30,7 @@ const run = async () => {
     consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
-            console.log(data);
+            console.log(topic,data);
             switch (topic){
                 case "get_ordered_to_be_delivered":
                     methods.getOrderedToBeDelivered(data,producer,mongoHelper.db);

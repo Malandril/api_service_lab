@@ -6,15 +6,14 @@ const port = 3000;
 const uuidv4 = require('uuid/v4');
 const {Kafka, logLevel} = require('kafkajs');
 
+
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
 const Queue = require('queue-fifo');
 const queue = new Queue();
-const listMealQueue = new Queue();
 const geoloQueue = new Queue();
-
 const creationInstances = new Map(); //sticky sessions
 
 const kafka = new Kafka({
@@ -44,6 +43,7 @@ const run = async () => {
     await consumer.subscribe({topic: "create_order"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
+
             var data = JSON.parse(message.value.toString());
             console.log("receive :" + util.inspect(data) + "in topic" + util.inspect(topic));
             switch (topic) {
@@ -52,19 +52,13 @@ const run = async () => {
                     break;
                 case "create_order":
                 case "eta_result":
-                    var element = creationInstances.get(data.sessionId);
-                    if (topic === "eta_result") {
-                        element.eta = data.eta;
-                    } else {
-                        element.orderId = data.orderId
-                    }
-                    if (element.checkFinish()) {
-                        creationInstances.delete(data.sessionId);
-                    }
-                    break;
                 case "meals_listed":
-                    dequeue(listMealQueue, message);
+                    var element = creationInstances.get(data.requestId);
+                    if (element.checkFinish(topic,message,data)) {
+                        creationInstances.delete(data.requestId);
+                    }
                     break;
+
                 default:
                     console.log("Unable to process " + topic + " response: " + message.value);
                     break;
@@ -102,6 +96,7 @@ signalTraps.map(type => {
 });
 
 app.get('/meals/', (req, res) => {
+
     console.log("Received : " + util.inspect(req.query));
     var categories = undefined;
     var restaurants = undefined;
@@ -117,23 +112,29 @@ app.get('/meals/', (req, res) => {
         return;
     }
     console.log("Parsed : categories=" + categories + ", restaurants=" + restaurants);
+    let requestId = uuidv4();
 
     let value = JSON.stringify({
+        requestId: requestId,
         categories: categories,
         restaurants: restaurants
     });
+    creationInstances.set(requestId,{
+        res: res,
+        checkFinish: function (topic,message,data) {
+            console.log("read "+ topic);
+            res.send(data);
+            return true;
+        }
 
+    });
     console.log("Send list_meals : " + util.inspect(value));
     producer.send({
         topic: "list_meals",
         messages: [{
-            key: "", value: value
+            key: requestId, value: value
         }]
     });
-    listMealQueue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
 });
 
 app.post('/orders/', (req, res) => {
@@ -149,7 +150,7 @@ app.post('/orders/', (req, res) => {
     const customer = req.body.customer;
     let session = uuidv4();
     let value = JSON.stringify({
-        sessionId: session,
+        requestId: session,
         meals: meals,
         customer: customer
     });
@@ -163,7 +164,12 @@ app.post('/orders/', (req, res) => {
         clientResp: res,
         eta: null,
         orderId: null,
-        checkFinish: function () {
+        checkFinish: function (topic,message,data) {
+            if (topic === "eta_result") {
+                this.eta = data.eta;
+            } else {
+                this.orderId = data.orderId
+            }
             let b = this.eta !== null && this.orderId !== null;
             if (b) {
                 this.clientResp.send(JSON.stringify({
@@ -183,10 +189,8 @@ app.put('/orders/:orderId', (req, res) => {
     const meals = req.body.meals;
     const customer = req.body.customer;
     const creditCard = req.body.creditCard;
-    let value = "";
-    if (creditCard != null) {
-        value = JSON.stringify({
-            timestamp: Date.now(),
+    let value = JSON.stringify({
+            timestamp: Math.round((new Date()).getTime() / 1000),
             order: {
                 id: orderId,
                 meals: meals,
@@ -194,11 +198,6 @@ app.put('/orders/:orderId', (req, res) => {
             },
             creditCard: creditCard
         });
-    } else {
-        value = JSON.stringify({
-            order: orderContent
-        });
-    }
     console.log("Send submit_order " + util.inspect(value));
     producer.send({
         topic: "submit_order",
@@ -206,6 +205,7 @@ app.put('/orders/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
+    res.sendStatus(200);
 });
 
 app.post('/feedbacks/', (req, res) => {

@@ -18,10 +18,10 @@ let methods = {
                 .find(query)
                 .project({_id: 0, feedback: 0})
                 .toArray((err, res) => {
-                    console.log("Send msg: " + JSON.stringify(res));
+                    console.log("Send msg: " + JSON.stringify(res)+" id "+ msg.requestId);
                     producer.send({
                         "topic":"meals_listed",
-                        "messages": [{"key":"", "value": JSON.stringify({"meals": res})}]
+                        "messages": [{"key":"", "value": JSON.stringify({"meals": res,requestId: msg.requestId})}]
                     });
                 });
     },

@@ -81,7 +81,7 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'catalog',
 });
-const listMeals = kafka.consumer({groupId: 'list_meals'});
+const consumer = kafka.consumer({groupId: 'list_meals'});
 const addFeedback = kafka.consumer({groupId: 'add_feedback'});
 const listFeedback = kafka.consumer({groupId: 'list_feedback'});
 const producer = kafka.producer();
@@ -89,12 +89,19 @@ const producer = kafka.producer();
 const run = async () => {
     await producer.connect();
 
-    await listMeals.connect();
-    await listMeals.subscribe({topic: "list_meals"});
-    await listMeals.run({
+    await consumer.connect();
+    await consumer.subscribe({topic: "list_meals"});
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log(topic,message.value.toString());
-            methods.listMeals(message.value.toString(), producer, mongoHelper.db);
+            switch (topic){
+                case "list_meals":
+
+                    console.log(topic,message.value.toString(), util.inspect(message), message.key.toString());
+                    methods.listMeals(message.value.toString(), producer, mongoHelper.db);
+                    break;
+                default:
+                    console.log("Unimplemented topic: "+ topic)
+            }
         }
     });
 
@@ -137,7 +144,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await getDeliverableOrders.disconnect();
+            await consumer.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)

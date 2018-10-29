@@ -3,7 +3,7 @@ const assert = require("assert");
 
 let customer_ws = "http://localhost:8097";
 let eta_url = "http://localhost:9090";
-let coursier_url = "http://localhost:8090";
+let coursier_url = "http://localhost:8099";
 let restaurant_url = "http://localhost:8080";
 
 
@@ -18,13 +18,11 @@ function coursierAction(orderId) {
             request({url: `${coursier_url}/deliveries`, qs: {id: coursierId, address:"3 Rue principale"}}, function (error, response, body) {
             }).then(function (res) {
                 console.log(res);
-            });
-                resolve(phone); // fulfilled
-
-
+                resolve(res);
+            }).catch(reject);
         })
-            .then(function () {
-
+            .then(function (e) {
+                console.log(e);
             });
 }
 function restaurantAction() {
