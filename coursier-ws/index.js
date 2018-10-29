@@ -6,7 +6,7 @@ const port = 3000;
 const {Kafka, logLevel} = require('kafkajs');
 const uuidv4 = require('uuid/v4');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
@@ -33,7 +33,7 @@ const run = async () => {
     await listResponse.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
-            if(openConnections.get(data.requestId).checkValidity(data)){
+            if (openConnections.get(data.requestId).checkValidity(data)) {
                 openConnections.delete(data.requestId);
             }
         }
@@ -83,7 +83,7 @@ app.get('/deliveries/', (req, res) => {
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
 
-    const uuid  = uuidv4();
+    const uuid = uuidv4();
     let value = JSON.stringify({
         requestId: uuid,
         coursier: {
@@ -99,7 +99,7 @@ app.get('/deliveries/', (req, res) => {
         }]
     });
 
-    openConnections.set(uuid,{
+    openConnections.set(uuid, {
         res: res,
         checkValidity: function (data) {
             delete data.requestId;
@@ -143,15 +143,22 @@ app.post('/deliveries/', (req, res) => {
 });
 
 
-app.put('/deliveries/', (req, res) => {
-    if (!("orderId" in req.body)) {
+app.put('/deliveries/:orderId', (req, res) => {
+    if (!("orderId" in req.params)) {
         res.send("Attribute 'orderId' needed");
         return;
     }
-    const orderId = req.body.orderId;
-    let value = JSON.stringify({order: {
-        id: orderId
-        }
+    const orderId = req.params.coursierId;
+    if (!("coursierId" in req.body)) {
+        res.send("Attribute 'orderId' needed");
+        return;
+    }
+    const coursierId = req.body.coursierId;
+    let value = JSON.stringify({
+        order: {
+            id: orderId
+        },
+        coursierId: coursierId
     });
     console.log("Send : order_delivered " + util.inspect(value));
     producer.send({
@@ -199,7 +206,6 @@ app.put('/geolocation/', (req, res) => {
     });
 
 });
-
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

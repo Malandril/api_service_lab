@@ -15,15 +15,37 @@ var orderId = null;
 function coursierAction(orderId) {
     new Promise(
         function (resolve, reject) {
-            request({url: `${coursier_url}/deliveries`, qs: {id: coursierId, address:"3 Rue principale"}}, function (error, response, body) {
+            request({
+                url: `${coursier_url}/deliveries`,
+                qs: {id: coursierId, address: "3 Rue principale"}
+            }, function (error, response, body) {
             }).then(function (res) {
-                console.log(res);
                 resolve(res);
             }).catch(reject);
         })
-            .then(function (e) {
-                console.log(e);
+        .then(function (e) {
+            var data = JSON.parse(e);
+
+            console.log("Orders : " + data.orders.length);
+            let id = data.orders[data.orders.length - 1].id;
+            console.log("We chose to deliver order ", id);
+            request({
+                url: `${coursier_url}/deliveries`,
+                method: 'POST',
+                body: {orderId: id, coursierId: coursierId},
+                json: true
+            }).then(function (res) {
+                console.log("res1", res)
+                request({
+                    url: `${coursier_url}/deliveries/${id}`,
+                    method: 'PUT',
+                    body: {orderId: id, coursierId: coursierId},
+                    json: true
+                }).then(function (res) {
+                    console.log("end result " + res);
+                });
             });
+        });
 }
 function restaurantAction() {
 
@@ -67,7 +89,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
             body: finalisation,
             json: true
         }).then(function (resp) {
-            console.log("resp"+resp);
+            console.log("resp" + resp);
             console.log("Ok, deux process à partir de maintenant: ");
             coursierAction();
             restaurantAction();
