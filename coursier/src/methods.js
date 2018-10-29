@@ -2,11 +2,11 @@
 const util = require('util');
 let methods = {
     addOrder : function (msg, db) {
-        console.log("added : " +util.inspect(txt, {showHidden: false, depth: null}) )
+        console.log("added : " +util.inspect(msg, {showHidden: false, depth: null}) )
         if(!("order" in msg) || !("meals" in msg.order)){
             console.log("Error : Not enough data")
         }else{
-            db.collection('orders').insertOne(msg, function(err, r) {
+            db.collection('orders').insertOne(msg.order, function(err, r) {
                console.log("added : "+ r );
             });
         }
@@ -15,15 +15,8 @@ let methods = {
         if("coursier" in msg &&"address" in msg.coursier){
             var id = msg.coursier.address.split(" ");
             var orders = [];
-            orders.push({id: 12,
-                restaurant: {
-                    address:"1337 Rue du code"
-                },
-                customer: {
-                    address:"12 Rue du code"
-                },
-                mustBePayed: true});
             db.collection('orders').find({}).limit(10).each(function(err, doc) {
+                console.log("found ",doc);
                 if(doc){
 
                     orders.push(doc);
