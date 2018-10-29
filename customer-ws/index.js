@@ -6,7 +6,7 @@ const port = 3000;
 const uuidv4 = require('uuid/v4');
 const {Kafka, logLevel} = require('kafkajs');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
@@ -23,11 +23,12 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'customerws',
 });
-function dequeue(queue, msg){
+
+function dequeue(queue, msg) {
     if (!queue.isEmpty()) {
         queue.dequeue()(msg);
     } else {
-        console.log("Unable to process "+ topic +" response: " + message.value)
+        console.log("Unable to process " + topic + " response: " + message.value)
     }
 }
 
@@ -44,20 +45,20 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
-            console.log("receive :"+ util.inspect(data)+ "in topic" + util.inspect(topic));
-            switch (topic){
+            console.log("receive :" + util.inspect(data) + "in topic" + util.inspect(topic));
+            switch (topic) {
                 case "order_tracker":
                     dequeue(geoloQueue, message);
                     break;
                 case "create_order":
                 case "eta_result":
                     var element = creationInstances.get(data.sessionId);
-                    if(topic === "eta_result"){
+                    if (topic === "eta_result") {
                         element.eta = data.eta;
-                    }else{
+                    } else {
                         element.orderId = data.orderId
                     }
-                    if(element.checkFinish()){
+                    if (element.checkFinish()) {
                         creationInstances.delete(data.sessionId);
                     }
                     break;
@@ -65,7 +66,7 @@ const run = async () => {
                     dequeue(listMealQueue, message);
                     break;
                 default:
-                    console.log("Unable to process "+ topic +" response: " + message.value);
+                    console.log("Unable to process " + topic + " response: " + message.value);
                     break;
             }
 
@@ -102,8 +103,8 @@ signalTraps.map(type => {
 
 app.get('/meals/', (req, res) => {
     console.log("Received : " + util.inspect(req.query));
-    var categories = [];
-    var restaurants = [];
+    var categories = undefined;
+    var restaurants = undefined;
     if ("categories" in req.query || "restaurants" in req.query) {
         if ("categories" in req.query) {
             categories = req.query.categories;
@@ -112,7 +113,7 @@ app.get('/meals/', (req, res) => {
             restaurants = req.query.restaurants;
         }
     } else {
-        res.send("Attribute 'categories' or 'restaurants' needed");
+        res.send("Attribute 'categories' or 'restaurants' needed", 400);
         return;
     }
     console.log("Parsed : categories=" + categories + ", restaurants=" + restaurants);
@@ -146,9 +147,9 @@ app.post('/orders/', (req, res) => {
         return;
     }
     const customer = req.body.customer;
-    let session  = uuidv4();
+    let session = uuidv4();
     let value = JSON.stringify({
-        sessionId:session,
+        sessionId: session,
         meals: meals,
         customer: customer
     });
@@ -158,13 +159,13 @@ app.post('/orders/', (req, res) => {
             key: "", value: value
         }]
     });
-    creationInstances.set(session,{
+    creationInstances.set(session, {
         clientResp: res,
         eta: null,
         orderId: null,
-        checkFinish : function () {
+        checkFinish: function () {
             let b = this.eta !== null && this.orderId !== null;
-            if(b){
+            if (b) {
                 this.clientResp.send(JSON.stringify({
                     orderId: this.orderId,
                     eta: this.eta
