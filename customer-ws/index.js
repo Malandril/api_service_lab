@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const util = require('util');
 const app = express();
 const port = 3000;
+const uuidv4 = require('uuid/v4');
 const {Kafka, logLevel} = require('kafkajs');
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -11,7 +12,10 @@ app.use(bodyParser.json());
 
 const Queue = require('queue-fifo');
 const queue = new Queue();
+const listMealQueue = new Queue();
 const geoloQueue = new Queue();
+
+const creationInstances = new Map(); //sticky sessions
 
 const kafka = new Kafka({
     logLevel: logLevel.ERROR,
@@ -19,7 +23,13 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'customerws',
 });
-
+function dequeue(queue, msg){
+    if (!queue.isEmpty()) {
+        queue.dequeue()(msg);
+    } else {
+        console.log("Unable to process "+ topic +" response: " + message.value)
+    }
+}
 
 const consumer = kafka.consumer({groupId: 'customer_consumer'});
 const producer = kafka.producer();
@@ -30,24 +40,32 @@ const run = async () => {
     await consumer.subscribe({topic: "meals_listed"});
     await consumer.subscribe({topic: "eta_result"});
     await consumer.subscribe({topic: "order_tracker"});
+    await consumer.subscribe({topic: "create_order"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("receive :"+ message.value.toString());
+            var data = JSON.parse(message.value.toString());
+            console.log("receive :"+ util.inspect(data)+ "in topic" + util.inspect(topic));
             switch (topic){
                 case "order_tracker":
-                    if (!geoloQueue.isEmpty()) {
-                        geoloQueue.dequeue()(message);
-                    } else {
-                        console.log("Unable to process "+ topic +" response: " + message.value)
+                    dequeue(geoloQueue, message);
+                    break;
+                case "create_order":
+                case "eta_result":
+                    var element = creationInstances.get(data.sessionId);
+                    if(topic === "eta_result"){
+                        element.eta = data.eta;
+                    }else{
+                        element.orderId = data.orderId
+                    }
+                    if(element.checkFinish()){
+                        creationInstances.delete(data.sessionId);
                     }
                     break;
+                case "meals_listed":
+                    dequeue(listMealQueue, message);
+                    break;
                 default:
-                    console.log("eachMessage " + topic + " " + message);
-                    if (!queue.isEmpty()) {
-                        queue.dequeue()(message);
-                    } else {
-                        console.log("Unable to process "+ topic +" response: " + message.value)
-                    }
+                    console.log("Unable to process "+ topic +" response: " + message.value);
                     break;
             }
 
@@ -103,6 +121,7 @@ app.get('/meals/', (req, res) => {
         categories: categories,
         restaurants: restaurants
     });
+
     console.log("Send list_meals : " + util.inspect(value));
     producer.send({
         topic: "list_meals",
@@ -110,14 +129,13 @@ app.get('/meals/', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
+    listMealQueue.enqueue(function (msg) {
         console.log("unqueue : " + msg.value);
         res.send(msg.value.toString());
     })
 });
 
 app.post('/orders/', (req, res) => {
-    res.send(util.inspect(req.body));
     if (!("meals" in req.body)) {
         res.send("Attribute 'meals' needed");
         return;
@@ -128,22 +146,34 @@ app.post('/orders/', (req, res) => {
         return;
     }
     const customer = req.body.customer;
-
+    let session  = uuidv4();
     let value = JSON.stringify({
+        sessionId:session,
         meals: meals,
         customer: customer
     });
-    console.log("Send create_order_request " + util.inspect(value));
     producer.send({
         topic: "create_order_request",
         messages: [{
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+    creationInstances.set(session,{
+        clientResp: res,
+        eta: null,
+        orderId: null,
+        checkFinish : function () {
+            let b = this.eta !== null && this.orderId !== null;
+            if(b){
+                this.clientResp.send(JSON.stringify({
+                    orderId: this.orderId,
+                    eta: this.eta
+                }));
+            }
+            return b;
+        }
+    });
+
 });
 
 
@@ -175,10 +205,6 @@ app.put('/orders/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
 });
 
 app.post('/feedbacks/', (req, res) => {
@@ -216,10 +242,6 @@ app.post('/feedbacks/', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
 });
 
 app.get('/geolocation/:orderId', (req, res) => {

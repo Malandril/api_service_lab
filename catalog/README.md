@@ -72,16 +72,16 @@
 
 
 #### List available meals
-kafka-console-producer --topic list_meals --broker-list=kafka:9092
+kafka-console-producer --topic list_meals --list_meals-list=kafka:9092
 >{}
 >{"restaurant": ["MacDo"]}
 >{"name": "BigMac", "Whopper"}
 
 
 #### Add a feedback
-kafka-console-producer --topic get_todo_meals --broker-list=192.168.99.100:9092
+kafka-console-producer --topic add_feedback --broker-list=kafka:9092
 >{"mealId": "69", "rating": 4, "customerId": "15", "desc": "Awesome"}
 
 #### List feedback
-kafka-console-producer --topic order_delivered --broker-list=192.168.99.100:9092
+kafka-console-producer --topic list_feedback --broker-list=kafka:9092
 >{"restaurantId": "12"}

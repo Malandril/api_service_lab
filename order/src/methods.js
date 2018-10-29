@@ -7,10 +7,14 @@ let methods = {
                 if (err) {
                     console.log(util.inspect(err));
                 } else {
-                    console.log("Create order " + r["insertedId"]);
+                    let messageResult = JSON.stringify({
+                        orderId: r["insertedId"],
+                        sessionId: message.sessionId
+                    });
+
                     producer.send({
                         topic: "create_order",
-                        messages: [{key: "", value: JSON.stringify({orderId: r["insertedId"]})}]
+                        messages: [{key: "", value: messageResult}]
                     });
                 }
             });
