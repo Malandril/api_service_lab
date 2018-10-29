@@ -8,67 +8,70 @@ const {Kafka, logLevel} = require('kafkajs');
 let mongoHelper = require("./mongo-helper");
 
 mongoHelper.initialize(mongoHelper, (db) => {
-    if(mongoHelper.db.collection("meals").count() === 0) {
-        // Seed the database
-        console.log("Seeding database");
-        mongoHelper.db.collection("meals").insert(
-                [
-                    {
-                        id: "42",
-                        name: "Mac first",
-                        category: "burger",
-                        eta: 4,
-                        price: 1.0,
-                        feedback: [
-                            {
-                                rating: 4,
-                                customerId: "15",
-                                desc: "Awesome"
+    console.log("in function");
+    db.collection("meals").countDocuments().then((count) => {
+        if(count === 0) {
+            // Seed the database
+            console.log("Seeding database");
+            db.collection("meals").insertMany(
+                    [
+                        {
+                            id: "42",
+                            name: "Mac first",
+                            category: "burger",
+                            eta: 4,
+                            price: 1.0,
+                            feedback: [
+                                {
+                                    rating: 4,
+                                    customerId: "15",
+                                    desc: "Awesome"
 
+                                }
+                            ],
+                            restaurant: {
+                                id: "12",
+                                name: "MacDo",
+                                address: "4 Privet Drive"
                             }
-                        ],
-                        restaurant: {
-                            id: "12",
-                            name: "MacDo",
-                            address: "4 Privet Drive"
-                        }
-                    },
-                    {
-                        id: "51",
-                        name: "Big Mac",
-                        category: "burger",
-                        eta: 4,
-                        price: 1.0,
-                        feedback: [
-                            {
-                                rating: 4,
-                                customerId: "15",
-                                desc: "Awesome"
+                        },
+                        {
+                            id: "51",
+                            name: "Big Mac",
+                            category: "burger",
+                            eta: 4,
+                            price: 1.0,
+                            feedback: [
+                                {
+                                    rating: 4,
+                                    customerId: "15",
+                                    desc: "Awesome"
 
+                                }
+                            ],
+                            restaurant: {
+                                id: "12",
+                                name: "MacDo",
+                                address: "4 Privet Drive"
                             }
-                        ],
-                        restaurant: {
-                            id: "12",
-                            name: "MacDo",
-                            address: "4 Privet Drive"
+                        },
+                        {
+                            id: "69",
+                            name: "Whopper",
+                            category: "burger",
+                            eta: 4,
+                            price: 1.0,
+                            feedback: [],
+                            restaurant: {
+                                id: "25",
+                                name: "BurgerKing",
+                                address: "7 Privet Drive"
+                            }
                         }
-                    },
-                    {
-                        id: "69",
-                        name: "Whopper",
-                        category: "burger",
-                        eta: 4,
-                        price: 1.0,
-                        feedback: [],
-                        restaurant: {
-                            id: "25",
-                            name: "BurgerKing",
-                            address: "7 Privet Drive"
-                        }
-                    }
-                ]
-        )
-    }
+                    ]
+            )
+        }
+    });
 });
 
 
