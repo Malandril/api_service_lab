@@ -1,4 +1,5 @@
 FROM node
+RUN export NODE_ENV=production
 RUN mkdir /delivery_man_account
 COPY ./package.json /delivery_man_account/
 WORKDIR /delivery_man_account

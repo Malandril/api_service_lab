@@ -24,14 +24,14 @@ let methods = {
                 console.log("added : " + r);
                 producer.send({
                     topic: "payment_succeeded",
-                    messages: [{key: "", value: msg.order.id}]
+                    messages: [{key: "", value: {order: {id: msg.order.id}}}]
                 });
             });
-        }else{
-            console.log("payment delayed to delivery");
+        } else {
+            console.log("payment refused");
             producer.send({
-                topic: "payment_delayed",
-                messages: [{key: "", value: msg.order.id}]
+                topic: "payment_failed",
+                messages: [{key: "", value: {order: {id: msg.order.id}}}]
             });
         }
     }

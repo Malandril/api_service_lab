@@ -19,13 +19,12 @@ module.exports = {
                     setTimeout(connectWithRetry, 5000);
                 } else {
                     console.log("Connected successfully to server");
-                    obj.db = obj.client.db("payment");
+                    obj.db = obj.client.db("delivery_man_account");
 
 
-                    obj.db.createCollection("payments", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("accounts", {"capped": true, "size": 100000, "max": 5000},
                         function (err, results) {
-                            console.log("Collection created.", err, results);
-                            //client.close();
+                            console.log("Collection created.");
                         }
                     );
                 }
