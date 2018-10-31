@@ -1,4 +1,5 @@
 FROM node
+RUN export NODE_ENV=production
 RUN mkdir /payment
 COPY ./package.json /payment/
 WORKDIR /payment

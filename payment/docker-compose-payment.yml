@@ -1,0 +1,14 @@
+version: '3.2'
+services:
+  payment:
+    build: .
+    image: payment
+    depends_on:
+    - "mongo_payment"
+    - "kafka"
+  mongo_payment:
+    image: mongo
+    expose:
+    - "27017"
+    ports:
+    - "27017:27017"
