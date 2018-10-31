@@ -2,7 +2,6 @@ const request = require("request-promise");
 const assert = require("assert");
 
 let customer_ws = "http://localhost:8097";
-let eta_url = "http://localhost:9090";
 let coursier_url = "http://localhost:8099";
 let restaurant_url = "http://localhost:8080";
 
@@ -12,6 +11,7 @@ var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0
 var order = null;
 var coursierId = 18;
 var orderId = null;
+
 function coursierAction(orderId) {
     new Promise(
         function (resolve, reject) {
@@ -35,7 +35,7 @@ function coursierAction(orderId) {
                 body: {orderId: id, coursierId: coursierId},
                 json: true
             }).then(function (res) {
-                console.log("res1", res)
+                console.log("res1", res);
                 request({
                     url: `${coursier_url}/deliveries/${id}`,
                     method: 'PUT',
@@ -47,9 +47,11 @@ function coursierAction(orderId) {
             });
         });
 }
+
 function restaurantAction() {
 
 }
+
 request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {
     assert(response.statusCode, 200);
 }).then(function (meals) {

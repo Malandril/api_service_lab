@@ -145,12 +145,12 @@ app.post('/deliveries/', (req, res) => {
 
 app.put('/deliveries/:orderId', (req, res) => {
     if (!("orderId" in req.params)) {
-        res.send("Attribute 'orderId' needed");
+        res.sendStatus(400).send("Attribute 'orderId' needed");
         return;
     }
-    const orderId = req.params.coursierId;
+    const orderId = req.params.orderId;
     if (!("coursierId" in req.body)) {
-        res.send("Attribute 'orderId' needed");
+        res.sendStatus(400).send("Attribute 'coursierId' needed");
         return;
     }
     const coursierId = req.body.coursierId;
@@ -167,7 +167,7 @@ app.put('/deliveries/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-
+    res.send("Ok")
 });
 
 app.put('/geolocation/', (req, res) => {
