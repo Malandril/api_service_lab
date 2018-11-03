@@ -25,6 +25,10 @@ module.exports = {
                     obj.db.createCollection("orderStatus", {"capped": true, "size": 100000, "max": 5000},
                         function (err, results) { }
                     );
+
+                    obj.db.createCollection("deliveryTime", {"capped": true, "size": 100000, "max": 5000},
+                        function (err, results) { }
+                    );
                 }
             });
         };
