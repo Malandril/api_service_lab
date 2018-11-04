@@ -15,7 +15,7 @@ const Queue = require('queue-fifo');
 const queue = new Queue();
 const geoloQueue = new Queue();
 const creationInstances = new Map(); //sticky sessions
-
+const waitForOrderValidation = new Map();
 const kafka = new Kafka({
     logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
@@ -31,7 +31,7 @@ function dequeue(queue, msg) {
     }
 }
 
-const consumer = kafka.consumer({groupId: 'customer_consumer'});
+const consumer = kafka.consumer({groupId: 'customerwsconsumer'});
 const producer = kafka.producer();
 
 const run = async () => {
@@ -53,12 +53,17 @@ const run = async () => {
                 case "create_order":
                 case "eta_result":
                 case "meals_listed":
-                    var element = creationInstances.get(data.requestId);
+                    const element = creationInstances.get(data.requestId);
                     if (element.checkFinish(topic,message,data)) {
                         creationInstances.delete(data.requestId);
                     }
                     break;
-
+                case "finalise_order":
+                    var el = waitForOrderValidation.get(data.id);
+                    if (el.checkFinish(topic,message,data)) {
+                        waitForOrderValidation.delete(data.id);
+                    }
+                    break;
                 default:
                     console.log("Unable to process " + topic + " response: " + message.value);
                     break;
@@ -183,7 +188,6 @@ app.post('/orders/', (req, res) => {
 
 });
 
-
 app.put('/orders/:orderId', (req, res) => {
     const orderId = req.body.orderId;
     const meals = req.body.meals;
@@ -199,6 +203,11 @@ app.put('/orders/:orderId', (req, res) => {
             creditCard: creditCard
         });
     console.log("Send submit_order " + util.inspect(value));
+    waitForOrderValidation.set(orderId, {
+        clientResp: res,
+        checkFinish: function (topic,message,data) {
+            this.clientResp.send("ok");
+            }});
     producer.send({
         topic: "submit_order",
         messages: [{

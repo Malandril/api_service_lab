@@ -3,7 +3,7 @@ const assert = require("assert");
 
 let customer_ws = "http://localhost:8097";
 let coursier_url = "http://localhost:8099";
-let restaurant_url = "http://localhost:8080";
+let restaurant_url = "http://localhost:8098";
 
 
 // assumption: the client is already connected
@@ -11,8 +11,9 @@ var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0
 var order = null;
 var coursierId = 18;
 var orderId = null;
-
-function coursierAction(orderId) {
+var restaurantId = null;
+function coursierAction() {
+    console.log("Un coursier du coin liste les orders");
     new Promise(
         function (resolve, reject) {
             request({
@@ -20,6 +21,7 @@ function coursierAction(orderId) {
                 qs: {id: coursierId, address: "3 Rue principale"}
             }, function (error, response, body) {
             }).then(function (res) {
+                console.log("Liste : "+ res);
                 resolve(res);
             }).catch(reject);
         })
@@ -49,7 +51,23 @@ function coursierAction(orderId) {
 }
 
 function restaurantAction() {
+    new Promise(
+        function (resolve, reject) {
+            request({
+                url: `${restaurant_url}/orders/`,
+                qs: {id: coursierId}
+            }, function (error, response, body) {
+            }).then(function (res) {
 
+                resolve(res);
+            }).catch(reject);
+        })
+        .then(function (e) {
+            var data = JSON.parse(e);
+            console.log(data);
+        }).catch(function (e) {
+        console.log(e);
+    });
 }
 
 request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {
@@ -57,7 +75,6 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
 }).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
-
     console.log("Meals returned : " + parse.meals.length);
     order = {
         meals: [data],

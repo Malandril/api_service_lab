@@ -9,10 +9,6 @@ const uuidv4 = require('uuid/v4');
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-
-const Queue = require('queue-fifo');
-const queue = new Queue();
-
 const kafka = new Kafka({
     logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
@@ -33,6 +29,7 @@ const run = async () => {
     await listResponse.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
+            console.log("Receive : " +message.value.toString()+ topic + data + data.requestId +openConnections.get(data.requestId) );
             if (openConnections.get(data.requestId).checkValidity(data)) {
                 openConnections.delete(data.requestId);
             }
@@ -83,14 +80,14 @@ app.get('/deliveries/', (req, res) => {
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
 
-    const uuid = uuidv4();
+    var uuid = uuidv4();
     let value = JSON.stringify({
         requestId: uuid,
         coursier: {
             id: coursierId,
             address: address
         }
-    });
+    })
     console.log("Send : " + util.inspect(value));
     producer.send({
         topic: "get_ordered_to_be_delivered",
@@ -98,7 +95,7 @@ app.get('/deliveries/', (req, res) => {
             key: "", value: value
         }]
     });
-
+    console.log("put "+uuid+ " in openConnection" );
     openConnections.set(uuid, {
         res: res,
         checkValidity: function (data) {
@@ -107,11 +104,6 @@ app.get('/deliveries/', (req, res) => {
             return true;
         }
     })
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
-
 
 });
 
@@ -167,7 +159,7 @@ app.put('/deliveries/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    res.send("Ok")
+
 });
 
 app.put('/geolocation/', (req, res) => {

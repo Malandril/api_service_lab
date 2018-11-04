@@ -23,12 +23,8 @@ let methods = {
             dbHelper.addEvent(message.order.id, {
                 event: "submit",
                 time: message.timestamp,
-                onlinePayment: ( "creditCard" in message.order)
             });
-            producer.send({
-                topic: "finalise_order",
-                messages: [{key: "", value: JSON.stringify(message)}]
-            });
+
         },
         processPaymentResult: function (succeed, message, dbHelper) {
             dbHelper.addEvent(message.order.id, {
@@ -36,6 +32,23 @@ let methods = {
                 time: Math.round(new Date().getTime() / 1000),
                 succeed: succeed
             });
+            if(succeed){
+                dbHelper.db.collection('orders')
+                    .find({"_id": msg.order.id})
+                    .project({ events: 0})
+                    .toArray((err, res) => {
+                        console.log("Send msg: " + JSON.stringify(res));
+                        res.id = res._id;
+                        producer.send({
+                            topic: "finalise_order",
+                            messages: [{key: "", value: JSON.stringify(res)}]
+                        });
+                    });
+            }else{
+                //TODO: manage payment error
+            }
+
+
         },
         logDeliveyAssignation: function (msg, dbHelper) {
             dbHelper.addEvent(msg.orderId, {event: "coursier_select", time: msg.timestamp, coursier: msg.coursierId})

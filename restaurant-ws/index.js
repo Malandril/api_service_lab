@@ -78,7 +78,7 @@ app.get('/orders/', (req, res) => {
     console.log("Parsed : id=" + restaurantId);
 
     let value = JSON.stringify({
-        restaurantId : 12
+        restaurantId : restaurantId
     });
     console.log("Send get_todo_meals : " + util.inspect(value));
     producer.send({
