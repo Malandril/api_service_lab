@@ -34,6 +34,7 @@ const run = async () => {
             switch (topic) {
                 case "meals_listed":
                     console.log(message.value);
+                    process.exit(0);
                     break;
             }
         }
