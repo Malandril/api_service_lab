@@ -1,7 +1,8 @@
 'use strict';
 const util = require('util');
 let methods = {
-    putNewStatus: function (msg, db, status) {
+    putNewStatus: function (msg_string, db, status) {
+        var msg = JSON.parse(msg_string);
         msg.status = status;
         db.collection('orderStatus').insertOne(msg, function (err, r) {
             if (err) {
@@ -11,50 +12,49 @@ let methods = {
             }
         });
     },
-    createStatistics: function (msg, db, producer) {
+    calculateDeliveryTime: function (msg_string, db) {
+        var msg = JSON.parse(msg_string);
+        var cookedMeal = db.collection('orderStatus').findOne({status: "meal_cooked", 'order.id': msg.order.id});
+        var finalisedOrder = db.collection('orderStatus').findOne({status: "finalise_order", 'order.id': msg.order.id});
+        var difference = msg.timestamp - cookedMeal.timestamp;
+        var date = new Date(msg.timestamp*1000).toISOString();
+        var meals = finalisedOrder.order.meals;
+        var value = JSON.stringify({
+            coursierId: msg.coursierId,
+            time: difference,
+            date: date,
+            meals: meals
+        });
+        db.collection('deliveryTime').insertOne(value, function (err, r) {
+            if (err) {
+                console.log(util.inspect(err));
+            } else {
+                console.log("Calculate and store delivery time for order");
+            }
+        });
+    },
+    pullStatistics: function (msg, db, producer) {
         var coursierMap = new Map();
-        var finalisedOrders = db.collection('orderStatus')
-            .find({status: "finalise_order", 'order.meals[0].restaurant.id': msg.restaurantId})
-            .toArray();
-        var assignedOrders = db.collection('orderStatus')
-            .find({status: "assign_delivery"})
-            .toArray();
-        finalisedOrders.forEach(function (finalisedOrder) {
-            assignedOrders.forEach(function (assignedOrder) {
-                if (finalisedOrder.order.id === assignedOrder.orderId) {
-                    var coursierId = assignedOrder.coursierId;
-                    var orderId = finalisedOrder.order.id;
 
-
-                    var deliveredOrder = db.collection('orderStatus').findOne({status: "order_delivered", 'order.id': orderId});
-                    var cookedMeal = db.collection('orderStatus').findOne({status: "meal_cooked", 'order.id': orderId});
-                    var difference = deliveredOrder.timestamp - cookedMeal.timestamp;
-                    var time = new Date(difference*1000).getMinutes();
-                    var date = new Date(finalisedOrder.timestamp*1000).toISOString();
-
-                    var order = {
-                        time: time,
-                        date: date,
-                        id: orderId,
-                        meals: []
-                    };
-                    finalisedOrder.order.meals.forEach(function (meal) {
-                        order.meals.push({id: meal.id})
-                    })
-
-                    if (!coursierMap.has(coursierId)) {
-                        var value = {
-                            id: coursierId,
-                            orders : []
-                        };
-                        coursierMap.set(coursierId, value);
-                    }
-                    var temp = coursierMap.get(coursierId);
-                    temp.orders.push(order);
-                    coursierMap.set(coursierId, temp);
-                }
-            })
-        })
+        var deliveries = db.collection('deliveryTime').find().toArray();
+        deliveries.forEach(function (delivery) {
+            var coursierId = delivery.coursierId;
+            if (!coursierMap.has(coursierId)) {
+                var value = {
+                    id: coursierId,
+                    orders : []
+                };
+                coursierMap.set(coursierId, value);
+            }
+            var order = {
+                time: delivery.time,
+                date: delivery.date,
+                meals: delivery.meals
+            };
+            var temp = coursierMap.get(coursierId);
+            temp.orders.push(order);
+            coursierMap.set(coursierId, temp);
+        });
         var result = {coursiers: []};
         coursierMap.forEach(function (value, key, map) {
             result.coursiers.push({
