@@ -5,5 +5,5 @@ COPY ./package.json /payment/
 WORKDIR /payment
 RUN npm install --production
 COPY ./src /payment
-EXPOSE 9090
+COPY ./env.json /
 ENTRYPOINT [ "node","server.js"]

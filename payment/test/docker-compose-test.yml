@@ -1,0 +1,8 @@
+version: '3.2'
+services:
+  test:
+    build: ./
+    image: test_payment
+    external_links:
+    - "kafka"
+    - "payment"
