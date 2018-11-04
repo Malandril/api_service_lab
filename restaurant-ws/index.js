@@ -26,7 +26,8 @@ const producer = kafka.producer();
 const run = async () => {
     await producer.connect();
     await consumer.connect();
-    await consumer.subscribe({topic: "todo_meals"});
+    await consumer.subscribe({topic: "meals_getted"});
+    await consumer.subscribe({topic: "delivered_meals"});
     await consumer.subscribe({topic: "order_delivered"});
     await consumer.subscribe({topic: "statistics"});
     await consumer.run({
@@ -74,15 +75,21 @@ app.get('/orders/', (req, res) => {
         res.send("Attribute 'id' needed");
         return;
     }
+    if (!("status" in req.query)) {
+        res.send("Attribute 'status' needed");
+        return;
+    }
     const restaurantId = req.query.id;
-    console.log("Parsed : id=" + restaurantId);
+    const status = req.query.status;
+    console.log("Parsed : id=" + restaurantId + ", status="+status);
 
     let value = JSON.stringify({
-        restaurantId : restaurantId
+        "restaurantId" : restaurantId,
+        "status": status
     });
-    console.log("Send get_todo_meals : " + util.inspect(value));
+    console.log("Send get_meals : " + util.inspect(value));
     producer.send({
-        topic: "get_todo_meals",
+        topic: "get_meals",
         messages: [{
             key: "", value: value
         }]

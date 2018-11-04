@@ -23,22 +23,22 @@ let methods = {
         db.collection('restaurants').insertOne(order);
         console.log("Inserted: " + JSON.stringify(order))
     },
-    getTodoMeals: function (msg_string, producer, db) {
+    getMeals: function (msg_string, producer, db) {
         var msg = JSON.parse(msg_string);
 
-        console.log("getTodoMeals: " + msg_string);
+        console.log("getMeals: " + msg_string);
 
-        if (!("restaurantId" in msg)) {
+        if (!("restaurantId" in msg && "status" in msg)) {
             console.log("Error : Malformed message");
             return;
         }
         db.collection('restaurants')
-                .find({"restaurantId": msg.restaurantId, "status": "todo"})
+                .find({"restaurantId": msg.restaurantId, "status": msg.status})
                 .project({_id: 0, restaurantId: 0})
                 .toArray((err, res) => {
                     console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
-                        "topic":"todo_meals",
+                        "topic":"meals_getted",
                         "messages": [{"key":"", "value": JSON.stringify({"orders": res})}]
                     });
                 });
