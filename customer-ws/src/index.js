@@ -15,7 +15,11 @@ const Queue = require('queue-fifo');
 const queue = new Queue();
 const geoloQueue = new Queue();
 const creationInstances = new Map(); //sticky sessions
+<<<<<<< HEAD
 const waitForOrderValidation = new Map();
+=======
+
+>>>>>>> origin/feat/kefka
 const kafka = new Kafka({
     logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],

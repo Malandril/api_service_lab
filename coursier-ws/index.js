@@ -80,14 +80,18 @@ app.get('/deliveries/', (req, res) => {
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
 
+<<<<<<< HEAD
     var uuid = uuidv4();
+=======
+    const uuid = uuidv4();
+>>>>>>> origin/feat/kefka
     let value = JSON.stringify({
         requestId: uuid,
         coursier: {
             id: coursierId,
             address: address
         }
-    })
+    });
     console.log("Send : " + util.inspect(value));
     producer.send({
         topic: "get_ordered_to_be_delivered",
@@ -96,6 +100,7 @@ app.get('/deliveries/', (req, res) => {
         }]
     });
     console.log("put "+uuid+ " in openConnection" );
+
     openConnections.set(uuid, {
         res: res,
         checkValidity: function (data) {
