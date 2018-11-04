@@ -64,7 +64,16 @@ function restaurantAction() {
         })
         .then(function (e) {
             var data = JSON.parse(e);
-            console.log(data);
+            request({
+                url: `${coursier_url}/orders/`,
+                method: 'PUT',
+                body: {orderId: orderId},
+                json: true
+            }).then(function (res) {
+                console.log("resp :" + res);
+            }).catch(function (err){
+                console.log("ERROR : " + err);
+            });
         }).catch(function (e) {
         console.log(e);
     });
@@ -90,7 +99,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
         json: true
     }).then(function (resp) {
         console.log("The ETA of Bob's order is  ", resp.eta, " minutes");
-
+        orderId = resp.orderId;
         var finalisation = {
             orderId: resp.orderId,
             customer: order.customer,
