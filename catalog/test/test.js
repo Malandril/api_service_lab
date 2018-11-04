@@ -38,6 +38,10 @@ const run = async () => {
             topic: "list_meals",
             messages: [{key: "", value: JSON.stringify({categories: ["burger"]})}]
         });
+    timeout = setTimeout(() => {
+        console.log("response timed out");
+        process.exit(2);
+    }, 10000);
     console.log("Message sent");
 };
 
