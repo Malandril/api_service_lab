@@ -1,24 +1,25 @@
 #!/usr/bin/env bash
 
 set -e
-#trap "kill 0" EXIT
+function cleanup {
+    echo  "===== exited with $? ====="
+    echo "cleaning up"
+    docker-compose down
+    }
+trap cleanup EXIT
 
-for f in payment
+for f in $(ls -d */)
 do
-    if [ -f $f/package.json ]; then
-        docker-compose -f "./kafka_test/docker-compose.yml" up -d --force-recreate
-        echo "===== Entering $f ====="
-        cd $f
-        echo "===== Waiting kafka ====="
+    if [ -f $f/test/docker-compose.yml ]; then
+        cd "$f/test/"
+        echo "===== entering $f ====="
+        docker-compose  build
+        docker-compose  -f "./docker-compose-test.yml" build
+        docker-compose  up -d
         sleep 5
-        echo "===== Launching service $f ====="
-        npm start &
-        sleep 5
-        echo "===== Launching test for $f ====="
-        npm test
-        kill $!
-        kill %1
-        jobs
-        cd ..
+        echo "===== running test ====="
+        docker-compose -f "./docker-compose-test.yml" run test --no-deps
+        docker-compose down
+        cd ../..
     fi
 done
