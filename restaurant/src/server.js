@@ -19,6 +19,7 @@ const kafka = new Kafka({
 const finaliseOrder = kafka.consumer({groupId: 'finalise_order'});
 const getTodoMeals = kafka.consumer({groupId: 'get_todo_meals'});
 const orderDelivered = kafka.consumer({groupId: 'order_delivered'});
+const mealCooked = kafka.consumer({groupId: 'meal_cooked'});
 const producer = kafka.producer();
 
 const run = async () => {
@@ -45,6 +46,14 @@ const run = async () => {
     await orderDelivered.run({
         eachMessage: async ({topic, partition, message}) => {
             methods.orderDelivered(message.value.toString(), mongoHelper.db);
+        }
+    });
+
+    await mealCooked.connect();
+    await mealCooked.subscribe({topic: "meal_cooked"});
+    await mealCooked.run({
+        eachMessage: async ({topic, partition, message}) => {
+            methods.mealCooked(message.value.toString(), mongoHelper.db);
         }
     });
 

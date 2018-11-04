@@ -19,7 +19,7 @@ let methods = {
                 meals.push({"id": meal.id, "name": meal.name});
             }
         });
-        var order = {"orderId": msg.order.id, "restaurantId": restaurantId, "meals": meals};
+        var order = {"orderId": msg.order.id, "restaurantId": restaurantId, "meals": meals, "status": "todo"};
         db.collection('restaurants').insertOne(order);
         console.log("Inserted: " + JSON.stringify(order))
     },
@@ -33,7 +33,7 @@ let methods = {
             return;
         }
         db.collection('restaurants')
-                .find({"restaurantId": msg.restaurantId})
+                .find({"restaurantId": msg.restaurantId, "status": "todo"})
                 .project({_id: 0, restaurantId: 0})
                 .toArray((err, res) => {
                     console.log("Send msg: " + JSON.stringify(res));
@@ -43,16 +43,29 @@ let methods = {
                     });
                 });
     },
-
+    mealCooked: function (msg_string, db) {
+        var msg = JSON.parse(msg_string);
+        console.log("mealCooked: " + msg_string);
+        if (!("order" in msg && "id" in msg.order)) {
+            console.log("Error : Malformed message");
+            return;
+        }
+        db.collection('restaurants').findOneAndUpdate(
+                {"id": msg.order.id},
+                {$set: {status: "cooked"}}
+        );
+    },
     orderDelivered: function (msg_string, db) {
-        // TODO not the right event, should do that on meal_cooked
         var msg = JSON.parse(msg_string);
         console.log("orderDelivered: " + msg_string);
         if (!("order" in msg && "id" in msg.order)) {
             console.log("Error : Malformed message");
             return;
         }
-        db.collection('orders').findOneAndDelete({"id": msg.order.id});
+        db.collection('restaurants').findOneAndUpdate(
+                {"id": msg.order.id},
+                {$set: {status: "delivered"}}
+        );
     }
 };
 
