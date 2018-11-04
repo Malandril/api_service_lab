@@ -1,29 +1,42 @@
 'use strict';
 
-let config = require('../src/configuration');
+// let config = require('../src/configuration');
 const {Kafka, logLevel} = require('kafkajs');
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
-    brokers: [config.KAFKA_URL],
+    logLevel: logLevel.ERROR,
+    brokers: ["kafka:9092"],
     connectionTimeout: 3000,
-    clientId: 'delivery_man_account',
+    clientId: 'test_payment',
 });
 
 const submitOrder = kafka.consumer({groupId: 'payment_test'});
 const producer = kafka.producer();
 console.log("started test");
 const run = async () => {
+    console.log("test");
     await producer.connect();
+    console.log("connected to kafka");
     await submitOrder.connect();
     await submitOrder.subscribe({topic: "payment_succeeded"});
     await submitOrder.subscribe({topic: "payment_failed"});
+    var timeout;
     await submitOrder.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("Waow received", topic, message);
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    console.log("response timed out");
+                    process.exit(2);
+                }, 10000);
+            }
+            console.log("Received", topic, JSON.stringify(message.value));
             if (topic === "payment_succeeded") {
                 process.exit(0)
+            } else {
+                console.log("quitting");
+                process.exit(1)
             }
         }
     });
@@ -37,10 +50,21 @@ const run = async () => {
             limit: "07/19"
         }
     };
+    console.log("starting send");
     await producer.send(
         {
-            topic: "payment_succeeded", messages: [{key: "", value: message}]
-        })
+            topic: "price_computed",
+            messages: [{key: "", value: JSON.stringify({orderId: message.orderId, price: 20})}]
+        });
+    await producer.send(
+        {
+            topic: "submit_order", messages: [{key: "", value: JSON.stringify(message)}]
+        });
+    timeout = setTimeout(() => {
+        console.log("response timed out");
+        process.exit(2);
+    }, 10000);
+    console.log("Message sent");
 };
 
 run().catch(e => console.error(`[payment_test/consumer] ${e.message}`, e));
@@ -63,10 +87,6 @@ errorTypes.map(type => {
 
 signalTraps.map(type => {
     process.once(type, async () => {
-        try {
-            await submitOrder.disconnect();
-        } finally {
-            process.kill(process.pid, type)
-        }
+        process.exit(1)
     })
 });

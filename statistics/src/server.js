@@ -36,16 +36,13 @@ const run = async () => {
                     methods.putNewStatus(data,mongoHelper.db, "meal_cooked");
                     break;
                 case "order_delivered":
-                    methods.putNewStatus(data,mongoHelper.db, "order_delivered");
-                    break;
-                case "assign_delivery":
-                    methods.putNewStatus(data,mongoHelper.db, "assign_delivery");
+                    methods.calculateDeliveryTime(data, mongoHelper.db);
                     break;
                 case "finalise_order":
                     methods.putNewStatus(data,mongoHelper.db, "finalise_order");
                     break;
                 case "get_statistics":
-                    methods.createStatistics(data, mongoHelper.db, producer);
+                    methods.pullStatistics(data, mongoHelper.db, producer);
             }
         }}
     );
