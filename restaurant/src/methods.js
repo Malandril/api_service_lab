@@ -39,7 +39,7 @@ let methods = {
                     console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
                         "topic":"todo_meals",
-                        "messages": [{"key":"", "value": JSON.stringify({"orders": res})}]
+                        "messages": [{"key":"", "value": JSON.stringify({"orders": res, requestId:msg.requestId})}]
                     });
                 });
     },
