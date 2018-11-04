@@ -23,17 +23,11 @@ const run = async () => {
     var timeout;
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            if (timeout) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    console.log("response timed out");
-                    process.exit(2);
-                }, 10000);
-            }
             console.log("Received", topic, JSON.stringify(message.value));
             switch (topic) {
                 case "meals_listed":
                     console.log(message.value);
+                    process.exit(0);
                     break;
             }
         }
@@ -42,12 +36,8 @@ const run = async () => {
     await producer.send(
         {
             topic: "list_meals",
-            messages: [{key: "", value: JSON.stringify({category: "burger"})}]
+            messages: [{key: "", value: JSON.stringify({categories: ["burger"]})}]
         });
-    timeout = setTimeout(() => {
-        console.log("response timed out");
-        process.exit(2);
-    }, 10000);
     console.log("Message sent");
 };
 

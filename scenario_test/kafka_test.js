@@ -10,8 +10,8 @@ let restaurant_url = "http://localhost:8098";
 var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762"};
 var order = null;
 var coursierId = 18;
+var restaurantId = 12;
 var orderId = null;
-var restaurantId = null;
 function coursierAction() {
     console.log("Un coursier du coin liste les orders");
     new Promise(
@@ -51,11 +51,12 @@ function coursierAction() {
 }
 
 function restaurantAction() {
+    console.log("The restaurant lists his todo meals")
     new Promise(
         function (resolve, reject) {
             request({
                 url: `${restaurant_url}/orders/`,
-                qs: {id: coursierId}
+                qs: {id: restaurantId, status: "todo"}
             }, function (error, response, body) {
             }).then(function (res) {
 
@@ -85,6 +86,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     console.log("Meals returned : " + parse.meals.length);
+    console.log("Bob order: " + JSON.stringify(data));
     order = {
         meals: [data],
         customer: {
