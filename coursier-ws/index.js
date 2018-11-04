@@ -80,11 +80,7 @@ app.get('/deliveries/', (req, res) => {
     const address = req.query.address;
     console.log("Parsed : id=" + coursierId + ", address= " + address);
 
-<<<<<<< HEAD
-    var uuid = uuidv4();
-=======
     const uuid = uuidv4();
->>>>>>> origin/feat/kefka
     let value = JSON.stringify({
         requestId: uuid,
         coursier: {

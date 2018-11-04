@@ -18,7 +18,7 @@ const kafka = new Kafka({
 });
 
 const producer = kafka.producer();
-const consumer = kafka.consumer({groupId:"order_consumer_test"});
+const consumer = kafka.consumer({groupId:"order_consume"});
 const consumers = ["submit_order", "order_delivered", "payment_failed", "payment_succeeded", "payment_not_needed", "create_order_request", "assign_delivery", "meal_cooked"];
 const TOPICS = ["create_order", "finalise_order"];
 

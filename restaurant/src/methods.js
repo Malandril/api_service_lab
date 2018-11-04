@@ -38,7 +38,7 @@ let methods = {
                 .toArray((err, res) => {
                     console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
-                        "topic":"list_orders_to_be_delivered",
+                        "topic":"todo_meals",
                         "messages": [{"key":"", "value": JSON.stringify({"orders": res})}]
                     });
                 });
