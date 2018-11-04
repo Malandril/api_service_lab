@@ -53,13 +53,15 @@ const run = async () => {
                 case "eta_result":
                 case "meals_listed":
                     const element = creationInstances.get(data.requestId);
-                    if (element.checkFinish(topic,message,data)) {
+                    console.log("request id",data.requestId);
+                    if (element.checkFinish(topic, message, data)) {
+                        console.log("should be ok now");
                         creationInstances.delete(data.requestId);
                     }
                     break;
                 case "finalise_order":
                     var el = waitForOrderValidation.get(data.id);
-                    if (el.checkFinish(topic,message,data)) {
+                    if (el.checkFinish(topic, message, data)) {
                         waitForOrderValidation.delete(data.id);
                     }
                     break;
@@ -123,10 +125,10 @@ app.get('/meals/', (req, res) => {
         categories: categories,
         restaurants: restaurants
     });
-    creationInstances.set(requestId,{
+    creationInstances.set(requestId, {
         res: res,
-        checkFinish: function (topic,message,data) {
-            console.log("read "+ topic);
+        checkFinish: function (topic, message, data) {
+            console.log("read " + topic);
             res.send(data);
             return true;
         }
@@ -169,7 +171,7 @@ app.post('/orders/', (req, res) => {
         clientResp: res,
         eta: null,
         orderId: null,
-        checkFinish: function (topic,message,data) {
+        checkFinish: function (topic, message, data) {
             if (topic === "eta_result") {
                 this.eta = data.eta;
             } else {
@@ -194,20 +196,21 @@ app.put('/orders/:orderId', (req, res) => {
     const customer = req.body.customer;
     const creditCard = req.body.creditCard;
     let value = JSON.stringify({
-            timestamp: Math.round((new Date()).getTime() / 1000),
-            order: {
-                id: orderId,
-                meals: meals,
-                customer: customer
-            },
-            creditCard: creditCard
-        });
+        timestamp: Math.round((new Date()).getTime() / 1000),
+        order: {
+            id: orderId,
+            meals: meals,
+            customer: customer
+        },
+        creditCard: creditCard
+    });
     console.log("Send submit_order " + util.inspect(value));
     waitForOrderValidation.set(orderId, {
         clientResp: res,
-        checkFinish: function (topic,message,data) {
+        checkFinish: function (topic, message, data) {
             this.clientResp.send("ok");
-            }});
+        }
+    });
     producer.send({
         topic: "submit_order",
         messages: [{
