@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "kafkajs": "^1.4.1",
-    "mongodb": "^3.1.8"
+    "mongodb": "^3.1.8",
+    "queue-fifo": "^0.2.5"
+
   },
   "author": "",
   "license": "ISC"

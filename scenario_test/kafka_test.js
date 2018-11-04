@@ -29,7 +29,7 @@ function coursierAction() {
         .then(function (e) {
             var data = JSON.parse(e);
 
-            console.log("Orders : " + data.orders.length);
+            console.log("Il y a " + data.orders.length + " commandes proche à livrer");
             let id = data.orders[data.orders.length - 1].id;
             console.log("We chose to deliver order ", id);
             request({
@@ -119,6 +119,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
             body: finalisation,
             json: true
         }).then(function (resp) {
+            console.log(JSON.stringify(resp))
             console.log("resp" + resp);
             console.log("Ok, deux process à partir de maintenant: ");
             coursierAction();

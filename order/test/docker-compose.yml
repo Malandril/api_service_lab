@@ -1,0 +1,21 @@
+version: '3.2'
+services:
+  kafka:
+    image: spotify/kafka
+    container_name: kafka
+    environment:
+      ADVERTISED_HOST: kafka
+      ADVERTISED_PORT: 9092
+
+  order:
+    build: ../
+    image: order
+    container_name: order
+    depends_on:
+    - "kafka"
+    - "mongo_order"
+    stdin_open: true
+  mongo_order:
+   image: mongo
+   logging:
+       driver: none
