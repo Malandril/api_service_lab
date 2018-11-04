@@ -21,6 +21,7 @@
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "kafkajs": "^1.4.1",
-    "queue-fifo": "^0.2.5"
+    "queue-fifo": "^0.2.5",
+    "uuid": "^3.3.2"
   }
 }
