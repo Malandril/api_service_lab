@@ -160,7 +160,7 @@ app.put('/deliveries/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-
+    res.sendStatus(200);
 });
 
 app.put('/geolocation/', (req, res) => {

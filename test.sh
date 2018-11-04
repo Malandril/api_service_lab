@@ -15,7 +15,7 @@ do
         echo "===== entering $f ====="
         docker-compose  build
         docker-compose  -f "./docker-compose-test.yml" build
-        docker-compose  up -d
+        docker-compose  up &
         sleep 5
         echo "===== running test ====="
         docker-compose -f "./docker-compose-test.yml" run test --no-deps

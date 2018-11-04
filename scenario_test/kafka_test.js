@@ -2,8 +2,8 @@ const request = require("request-promise");
 const assert = require("assert");
 
 let customer_ws = "http://localhost:8097";
-let coursier_url = "http://localhost:8099";
 let restaurant_url = "http://localhost:8098";
+let coursier_url = "http://localhost:8099";
 
 
 // assumption: the client is already connected
@@ -14,14 +14,14 @@ var restaurantId = 12;
 var orderId = null;
 function coursierAction() {
     console.log("Un coursier du coin liste les orders");
-    new Promise(
+    return new Promise(
         function (resolve, reject) {
             request({
                 url: `${coursier_url}/deliveries`,
                 qs: {id: coursierId, address: "3 Rue principale"}
             }, function (error, response, body) {
             }).then(function (res) {
-                console.log("Liste : "+ res);
+                console.log("Liste : " + res);
                 resolve(res);
             }).catch(reject);
         })
@@ -52,7 +52,7 @@ function coursierAction() {
 
 function restaurantAction() {
     console.log("The restaurant lists his todo meals")
-    new Promise(
+    return new Promise(
         function (resolve, reject) {
             request({
                 url: `${restaurant_url}/orders/`,
@@ -66,18 +66,19 @@ function restaurantAction() {
         .then(function (e) {
             var data = JSON.parse(e);
             request({
-                url: `${coursier_url}/orders/`,
+                url: `${restaurant_url}/orders/${orderId}`,
                 method: 'PUT',
                 body: {orderId: orderId},
                 json: true
             }).then(function (res) {
                 console.log("resp :" + res);
-            }).catch(function (err){
+            }).catch(function (err) {
                 console.log("ERROR : " + err);
+                process.exit(1)
             });
         }).catch(function (e) {
-        console.log(e);
-    });
+            console.log(e);
+        });
 }
 
 request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {

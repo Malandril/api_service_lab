@@ -102,12 +102,12 @@ app.get('/orders/', (req, res) => {
 
 });
 
-app.put('/orders/', (req, res) => {
+app.put('/orders/:orderId', (req, res) => {
     if (!("orderId" in req.body)) {
         res.send("Attribute 'orderId' needed");
         return;
     }
-    const orderId = req.body.orderId;
+    const orderId = req.params.orderId;
     let value = JSON.stringify({order: {
             id: orderId
         }
