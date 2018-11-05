@@ -3,7 +3,7 @@ const util = require('util');
 let methods = {
     putNewStatus: function (msg, db, status) {
         msg.status = status;
-        db.collection('orderStatus').findOne({status: "meal_cooked", 'order.id': msg.order.id}).then(value => {
+        db.collection('orderStatus').findOne({status: status, 'order.id': msg.order.id}).then(value => {
             console.log("found:", value);
             if (!value) {
                 db.collection('orderStatus').insertOne(msg, function (err, r) {
@@ -15,7 +15,7 @@ let methods = {
                 });
                 return;
             }
-            db.collection('orderStatus').findOneAndUpdate({status: "meal_cooked", 'order.id': msg.order.id}, {
+            db.collection('orderStatus').findOneAndUpdate({status: status, 'order.id': msg.order.id}, {
                 $set: {
                     timestamp: msg.timestamp
                 }
