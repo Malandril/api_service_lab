@@ -20,7 +20,6 @@ function coursierAction() {
             request({
                 url: `${coursier_url}/deliveries`,
                 qs: {id: coursierId, address: "3 Rue principale"}
-            }, function (error, response, body) {
             }).then(function (res) {
                 console.log("Liste : " + res);
                 resolve(res);
@@ -81,9 +80,7 @@ function restaurantAction() {
         });
 }
 
-request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {
-    assert(response.statusCode, 200);
-}).then(function (meals) {
+request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     restaurantId = data.restaurant.id;
@@ -194,7 +191,22 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
                                                     body: {mealId: order.meals[0].id, rating: 4, customerId: client.id, desc: "Super Mac first !"},
                                                     json: true
                                                 }).then(function (resp) {
-
+                                                    console.log("Jordan consulte les avis sur les plats de son restaurant");
+                                                    request({
+                                                        url: `${restaurant_url}/feedbacks/${restaurantId}`,
+                                                        method: 'GET',
+                                                        qs: {restaurantId: restaurantId}
+                                                    }).then(function (res) {
+                                                        console.log("Terry consulte les statistiques")
+                                                        request({
+                                                            url: `${restaurant_url}/statistics/`,
+                                                            qs: {restaurantId: restaurantId}
+                                                        }).then(function (res) {
+                                                            console.log("Liste : " + res);
+                                                        });
+                                                    }).catch(err=>{
+                                                        throw  err;
+                                                    });
                                                 });
                                             });
                                         });
@@ -205,7 +217,6 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
                                     console.log("ERROR : " + err);
                                     process.exit(1)
                                 });
-
                             });
                         }
                     }).catch(err => {

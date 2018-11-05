@@ -39,10 +39,11 @@ let methods = {
                 .find({"restaurant.id": msg.restaurantId})
                 .project({_id: 0, eta: 0, price: 0, restaurant:0})
                 .toArray((err, res) => {
-                    console.log("Send msg: " + JSON.stringify(res));
+                    let value = JSON.stringify({"meals": res, requestId: msg.requestId});
+                    console.log("Send msg: " + JSON.stringify(value));
                     producer.send({
                         "topic":"feedback_listed",
-                        "messages": [{"key":"", "value": JSON.stringify({"meals": res})}]
+                        "messages": [{"key":"", "value": value}]
                     });
                 });
     },

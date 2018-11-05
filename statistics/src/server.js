@@ -28,7 +28,7 @@ const run = async () => {
     consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
-            console.log(data);
+            console.log("Received",topic,data);
             switch (topic){
                 case "meal_cooked":
                     methods.putNewStatus(data,mongoHelper.db, "meal_cooked");
@@ -40,6 +40,7 @@ const run = async () => {
                     methods.putNewStatus(data,mongoHelper.db, "finalise_order");
                     break;
                 case "get_statistics":
+                    console.log("pull statistics");
                     methods.pullStatistics(data, mongoHelper.db, producer);
             }
         }}

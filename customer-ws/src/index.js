@@ -22,7 +22,17 @@ const kafka = new Kafka({
     clientId: 'customerws',
 });
 
+function checkArgs(argName, request, errors) {
+    if (!(argName in request)) {
+        errors.push("Attribute '" + argName + "' needed");
+        return null;
+    } else {
+
+        return request[argName];
+    }
+}
 function dequeue(queue, msg) {
+    console.log("Deprecated. Use Map instead (Customer-ws::dequeue line 26)");
     if (!queue.isEmpty()) {
         queue.dequeue()(msg);
     } else {
@@ -225,40 +235,34 @@ app.put('/orders/:orderId', (req, res) => {
 });
 
 app.post('/feedbacks/', (req, res) => {
-    res.send(util.inspect(req.body));
     if (!("mealId" in req.body)) {
         res.send("Attribute 'mealId' needed");
         return;
     }
-    const mealId = req.body.mealId;
-    if (!("customerId" in req.body)) {
-        res.send("Attribute 'customerId' needed");
+    var errors = [];
+    const mealId = checkArgs("mealId", req.body, errors);
+    const customerId = checkArgs("customerId", req.body, errors);
+    const rating = checkArgs("rating", req.body, errors);
+    const desc = checkArgs("desc", req.body, errors);
+    if(errors.length !== 0){
+        res.statusCode = 412;
+        res.send(errors.toString());
         return;
     }
-    const customerId = req.body.customerId;
-    if (!("rating" in req.body)) {
-        res.send("Attribute 'rating' needed");
-        return;
-    }
-    const rating = req.body.rating;
-    if (!("description" in req.body)) {
-        res.send("Attribute 'description' needed");
-        return;
-    }
-    const description = req.body.description;
     let value = JSON.stringify({
         mealId: mealId,
         rating: rating,
         customerId: customerId,
-        desc: description
+        desc: desc
     });
     console.log("Send add_feeback " + util.inspect(value));
     producer.send({
-        topic: "add_feeback",
+        topic: "add_feedback",
         messages: [{
             key: "", value: value
         }]
     });
+    res.send("Ok");
 });
 
 app.get('/geolocation/:orderId', (req, res) => {

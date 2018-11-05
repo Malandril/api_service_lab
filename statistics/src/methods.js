@@ -69,7 +69,7 @@ let methods = {
             temp.orders.push(order);
             coursierMap.set(coursierId, temp);
         });
-        var result = {coursiers: []};
+        var result = {coursiers: [],requestId: msg.requestId};
         coursierMap.forEach(function (value, key, map) {
             result.coursiers.push({
                 id: key,

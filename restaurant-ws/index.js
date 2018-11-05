@@ -38,11 +38,13 @@ const run = async () => {
     await consumer.subscribe({topic: "todo_meals"});
     // await consumer.subscribe({topic: "order_delivered"});
     await consumer.subscribe({topic: "statistics"});
+    await consumer.subscribe({topic: "feedback_listed"});
     await consumer.subscribe({topic: "vouchers_listed"});
 
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
+            console.log(topic,data);
             if ("requestId" in data) {
                 const el = openConnections.get(data.requestId);
                 console.log("Get connection " + data.requestId + " : " + el);
@@ -71,7 +73,8 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await listResponse.disconnect();
+            await consumer.disconnect();
+            await producer.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -81,7 +84,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await listResponse.disconnect();
+            await consumer.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
@@ -139,15 +142,23 @@ app.put('/orders/:orderId', (req, res) => {
 });
 
 app.get('/statistics/', (req, res) => {
-    if (!("restaurantId" in req.body)) {
+    if (!("restaurantId" in req.query)) {
         res.send("Attribute 'restaurantId' needed");
         return;
     }
-    const restaurantId = req.body.restaurantId;
+    const requestId = uuidv4();
+
+    const restaurantId = req.query.restaurantId;
     let value = JSON.stringify({
+        requestId:requestId,
         restaurantId: restaurantId
     });
     console.log("Send get_statistics : " + util.inspect(value));
+
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
     producer.send({
         topic: "get_statistics",
         messages: [{
@@ -160,26 +171,31 @@ app.get('/statistics/', (req, res) => {
     })
 });
 
-app.get('/feedbacks/', (req, res) => {
-    if (!("restaurantId" in req.body)) {
+app.get('/feedbacks/:restaurantId', (req, res) => {
+    if (!("restaurantId" in req.params)) {
         res.send("Attribute 'restaurantId' needed");
         return;
     }
-    const restaurantId = req.body.restaurantId;
+    const restaurantId = req.params.restaurantId;
+    const requestId = uuidv4();
+
     let value = JSON.stringify({
-        restaurantId: restaurantId
+        restaurantId: restaurantId,
+        requestId: requestId
     });
     console.log("Send list_feedback : " + util.inspect(value));
+
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
     producer.send({
         topic: "list_feedback",
         messages: [{
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+
 });
 
 
