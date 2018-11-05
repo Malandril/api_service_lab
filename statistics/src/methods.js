@@ -1,19 +1,33 @@
 'use strict';
 const util = require('util');
 let methods = {
-    putNewStatus: function (msg_string, db, status) {
-        var msg = JSON.parse(msg_string);
+    putNewStatus: function (msg, db, status) {
         msg.status = status;
-        db.collection('orderStatus').insertOne(msg, function (err, r) {
-            if (err) {
-                console.log(util.inspect(err));
-            } else {
-                console.log("Add status "+status+" for order " + r["order"]+ " in db");
+        db.collection('orderStatus').findOne({status: "meal_cooked", 'order.id': msg.order.id}).then(value => {
+            console.log("found:", value);
+            if (!value) {
+                db.collection('orderStatus').insertOne(msg, function (err, r) {
+                    if (err) {
+                        console.log(util.inspect(err));
+                    } else {
+                        console.log("Add status "+status+" for order " + r["order"]+ " in db");
+                    }
+                });
+                return;
             }
-        });
+            db.collection('orderStatus').findOneAndUpdate({status: "meal_cooked", 'order.id': msg.order.id}, {
+                $set: {
+                    timestamp: msg.timestamp
+                }
+            }).then(value => {
+                    console.log('Updated timestamp of order for statistics');
+                }
+            );
+        })
+
+
     },
-    calculateDeliveryTime: function (msg_string, db) {
-        var msg = JSON.parse(msg_string);
+    calculateDeliveryTime: function (msg, db) {
         var cookedMeal = db.collection('orderStatus').findOne({status: "meal_cooked", 'order.id': msg.order.id});
         var finalisedOrder = db.collection('orderStatus').findOne({status: "finalise_order", 'order.id': msg.order.id});
         var difference = msg.timestamp - cookedMeal.timestamp;

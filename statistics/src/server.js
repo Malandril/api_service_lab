@@ -1,8 +1,6 @@
 'use strict';
 
-const util = require('util');
-let http = require('http');
-let url = require('url');
+
 let methods = require('./methods');
 const { Kafka, logLevel } = require('kafkajs');
 let mongoHelper = require("./mongo-helper");
