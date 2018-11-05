@@ -18,12 +18,12 @@ const producer = kafka.producer();
 const consumers = ["create_order", "add_voucher", "list_vouchers"];
 const run = async () => {
     await producer.connect();
-    await submitOrder.connect();
+    await consumer.connect();
 
     await consumers.forEach(function (c) {
         consumer.subscribe({topic: c});
     });
-    await submitOrder.run({
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
             console.log("Received from topic:", topic, data);
