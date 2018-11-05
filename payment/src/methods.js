@@ -17,7 +17,8 @@ let methods = {
             console.log(`contacting bank of ${msg.creditCard.name} ${msg.creditCard.number}`);
             let collection = db.collection('payments');
 
-            collection.findOne({"orderId": msg.orderId}).then(value => {
+            let orderId = msg.order.id;
+            collection.findOne({"orderId": orderId}).then(value=> {
                 console.log("found:", value);
                 if (!value) {
                     payment_failed(producer, msg);
@@ -32,7 +33,7 @@ let methods = {
                         console.log(`payment of ${JSON.stringify(value)} euros succeeded`);
                         producer.send({
                             topic: "payment_succeeded",
-                            messages: [{key: "", value: {orderId: msg.orderId}}]
+                            messages: [{key: "", value: JSON.stringify({order:{id: orderId}})}]
                         }, reason => {
                             payment_failed(producer, msg);
                         });
@@ -47,9 +48,9 @@ let methods = {
     },
     priceComputed: function (msg, db) {
         db.collection('payments').insertOne({
-                orderId: msg.orderId,
-                amount: msg.price,
-                payed: false
+            orderId: msg.orderId,
+            amount: msg.price,
+            payed: false
         }, function (err, r) {
             console.log("added : " + r);
         });
