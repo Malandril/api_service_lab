@@ -7,14 +7,10 @@ let methods = {
                 if (err) {
                     console.log(util.inspect(err));
                 } else {
-                    let messageResult = JSON.stringify({
-                        orderId: r["insertedId"],
-                        requestId: message.requestId
-                    });
-
+                    message.orderId = r["insertedId"];
                     producer.send({
                         topic: "create_order",
-                        messages: [{key: "", value: messageResult}]
+                        messages: [{key: "", value: JSON.stringify(message)}]
                     });
                 }
             });
@@ -27,16 +23,18 @@ let methods = {
 
         },
         processPaymentResult: function (succeed, message, dbHelper) {
-            dbHelper.addEvent(message.order.id, {
+            let orderId = message.order.id;
+            console.log("Payment of order " + orderId);
+            dbHelper.addEvent(orderId, {
                 event: "payment",
                 time: Math.round(new Date().getTime() / 1000),
                 succeed: succeed
             });
             if(succeed){
                 dbHelper.db.collection('orders')
-                    .find({"_id": msg.order.id})
+                    .findOne({"_id": msg.order.id})
                     .project({ events: 0})
-                    .toArray((err, res) => {
+                    .then(res=> {
                         console.log("Send msg: " + JSON.stringify(res));
                         res.id = res._id;
                         producer.send({

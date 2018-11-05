@@ -31,10 +31,10 @@ const run = async () => {
                 case "create_order":
                     var orderId = data.orderId;
                     var requestId = data.requestId;
-                    let value = JSON.stringify({
+                    let value ={
                         requestId: requestId,
                         orderId: orderId,
-                    });
+                    };
                     const restaurantId = data.meals[0].restaurant.id;
                     var totalPrice = 0;
                     for (var i = 0; i< data.meals.length; i++){
@@ -50,7 +50,7 @@ const run = async () => {
                                 producer.send({
                                     topic: "price_computed",
                                     messages: [{
-                                        key: "", value: value
+                                        key: "", value: JSON.stringify(value)
                                     }]
                                 });
                                 return;
@@ -59,7 +59,7 @@ const run = async () => {
                             producer.send({
                                 topic: "price_computed",
                                 messages: [{
-                                    key: "", value: value
+                                    key: "", value:  JSON.stringify(value)
                                 }]
                             });
                         })
@@ -68,7 +68,7 @@ const run = async () => {
                         producer.send({
                             topic: "price_computed",
                             messages: [{
-                                key: "", value: value
+                                key: "", value:  JSON.stringify(value)
                             }]
                         });
                     }
@@ -93,7 +93,7 @@ const run = async () => {
                     producer.send({
                         topic: "vouchers_listed",
                         messages: [{
-                            key: "", value: result
+                            key: "", value:  JSON.stringify(result)
                         }]
                     });
 

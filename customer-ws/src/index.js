@@ -49,7 +49,7 @@ const run = async () => {
                 case "order_tracker":
                     dequeue(geoloQueue, message);
                     break;
-                case "create_order":
+                case "price_computed":
                 case "eta_result":
                 case "meals_listed":
                     const element = creationInstances.get(data.requestId);
