@@ -2,6 +2,7 @@
 
 let methods = {
     calculateETA: function (msg, producer) {
+        console.log(msg.toString());
         let _orderObj = JSON.parse(msg);
         if (_orderObj.meals == null) {
             console.error('Your order must contain a list of meals.');
@@ -15,12 +16,13 @@ let methods = {
                 }
             }
             let response = {
-                eta:  totalETA
+                eta:  totalETA,
+                requestId: _orderObj.requestId
             };
             console.log("Send event eta_result : " + JSON.stringify(response));
             producer.send({
                 topic:"eta_result",
-                messages: [{key:"", value: response}]
+                messages: [{key:"", value: JSON.stringify(response)}]
             });
         }
     }

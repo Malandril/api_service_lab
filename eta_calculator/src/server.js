@@ -9,9 +9,9 @@ const { Kafka, logLevel } = require('kafkajs');
 const PORT = process.env.PORT || 9090;
 
 const kafka = new Kafka({
-    logLevel: logLevel.INFO,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
-    // connectionTimeout: 3000,
+    connectionTimeout: 3000,
     clientId: 'eta_calculator',
 });
 const createOrderRequest = kafka.consumer({ groupId: 'create_order_request' });

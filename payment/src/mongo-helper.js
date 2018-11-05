@@ -11,7 +11,7 @@ module.exports = {
             obj.client.connect(function (err) {
                 if (err) {
                     if (count === MAX_RETRY) {
-                        console.error("Couldn't connect to mongo database",err);
+                        console.error("Couldn't connect to mongo database", err);
                         throw err;
                     }
                     console.error('Failed to connect to mongo on startup - retrying in 5 sec');
@@ -21,9 +21,10 @@ module.exports = {
                     console.log("Connected successfully to server");
 
                     obj.db = obj.client.db("payment");
-                    obj.db.createCollection("payments", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("payments",
                         function (err, results) {
-                            console.log("Collection created." + err + results);
+                        if(!err)
+                            console.log("Payment collection created.");
                             //client.close();
                         }
                     );

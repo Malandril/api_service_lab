@@ -1,39 +1,58 @@
 'use strict';
 const util = require('util');
 
-function computeOrderPrice(msg) {
-    return msg.order.meals.reduce(function (pv, cv) {
-        return pv.price + cv.price
+
+function payment_failed(producer, msg) {
+    console.log("payment failed");
+    producer.send({
+        topic: "payment_failed",
+        messages: [{key: "", value: {orderId: JSON.stringify(msg.orderId)}}]
     });
 }
 
 let methods = {
     submitOrder: function (msg, db, producer) {
-        msg = JSON.parse(msg);
         console.log("processing order payment");
         if (msg.creditCard) {
             console.log(`contacting bank of ${msg.creditCard.name} ${msg.creditCard.number}`);
-            var price = computeOrderPrice(msg);
-            console.log(`payment of ${price} euros succeeded`);
-            db.collection('payments').insertOne({
-                payment: {
-                    from: msg.creditCard,
-                    amount: price
+            let collection = db.collection('payments');
+
+            collection.findOne({"orderId": msg.orderId}).then(value => {
+                console.log("found:", value);
+                if (!value) {
+                    payment_failed(producer, msg);
+                    return;
                 }
-            }, function (err, r) {
-                console.log("added : " + r);
-                producer.send({
-                    topic: "payment_succeeded",
-                    messages: [{key: "", value: msg.order.id}]
-                });
-            });
-        }else{
-            console.log("payment delayed to delivery");
-            producer.send({
-                topic: "payment_delayed",
-                messages: [{key: "", value: msg.order.id}]
-            });
+                collection.findOneAndUpdate({"orderId": msg.orderId}, {
+                    $set: {
+                        from: msg.creditCard,
+                        payed: true
+                    }
+                }).then(value => {
+                        console.log(`payment of ${JSON.stringify(value)} euros succeeded`);
+                        producer.send({
+                            topic: "payment_succeeded",
+                            messages: [{key: "", value: {orderId: msg.orderId}}]
+                        }, reason => {
+                            payment_failed(producer, msg);
+                        });
+                    }
+                );
+            })
+
+
+        } else {
+            payment_failed(producer, msg);
         }
+    },
+    priceComputed: function (msg, db) {
+        db.collection('payments').insertOne({
+                orderId: msg.orderId,
+                amount: msg.price,
+                payed: false
+        }, function (err, r) {
+            console.log("added : " + r);
+        });
     }
 };
 

@@ -8,7 +8,7 @@ module.exports = {
     client: null,
     db: null,
     initialize: function (obj) {
-        obj.client = new MongoClient("mongodb://mongocoursier:27017/", {useNewUrlParser: true});
+        obj.client = new MongoClient("mongodb://mongo_coursier:27017/", {useNewUrlParser: true});
         let count = 0;
 
         let connectWithRetry = function () {
@@ -27,10 +27,11 @@ module.exports = {
 
 
                     obj.db.createCollection("orders", {"capped": true, "size": 100000, "max": 5000},
-                        function (err, results) {
-                            console.log("Collection created." + err + results);
-                            //client.close();
-                        }
+                        function (err, results) { }
+                    );
+
+                    obj.db.createCollection("tracks", {"capped": true, "size": 100000, "max": 5000},
+                        function (err, results) {}
                     );
                 }
             });

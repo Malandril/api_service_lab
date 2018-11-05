@@ -8,7 +8,7 @@ mongoHelper.initialize(mongoHelper);
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.INFO,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'delivery_man_account',

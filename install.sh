@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
-
-
-for folder in commons coursier order restaurant
+set -e
+echo "To install the project you must have node and npm installed"
+for folder in $(ls -d */)
 do
-    cd ${folder}
-    echo entering $folder
-    if [ ./package.json ]; then
-        npm install
-        npm run build
+    if [ $folder/package.json ]; then
+        cd $folder
+        echo entering $folder
+            npm install
+        cd ..
     fi
-    cd ..
 done
-read  -n 1 -p "Press any key to exit"

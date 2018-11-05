@@ -1,0 +1,20 @@
+version: '3.2'
+services:
+  kafka:
+    image: spotify/kafka
+    container_name: kafka
+    environment:
+      ADVERTISED_HOST: kafka
+      ADVERTISED_PORT: 9092
+      TOPICS:
+  payment:
+    build: ../
+    image: payment
+    container_name: payment
+    depends_on:
+    - "mongo_payment"
+    - "kafka"
+  mongo_payment:
+    image: mongo
+    container_name: mongo_payment
+

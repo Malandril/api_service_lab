@@ -5,21 +5,25 @@ services:
     build: ./order
     image: order
     container_name: order
-    expose:
-      - "8000"
-    ports:
-      - "8000:3000"
+    depends_on:
+    - "kafka"
+    - "mongo_order"
     stdin_open: true
   coursier:
     build: ./coursier
     image: coursier
     depends_on:
-    - "mongo"
+    - "mongo_coursier"
+    - "kafka"
     container_name: coursier
-    expose:
-    - "8090"
-    ports:
-    - "8090:3000"
+    stdin_open: true
+  restaurant:
+    build: ./restaurant
+    image: restaurant
+    container_name: restaurant
+    depends_on:
+    - "mongo_restaurant"
+    - "kafka"
     stdin_open: true
   coursierws:
     build: ./coursier-ws
@@ -32,51 +36,75 @@ services:
     ports:
     - "8099:3000"
     stdin_open: true
-  restaurant:
-    build: ./restaurant
-    image: restaurant
-    container_name: restaurant
+  restaurantws:
+    build: ./restaurant-ws
+    image: restaurant-ws
+    depends_on:
+    - "kafka"
+    container_name: restaurantws
     expose:
-      - "8080"
+    - "8098"
     ports:
-      - "8080:3000"
+    - "8098:3000"
+    stdin_open: true
+  customerws:
+    build: ./customer-ws
+    image: customer-ws
+    depends_on:
+    - "kafka"
+    container_name: customerws
+    expose:
+    - "8097"
+    ports:
+    - "8097:3000"
     stdin_open: true
   eta_calculator:
     build: ./eta_calculator
     image: eta_calculator
     container_name: eta_calculator
-    expose:
-    - "9090"
-    ports:
-    - "9090:9090"
+    depends_on:
+      - "kafka"
     stdin_open: true
-  mongo:
+  pricer:
+    build: ./pricer
+    image: pricer
+    container_name: pricer
+    depends_on:
+      - "kafka"
+      - "mongo_pricer"
+    stdin_open: true
+  mongo_coursier:
    image: mongo
-   environment:
-     - MONGO_INITDB_ROOT_USERNAME=soauser
-     - MONGO_INITDB_ROOT_PASSWORD=soa
-   expose:
-        - "27017"
-   ports:
-        - "27017:27017"
-  mongocoursier:
-   image: mongo
-   expose:
-        - "27016"
-   ports:
-        - "27016:27017"
+   logging:
+       driver: none
+  mongo_catalog:
+    image: mongo
+    logging:
+      driver: none
   mongo_delivery_man:
     image: mongo
-    expose:
-    - "27018"
-    ports:
-    - "27018:27017"
+    logging:
+        driver: none
+  mongo_restaurant:
+    image: mongo
+    logging:
+        driver: none
   mongo_payment:
     image: mongo
-    expose:
-    - "27019"
-    ports:
-    - "27019:27017"
+    logging:
+        driver: none
+  mongo_order:
+   image: mongo
+   logging:
+       driver: none
+  mongo_pricer:
+   image: mongo
+   logging:
+       driver: none
+  mongo_statistics:
+    image: mongo
+    logging:
+      driver: none
   kafka:
     image: spotify/kafka
     ports:
@@ -101,4 +129,12 @@ services:
     - "mongo_payment"
     - "kafka"
     container_name: payment
+    stdin_open: true
+  catalog:
+    build: ./catalog
+    image: catalog
+    depends_on:
+    - "mongo_restaurant"
+    - "kafka"
+    container_name: catalog
     stdin_open: true
