@@ -197,6 +197,7 @@ app.put('/geolocation/', (req, res) => {
             key: "", value: value
         }]
     });
+    res.send("ok");
 
 });
 

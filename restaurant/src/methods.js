@@ -25,7 +25,6 @@ let methods = {
     },
     getTodoMeals: function (msg_string, producer, db) {
         var msg = JSON.parse(msg_string);
-
         console.log("getTodoMeals: " + msg_string);
 
         if (!("restaurantId" in msg)) {

@@ -46,7 +46,7 @@ const run = async () => {
             if ("requestId" in data) {
                 const el = openConnections.get(data.requestId);
                 console.log("Get connection " + data.requestId + " : " + el);
-                if (el(topic, message)) {
+                if (el(topic, data)) {
                     openConnections.delete(data.requestId);
                 }
             } else {
@@ -135,10 +135,7 @@ app.put('/orders/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+    res.send("Ok");
 });
 
 app.get('/statistics/', (req, res) => {
