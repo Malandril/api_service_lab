@@ -7,7 +7,9 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "kafkajs": "^1.4.1"
+    "kafkajs": "^1.4.1",
+    "queue-fifo": "^0.2.5"
+
   },
   "author": "",
   "license": "ISC"
