@@ -39,7 +39,7 @@ const run = async () => {
     await consumer.subscribe({topic: "meals_listed"});
     await consumer.subscribe({topic: "eta_result"});
     await consumer.subscribe({topic: "order_tracker"});
-    await consumer.subscribe({topic: "create_order"});
+    await consumer.subscribe({topic: "price_computed"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
 
@@ -171,17 +171,20 @@ app.post('/orders/', (req, res) => {
         clientResp: res,
         eta: null,
         orderId: null,
+        price: null,
         checkFinish: function (topic, message, data) {
             if (topic === "eta_result") {
                 this.eta = data.eta;
             } else {
-                this.orderId = data.orderId
+                this.orderId = data.orderId;
+                this.price = data.price;
             }
             let b = this.eta !== null && this.orderId !== null;
             if (b) {
                 this.clientResp.send(JSON.stringify({
                     orderId: this.orderId,
-                    eta: this.eta
+                    eta: this.eta,
+                    price: this.price
                 }));
             }
             return b;
