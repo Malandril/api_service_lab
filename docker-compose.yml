@@ -138,3 +138,11 @@ services:
     - "kafka"
     container_name: catalog
     stdin_open: true
+  statistics:
+    build: ./statistics
+    image: statistics
+    depends_on:
+    - "mongo_statistics"
+    - "kafka"
+    container_name: statistics
+    stdin_open: true
