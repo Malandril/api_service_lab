@@ -42,16 +42,16 @@ const run = async () => {
                     methods.submitOrder(data, mongoHelper, producer);
                     break;
                 case "payment_succeeded":
-                    methods.processPaymentResult(true, data, mongoHelper);
+                    methods.processPaymentResult(true, data, mongoHelper, producer);
                     break;
                 case "payment_failed":
-                    methods.processPaymentResult(false, data, mongoHelper);
+                    methods.processPaymentResult(false, data, mongoHelper, producer);
                     break;
                 case "payment_not_needed":
                     //do nothing
                     break;
                 case "assign_delivery":
-                    methods.logDeliveyAssignation(data,mongoHelper);
+                    methods.logDeliveyAssignation(data,mongoHelper, producer);
                     break;
                 case "meal_cooked":
                     methods.logMealCooked(data,mongoHelper);

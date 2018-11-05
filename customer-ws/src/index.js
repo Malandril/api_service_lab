@@ -39,6 +39,7 @@ const run = async () => {
     await consumer.subscribe({topic: "meals_listed"});
     await consumer.subscribe({topic: "eta_result"});
     await consumer.subscribe({topic: "order_tracker"});
+    await consumer.subscribe({topic: "finalise_order"});
     await consumer.subscribe({topic: "price_computed"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
@@ -60,9 +61,10 @@ const run = async () => {
                     }
                     break;
                 case "finalise_order":
-                    var el = waitForOrderValidation.get(data.id);
+                    var el = waitForOrderValidation.get(data.order.id);
                     if (el.checkFinish(topic, message, data)) {
-                        waitForOrderValidation.delete(data.id);
+                        console.log("received finalise");
+                        waitForOrderValidation.delete(data.order.id);
                     }
                     break;
                 default:
@@ -220,7 +222,6 @@ app.put('/orders/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    res.sendStatus(200);
 });
 
 app.post('/feedbacks/', (req, res) => {
