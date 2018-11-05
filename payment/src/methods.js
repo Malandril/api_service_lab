@@ -11,7 +11,7 @@ function payment_failed(producer, msg) {
 }
 
 let methods = {
-    submitOrder: function (msg, db, producer) {
+    finaliseOrder: function (msg, db, producer) {
         console.log("processing order payment");
         if (msg.creditCard) {
             console.log(`contacting bank of ${msg.creditCard.name} ${msg.creditCard.number}`);
@@ -24,7 +24,7 @@ let methods = {
                     payment_failed(producer, msg);
                     return;
                 }
-                collection.findOneAndUpdate({"orderId": msg.orderId}, {
+                collection.findOneAndUpdate({"orderId": orderId}, {
                     $set: {
                         from: msg.creditCard,
                         payed: true
@@ -34,11 +34,9 @@ let methods = {
                         producer.send({
                             topic: "payment_succeeded",
                             messages: [{key: "", value: JSON.stringify({order:{id: orderId}})}]
-                        }, reason => {
-                            payment_failed(producer, msg);
-                        });
+                        }).catch(() => payment_failed(producer, msg));
                     }
-                );
+                ).catch(() => payment_failed(producer, msg));
             })
 
 

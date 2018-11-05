@@ -12,26 +12,29 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'payment',
+    retry:{
+        retries:8
+    }
 });
-const submitOrder = kafka.consumer({groupId: 'payment'});
+const consumer = kafka.consumer({groupId: 'payment'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
-    await submitOrder.connect();
-    await submitOrder.subscribe({topic: "submit_order"});
-    await submitOrder.subscribe({topic: "price_computed"});
-    await submitOrder.run({
+    await consumer.connect();
+    await consumer.subscribe({topic: "finalise_order"});
+    await consumer.subscribe({topic: "price_computed"});
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
             console.log("Received from topic:", topic, data);
             switch (topic) {
-                case "submit_order":
-                    methods.submitOrder(data, mongoHelper.db, producer);
+                case "finalise_order":
+                    methods.finaliseOrder(data, mongoHelper.db, producer);
                     break;
                 case "price_computed":
                     methods.priceComputed(data, mongoHelper.db);
-
+                    break;
             }
         }
     });
@@ -44,24 +47,9 @@ const errorTypes = ['unhandledRejection', 'uncaughtException'];
 const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
 
 errorTypes.map(type => {
-    process.on(type, async e => {
-        try {
-            console.log(`process.on ${type}`);
-            console.error(e);
-            await submitOrder.disconnect();
-            process.exit(0)
-        } catch (_) {
-            process.exit(1)
-        }
-    })
+    process.on(type, async () => process.exit(0))
 });
 
 signalTraps.map(type => {
-    process.once(type, async () => {
-        try {
-            await submitOrder.disconnect();
-        } finally {
-            process.kill(process.pid, type)
-        }
-    })
+    process.once(type, async () => process.exit(0))
 });

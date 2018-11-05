@@ -41,7 +41,7 @@ const run = async () => {
         }
     });
     let message = {
-        orderId: "waowID123",
+        order: {id: "waowID123"},
         customer: {},
         creditCard: {
             name: "Bob",
@@ -54,11 +54,11 @@ const run = async () => {
     await producer.send(
         {
             topic: "price_computed",
-            messages: [{key: "", value: JSON.stringify({orderId: message.orderId, price: 20})}]
+            messages: [{key: "", value: JSON.stringify({orderId: message.order.id, price: 20})}]
         });
     await producer.send(
         {
-            topic: "submit_order", messages: [{key: "", value: JSON.stringify(message)}]
+            topic: "finalise_order", messages: [{key: "", value: JSON.stringify(message)}]
         });
     timeout = setTimeout(() => {
         console.log("response timed out");
