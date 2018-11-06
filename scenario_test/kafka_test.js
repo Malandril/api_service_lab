@@ -197,9 +197,9 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                         method: 'GET',
                                                         qs: {restaurantId: restaurantId}
                                                     }).then(function (res) {
-                                                        console.log("Terry consulte les statistiques")
+                                                        console.log("Terry consulte les statistiques de son restaurant")
                                                         request({
-                                                            url: `${restaurant_url}/statistics/`,
+                                                            url: `${restaurant_url}/statistics/${restaurantId}`,
                                                             qs: {restaurantId: restaurantId}
                                                         }).then(function (res) {
                                                             console.log("Liste : " + res);

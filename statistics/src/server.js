@@ -17,7 +17,7 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'statistics_consumer' });
 const producer = kafka.producer();
-const consumers = ["meal_cooked","order_delivered","assign_delivery","finalise_order","get_statistics"];
+const consumers = ["meal_cooked","order_delivered","finalise_order","get_statistics"];
 const run = async () => {
     await producer.connect();
     await consumer.connect();
