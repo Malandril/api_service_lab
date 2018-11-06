@@ -1,4 +1,3 @@
-'use strict';
 
 let methods = require('./methods');
 let config = require('./configuration');
@@ -15,7 +14,7 @@ const kafka = new Kafka({
 });
 const consumer = kafka.consumer({groupId: 'pricer'});
 const producer = kafka.producer();
-const consumers = ["create_order", "add_voucher", "list_vouchers"];
+const consumers = ["create_order_request", "add_voucher", "list_vouchers"];
 const run = async () => {
     await producer.connect();
     await consumer.connect();
