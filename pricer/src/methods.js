@@ -1,6 +1,5 @@
 'use strict';
 const util = require('util');
-const helper = require('./helper');
 
 function send_price_computed(producer, value) {
     producer.send({
