@@ -1,4 +1,4 @@
-export {send_price_computed, findVoucherByCodeRestaurant}
+module.export = {send_price_computed:send_price_computed , findVoucherByCodeRestaurant:findVoucherByCodeRestaurant};
 
 function send_price_computed(producer, value) {
     producer.send({
