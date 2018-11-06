@@ -22,14 +22,14 @@ const producer = kafka.producer();
 const run = async () => {
     await producer.connect();
     await consumer.connect();
-    await consumer.subscribe({topic: "finalise_order"});
+    await consumer.subscribe({topic: "submit_order"});
     await consumer.subscribe({topic: "price_computed"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
             console.log("Received from topic:", topic, data);
             switch (topic) {
-                case "finalise_order":
+                case "submit_order":
                     methods.finaliseOrder(data, mongoHelper.db, producer);
                     break;
                 case "price_computed":
