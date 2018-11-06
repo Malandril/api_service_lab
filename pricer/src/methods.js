@@ -1,58 +1,75 @@
 'use strict';
 const util = require('util');
+const helper = require('./helper');
 
 
-function pricer_failed(producer, msg) {
-    console.log("pricer failed");
-    producer.send({
-        topic: "pricer_failed",
-        messages: [{key: "", value: {orderId: JSON.stringify(msg.orderId)}}]
-    });
-}
+
 
 let methods = {
-    submitOrder: function (msg, db, producer) {
-        console.log("processing order pricer");
-        if (msg.creditCard) {
-            console.log(`contacting bank of ${msg.creditCard.name} ${msg.creditCard.number}`);
-            let collection = db.collection('pricers');
-
-            collection.findOne({"orderId": msg.orderId}).then(value => {
-                console.log("found:", value);
-                if (!value) {
-                    pricer_failed(producer, msg);
+    addVoucher: function (data, db) {
+        db.collection('vouchers').insertOne(data, function (err, r) {
+            if (err) {
+                console.log(util.inspect(err));
+            } else {
+                console.log("Add voucher " + data + " in db");
+            }
+        });
+    },
+    listVouchers: function (data, db, producer) {
+        var vouchers = db.collection('vouchers').find({restaurantId: data.restaurantId}).toArray();
+        let result = {
+            vouchers: vouchers,
+            restaurantId: data.restaurantId,
+            requestId: data.requestId
+        };
+        producer.send({
+            topic: "vouchers_listed",
+            messages: [{
+                key: "", value: JSON.stringify(result)
+            }]
+        });
+    },
+    createOrder: function (data, db, producer) {
+        const orderId = data.orderId;
+        const requestId = data.requestId;
+        let value = {
+            requestId: requestId,
+            orderId: orderId,
+        };
+        const restaurantId = data.meals[0].restaurant.id;
+        let totalPrice = 0;
+        for (let i = 0; i < data.meals.length; i++) {
+            totalPrice += data.meals[i].price;
+        }
+        if (data.voucher) {
+            const code = data.voucher;
+            helper.findVoucherByCodeRestaurant(db, restaurantId, code).then(voucher => {
+                if (!voucher) {
+                    console.log("Voucher " + code + " not found.");
+                    value.price = totalPrice;
+                    helper.send_price_computed(producer, value);
                     return;
                 }
-                collection.findOneAndUpdate({"orderId": msg.orderId}, {
-                    $set: {
-                        from: msg.creditCard,
-                        payed: true
+                else if (voucher.neededCategories) {
+                    console.log("voucher has categories");
+                    let meal_categories = data.meals.map(meal => meal.type.toLowerCase());
+                    if (voucher.neededCategories.every(category => meal_categories.includes(category))) {
+                        value.price = totalPrice * (1 - voucher.discount);
+                        helper.send_price_computed(producer, value);
+                    } else {
+                        helper.send_price_computed(producer, totalPrice)
                     }
-                }).then(value => {
-                        console.log(`pricer of ${JSON.stringify(value)} euros succeeded`);
-                        producer.send({
-                            topic: "pricer_succeeded",
-                            messages: [{key: "", value: {orderId: msg.orderId}}]
-                        }, reason => {
-                            pricer_failed(producer, msg);
-                        });
-                    }
-                );
+                } else {
+                    value.price = totalPrice * (1 - voucher.discount);
+                    helper.send_price_computed(producer, value);
+                }
+            }).catch(reason => {
+                console.log("Error when finding voucher", reason);
             })
-
-
         } else {
-            pricer_failed(producer, msg);
+            value.price = totalPrice;
+            helper.send_price_computed(producer, value);
         }
-    },
-    priceComputed: function (msg, db) {
-        db.collection('pricers').insertOne({
-                orderId: msg.orderId,
-                amount: msg.price,
-                payed: false
-        }, function (err, r) {
-            console.log("added : " + r);
-        });
     }
 };
 
