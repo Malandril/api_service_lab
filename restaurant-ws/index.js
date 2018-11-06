@@ -7,6 +7,7 @@ const {Kafka, logLevel} = require('kafkajs');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+const uuidv4 = require('uuid/v4');
 
 
 const Queue = require('queue-fifo');
@@ -19,23 +20,45 @@ const kafka = new Kafka({
     clientId: 'restaurantws',
 });
 
-
+const openConnections = new Map();
 const consumer = kafka.consumer({groupId: 'restaurant_consumer'});
 const producer = kafka.producer();
+function checkArgs(argName, request, errors) {
+    if (!(argName in request)) {
+        errors.push("Attribute '" + argName + "' needed");
+        return null;
+    } else {
 
+        return request[argName];
+    }
+}
 const run = async () => {
     await producer.connect();
     await consumer.connect();
     await consumer.subscribe({topic: "meals_getted"});
     await consumer.subscribe({topic: "delivered_meals"});
-    await consumer.subscribe({topic: "order_delivered"});
+    // await consumer.subscribe({topic: "order_delivered"});
     await consumer.subscribe({topic: "statistics"});
+    await consumer.subscribe({topic: "feedback_listed"});
+    await consumer.subscribe({topic: "vouchers_listed"});
+
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            if (!queue.isEmpty()) {
-                queue.dequeue()(message);
+            const data = JSON.parse(message.value.toString());
+            console.log(topic,data);
+            if ("requestId" in data) {
+                const el = openConnections.get(data.requestId);
+                console.log("Get connection " + data.requestId + " : " + el);
+                if (el(topic, data)) {
+                    openConnections.delete(data.requestId);
+                }
             } else {
-                console.log("Unable to process "+topic+" response: " + message.value)
+
+                if (!queue.isEmpty()) {
+                    queue.dequeue()(message);
+                } else {
+                    console.log("Unable to process " + topic + " response: " + message.value)
+                }
             }
         }
     });
@@ -51,7 +74,8 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await listResponse.disconnect();
+            await consumer.disconnect();
+            await producer.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -61,7 +85,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await listResponse.disconnect();
+            await consumer.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
@@ -80,25 +104,26 @@ app.get('/orders/', (req, res) => {
         return;
     }
     const restaurantId = req.query.id;
+    const requestId = uuidv4();
     const status = req.query.status;
     console.log("Parsed : id=" + restaurantId + ", status="+status);
 
     let value = JSON.stringify({
         "restaurantId" : restaurantId,
-        "status": status
+        "status": status,
+        "requestId": requestId
     });
     console.log("Send get_meals : " + util.inspect(value));
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
     producer.send({
         topic: "get_meals",
         messages: [{
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
-
 
 });
 
@@ -108,7 +133,8 @@ app.put('/orders/:orderId', (req, res) => {
         return;
     }
     const orderId = req.params.orderId;
-    let value = JSON.stringify({order: {
+    let value = JSON.stringify({
+        order: {
             id: orderId
         }
     });
@@ -119,56 +145,115 @@ app.put('/orders/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+    res.send("Ok");
 });
 
-app.get('/statistics/', (req, res) => {
-    if (!("restaurantId" in req.body)) {
+app.get('/statistics/:restaurantId', (req, res) => {
+    if (!("restaurantId" in req.query)) {
         res.send("Attribute 'restaurantId' needed");
         return;
     }
-    const restaurantId = req.body.restaurantId;
+    const requestId = uuidv4();
+
+    const restaurantId = req.query.restaurantId;
     let value = JSON.stringify({
+        requestId:requestId,
         restaurantId: restaurantId
     });
     console.log("Send get_statistics : " + util.inspect(value));
+
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
     producer.send({
         topic: "get_statistics",
         messages: [{
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
 });
 
-app.get('/feedbacks/', (req, res) => {
-    if (!("restaurantId" in req.body)) {
+app.get('/feedbacks/:restaurantId', (req, res) => {
+    if (!("restaurantId" in req.params)) {
         res.send("Attribute 'restaurantId' needed");
         return;
     }
-    const restaurantId = req.body.restaurantId;
+    const restaurantId = req.params.restaurantId;
+    const requestId = uuidv4();
+
     let value = JSON.stringify({
-        restaurantId: restaurantId
+        restaurantId: restaurantId,
+        requestId: requestId
     });
     console.log("Send list_feedback : " + util.inspect(value));
+
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
     producer.send({
         topic: "list_feedback",
         messages: [{
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+
 });
 
+
+app.post('/vouchers/', (req, res) => {
+
+    var errors = [];
+    const restaurantId = checkArgs("restaurantId", req.body, errors);
+    const code = checkArgs("code", req.body, errors);
+    const discount = checkArgs("discount", req.body, errors);
+    const expirationDate = checkArgs("expirationDate", req.body, errors);
+    if (errors.length !== 0) {
+        res.statusCode = 412;
+        res.send(errors.toString());
+        return;
+    }
+    let value = JSON.stringify({
+        restaurantId: restaurantId,
+        code: code,
+        discount: discount,
+        expirationDate: expirationDate
+    });
+    producer.send({
+        topic: "add_voucher",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    res.send("ok");
+});
+app.get('/vouchers/', (req, res) => {
+    var errors = [];
+    const restaurantId = checkArgs("restaurantId", req.body, errors);
+    if (errors.length !== 0) {
+        res.statusCode = 412;
+        res.send(errors.toString());
+        return;
+    }
+    const uuid = uuidv4();
+
+    let value = JSON.stringify({
+        restaurantId: restaurantId,
+        requestId: uuid
+    });
+    openConnections.set(uuid, function (topic, msg) {
+        res.send(msg);
+        return true;
+    });
+    producer.send({
+        topic: "list_vouchers",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+
+});
 
 
 app.listen(port, () => console.log(`Restaurant Gateway app listening on port ${port}!`));

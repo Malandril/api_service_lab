@@ -65,6 +65,14 @@ services:
     depends_on:
       - "kafka"
     stdin_open: true
+  pricer:
+    build: ./pricer
+    image: pricer
+    container_name: pricer
+    depends_on:
+      - "kafka"
+      - "mongo_pricer"
+    stdin_open: true
   mongo_coursier:
    image: mongo
    logging:
@@ -86,6 +94,10 @@ services:
     logging:
         driver: none
   mongo_order:
+   image: mongo
+   logging:
+       driver: none
+  mongo_pricer:
    image: mongo
    logging:
        driver: none
@@ -125,4 +137,12 @@ services:
     - "mongo_restaurant"
     - "kafka"
     container_name: catalog
+    stdin_open: true
+  statistics:
+    build: ./statistics
+    image: statistics
+    depends_on:
+    - "mongo_statistics"
+    - "kafka"
+    container_name: statistics
     stdin_open: true

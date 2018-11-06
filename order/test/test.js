@@ -1,38 +1,67 @@
-/**
- * Created by Hasaghi on 27/10/2018.
- */
+'use strict';
 
-const util = require('util');
-let http = require('http');
-let url = require('url');
-const { Kafka, logLevel } = require('kafkajs');
+// let config = require('../src/configuration');
+const {Kafka, logLevel} = require('kafkajs');
+
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
-    clientId: 'order-test',
+    clientId: 'test_order',
 });
 
+const submitOrder = kafka.consumer({groupId: 'order_test'});
 const producer = kafka.producer();
-const consumer = kafka.consumer({groupId:"order_consumer_test"});
-const consumers = ["create_order","finalise_order"];
-const run = async () => {
-    await producer.connect();
-    consumer.connect();
-    await consumers.forEach(function (c) {
-        consumer.subscribe({topic: c});
-    });
 
-    consumer.run({
+const Queue = require('queue-fifo');
+const queue = new Queue();
+
+console.log("started test");
+const run = async () => {
+    console.log("test");
+    await producer.connect();
+    console.log("connected to kafka");
+    await submitOrder.connect();
+    await submitOrder.subscribe({topic: "create_order"});
+    await submitOrder.subscribe({topic: "finalise_order"});
+    var timeout;
+    await submitOrder.run({
         eachMessage: async ({topic, partition, message}) => {
-            console.log("[" + topic+ "] "+ util.inspect(JSON.parse(message.value.toString())));
+            queue.enqueue({topic : topic, msg: message});
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    console.log("response timed out");
+                    process.exit(2);
+                }, 10000);
+            }
+            console.log("Received", topic, JSON.stringify(message.value));
+
         }
     });
+
+
+    let message = {
+        order: {
+            id:"12345"
+        },
+        timestamp: Math.round(new Date().getTime() / 1000)
+    };
+    console.log("starting send");
+    await producer.send(
+        {
+            topic: "price_computed",
+            messages: [{key: "", value: JSON.stringify(message)}]
+        });
+    timeout = setTimeout(() => {
+        console.log("response timed out");
+        process.exit(2);
+    }, 10000);
+    console.log("Message sent");
 };
 
-
-run().catch(e => console.error(`[order] ${e.message}`, e));
+run().catch(e => console.error(`[payment_test/consumer] ${e.message}`, e));
 
 const errorTypes = ['unhandledRejection', 'uncaughtException'];
 const signalTraps = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
@@ -42,10 +71,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await producer.disconnect();
-            await consumers.forEach(function (c) {
-                consumer.disconnect();
-            });
+            await submitOrder.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -55,13 +81,6 @@ errorTypes.map(type => {
 
 signalTraps.map(type => {
     process.once(type, async () => {
-        try {
-            await producer.disconnect();
-            await consumers.forEach(function (c) {
-                consumer.disconnect();
-            });
-        } finally {
-            process.kill(process.pid, type)
-        }
+        process.exit(1)
     })
 });

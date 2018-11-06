@@ -25,7 +25,6 @@ let methods = {
     },
     getMeals: function (msg_string, producer, db) {
         var msg = JSON.parse(msg_string);
-
         console.log("getMeals: " + msg_string);
 
         if (!("restaurantId" in msg && "status" in msg)) {
@@ -39,7 +38,7 @@ let methods = {
                     console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
                         "topic":"meals_getted",
-                        "messages": [{"key":"", "value": JSON.stringify({"orders": res})}]
+                        "messages": [{"key":"", "value": JSON.stringify({"orders": res, requestId:msg.requestId})}]
                     });
                 });
     },

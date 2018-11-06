@@ -1,8 +1,6 @@
 'use strict';
 
-const util = require('util');
-let http = require('http');
-let url = require('url');
+
 let methods = require('./methods');
 const { Kafka, logLevel } = require('kafkajs');
 let mongoHelper = require("./mongo-helper");
@@ -19,7 +17,7 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'statistics_consumer' });
 const producer = kafka.producer();
-const consumers = ["meal_cooked","order_delivered","assign_delivery","finalise_order","get_statistics"];
+const consumers = ["meal_cooked","order_delivered","finalise_order","get_statistics"];
 const run = async () => {
     await producer.connect();
     await consumer.connect();
@@ -30,7 +28,7 @@ const run = async () => {
     consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
-            console.log(data);
+            console.log("Received",topic,data);
             switch (topic){
                 case "meal_cooked":
                     methods.putNewStatus(data,mongoHelper.db, "meal_cooked");
@@ -42,6 +40,7 @@ const run = async () => {
                     methods.putNewStatus(data,mongoHelper.db, "finalise_order");
                     break;
                 case "get_statistics":
+                    console.log("pull statistics");
                     methods.pullStatistics(data, mongoHelper.db, producer);
             }
         }}

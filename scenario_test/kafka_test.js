@@ -19,7 +19,6 @@ function coursierAction() {
             request({
                 url: `${coursier_url}/deliveries`,
                 qs: {id: coursierId, address: "3 Rue principale"}
-            }, function (error, response, body) {
             }).then(function (res) {
                 console.log("Liste : " + res);
                 resolve(res);
@@ -28,7 +27,7 @@ function coursierAction() {
         .then(function (e) {
             var data = JSON.parse(e);
 
-            console.log("Orders : " + data.orders.length);
+            console.log("Il y a " + data.orders.length + " commandes proche à livrer");
             let id = data.orders[data.orders.length - 1].id;
             console.log("We chose to deliver order ", id);
             request({
@@ -81,11 +80,10 @@ function restaurantAction() {
         });
 }
 
-request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (error, response, body) {
-    assert(response.statusCode, 200);
-}).then(function (meals) {
+request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
+    restaurantId = data.restaurant.id;
     console.log("Meals returned : " + parse.meals.length);
     console.log("Bob order: " + JSON.stringify(data));
     order = {
@@ -119,11 +117,115 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}, function (e
             method: 'PUT',
             body: finalisation,
             json: true
-        }).then(function (resp) {
-            console.log("resp" + resp);
-            console.log("Ok, deux process à partir de maintenant: ");
-            coursierAction();
-            restaurantAction();
+        }).then(function () {
+            console.log("La commande de Gail est validée. Id = " + orderId);
+            request({
+                url: `${restaurant_url}/orders/`,
+                qs: {id: restaurantId}
+            }).then(function (res) {
+                const data = JSON.parse(res);
+                console.log("Le restaurateur liste les plats à préparer :");
+                var commandFound = false;
+                data.orders.forEach(o => {
+                    console.log(o.orderId);
+                    if (o.orderId === orderId) {
+                        commandFound = true;
+                    }
+                });
+                if (!commandFound) {
+                    console.log("Le restaurateur ne trouve pas la commande de Gail oO");
+                } else {
+                    console.log("Jamie liste les commandes proches");
+                    request({
+                        url: `${coursier_url}/deliveries`,
+                        qs: {id: coursierId, address: "3 Rue principale"}
+                    }).then(function (res) {
+                        var commandFound = false;
+                        var data= JSON.parse(res);
+                        data.orders.forEach(order => {
+                            console.log(order.id);
+                            if (order.id === orderId) {
+                                commandFound = true;
+                            }
+                        });
+                        if (!commandFound) {
+                            console.log("Jamie ne trouve pas la commande");
+
+                        } else {
+                            console.log("Jamie s'occuper de la commande " + orderId);
+                            request({
+                                url: `${coursier_url}/deliveries`,
+                                method: 'POST',
+                                body: {orderId: orderId, coursierId: coursierId},
+                                json: true
+                            }).then(function (res) {
+                                console.log("TODO: jamie meurt");
+                                console.log("Jordan le cuisto a fini le Mac First ");
+                                request({
+                                    url: `${restaurant_url}/orders/${orderId}`,
+                                    method: 'PUT',
+                                    body: {orderId: orderId},
+                                    json: true
+                                }).then(function (res) {
+                                    console.log("Jamie récupère la commande et met à jour sa position");
+                                    request({
+                                        url: `${coursier_url}/geolocation`,
+                                        method: 'PUT',
+                                        body: {orderId: orderId, coursierId: coursierId,timestamp: Math.round((Date.now()) / 1000),geolocation : {long: 12, lat: 42} },
+                                        json: true
+                                    }).then(function (res) {
+                                        console.log("Gail traque Jamie");
+                                        request({
+                                            url: `${customer_ws}/geolocation/${orderId}`
+                                        }).then(function (res) {
+                                            console.log("Jamie vient de livrer la commande à Gail.", res);
+                                            request({
+                                                url: `${coursier_url}/deliveries/${orderId}`,
+                                                method: 'PUT',
+                                                body: {coursierId: coursierId},
+                                                json: true
+                                            }).then(function () {
+                                                console.log("Gail, contente de la qualité, décide de laisser un commentaire");
+                                                request({
+                                                    url: `${customer_ws}/feedbacks/`,
+                                                    method: 'POST',
+                                                    body: {mealId: order.meals[0].id, rating: 4, customerId: client.id, desc: "Super Mac first !"},
+                                                    json: true
+                                                }).then(function (resp) {
+                                                    console.log("Jordan consulte les avis sur les plats de son restaurant");
+                                                    request({
+                                                        url: `${restaurant_url}/feedbacks/${restaurantId}`,
+                                                        method: 'GET',
+                                                        qs: {restaurantId: restaurantId}
+                                                    }).then(function (res) {
+                                                        console.log("Terry consulte les statistiques de son restaurant")
+                                                        request({
+                                                            url: `${restaurant_url}/statistics/${restaurantId}`,
+                                                            qs: {restaurantId: restaurantId}
+                                                        }).then(function (res) {
+                                                            console.log("Liste : " + res);
+                                                        });
+                                                    }).catch(err=>{
+                                                        throw  err;
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    }).catch(err=>{
+                                        console.log("Impossible de mettre à jour sa position : " , err);
+                                    })
+                                }).catch(function (err) {
+                                    console.log("ERROR : " + err);
+                                    process.exit(1)
+                                });
+                            });
+                        }
+                    }).catch(err => {
+                        console.log("err", err);
+                    });
+                }
+
+            });
         });
     });
 });

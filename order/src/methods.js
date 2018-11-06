@@ -1,20 +1,21 @@
 'use strict';
 const util = require('util');
+var ObjectId = require('mongodb').ObjectID;
 let methods = {
         createOrder: function (message, db, producer) {
             message.events = [{event: "creation", time: message.timestamp}];
+            const requestId = message.requestId;
+
+            delete message.requestId;
             db.collection('orders').insertOne(message, function (err, r) {
                 if (err) {
                     console.log(util.inspect(err));
                 } else {
-                    let messageResult = JSON.stringify({
-                        orderId: r["insertedId"],
-                        requestId: message.requestId
-                    });
-
+                    message.orderId = r["insertedId"];
+                    message.requestId = requestId;
                     producer.send({
                         topic: "create_order",
-                        messages: [{key: "", value: messageResult}]
+                        messages: [{key: "", value: JSON.stringify(message)}]
                     });
                 }
             });
@@ -26,25 +27,31 @@ let methods = {
             });
 
         },
-        processPaymentResult: function (succeed, message, dbHelper) {
-            dbHelper.addEvent(message.order.id, {
+        processPaymentResult: function (succeed, message, dbHelper, producer) {
+            let orderId = message.order.id;
+            console.log("Payment of order " + orderId, "succeed : ", succeed);
+            dbHelper.addEvent(orderId, {
                 event: "payment",
                 time: Math.round(new Date().getTime() / 1000),
                 succeed: succeed
             });
-            if(succeed){
+
+            if (succeed) {
                 dbHelper.db.collection('orders')
-                    .find({"_id": msg.order.id})
-                    .project({ events: 0})
-                    .toArray((err, res) => {
-                        console.log("Send msg: " + JSON.stringify(res));
+                    .find({"_id": new ObjectId(orderId)})
+                    .forEach((res, err) => {
+                        if (err) {
+                            throw err;
+                        }
                         res.id = res._id;
+                        delete res._id;
+                        delete res.events;
                         producer.send({
                             topic: "finalise_order",
-                            messages: [{key: "", value: JSON.stringify(res)}]
+                            messages: [{key: "", value: JSON.stringify({order:res})}]
                         });
                     });
-            }else{
+            } else {
                 //TODO: manage payment error
             }
 
@@ -63,12 +70,12 @@ let methods = {
                 .find({"_id": msg.order.id})
                 .forEach((err, res) => {
                     console.log(res);
-                        if (err) {
-                            console.log(err);
-                        }
-                        else {
-                            console.log(res);
-                        }
+                    if (err) {
+                        console.log(err);
+                    }
+                    else {
+                        console.log(res);
+                    }
                 });
         }
     }

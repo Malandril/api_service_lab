@@ -15,7 +15,7 @@ let methods = {
         if("coursier" in msg &&"address" in msg.coursier){
             var id = msg.coursier.address.split(" ");
             var orders = [];
-            db.collection('orders').find({}).limit(10).each(function(err, doc) {
+            db.collection('orders').find({}).limit(1000).each(function(err, doc) {
                 console.log("found ",doc);
                 if(doc){
 
