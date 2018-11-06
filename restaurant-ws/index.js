@@ -141,7 +141,7 @@ app.put('/orders/:orderId', (req, res) => {
     res.send("Ok");
 });
 
-app.get('/statistics/', (req, res) => {
+app.get('/statistics/:restaurantId', (req, res) => {
     if (!("restaurantId" in req.query)) {
         res.send("Attribute 'restaurantId' needed");
         return;
@@ -165,10 +165,6 @@ app.get('/statistics/', (req, res) => {
             key: "", value: value
         }]
     });
-    queue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
 });
 
 app.get('/feedbacks/:restaurantId', (req, res) => {
