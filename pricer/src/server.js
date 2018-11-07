@@ -28,7 +28,7 @@ const run = async () => {
             console.log("Received from topic:", topic, data);
             switch (topic) {
                 case "create_order_request":
-                    methods.createOrder(data, mongoHelper.db, producer);
+                    await methods.createOrder(data, mongoHelper.db, producer);
                     break;
                 case "add_voucher":
                     methods.addVoucher(data, mongoHelper.db);

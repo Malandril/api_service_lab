@@ -1,18 +1,7 @@
 'use strict';
 const util = require('util');
+const helper = require('./helper');
 
-function send_price_computed(producer, value) {
-    producer.send({
-        topic: "price_computed",
-        messages: [{
-            key: "", value: JSON.stringify(value)
-        }]
-    });
-}
-
-function findVoucherByCodeRestaurant(db, restaurantId, code) {
-    return db.collection("vouchers").findOne({"restaurantId": restaurantId, "code": code});
-}
 
 let methods = {
     addVoucher: function (data, db) {
@@ -38,46 +27,59 @@ let methods = {
             }]
         });
     },
-    createOrder: function (data, db, producer) {
+    createOrder: async function (data, db, producer) {
         const orderId = data.orderId;
         const requestId = data.requestId;
         let value = {
             requestId: requestId,
             orderId: orderId,
         };
+        if (!data.meals) {
+            return;
+        }
         const restaurantId = data.meals[0].restaurant.id;
         let totalPrice = 0;
         for (let i = 0; i < data.meals.length; i++) {
-            totalPrice += data.meals[i].price;
+            if (!isNaN(data.meals[i].price)) {
+                totalPrice += data.meals[i].price;
+            }
         }
         if (data.voucher) {
             const code = data.voucher;
-            findVoucherByCodeRestaurant(db, restaurantId, code).then(voucher => {
+            await helper.findVoucherByCodeRestaurant(db, restaurantId, code).then(voucher => {
                 if (!voucher) {
                     console.log("Voucher " + code + " not found.");
                     value.price = totalPrice;
-                    send_price_computed(producer, value);
-                    return;
+                    helper.send_price_computed(producer, value);
                 }
-                else if (voucher.neededCategories) {
+                else if (voucher.neededCategories && voucher.neededCategories.length !== 0) {
                     console.log("voucher has categories");
-                    let meal_categories = data.meals.map(meal => meal.type.toLowerCase());
-                    if (voucher.neededCategories.every(category => meal_categories.includes(category))) {
+                    let meal_categories = data.meals.map(meal => {
+                        if (meal.type)
+                           return meal.type.toLowerCase();
+                    });
+                    if (voucher.neededCategories.every(category => {
+                        let b = meal_categories.includes(category);
+                        return b;
+                    })) {
                         value.price = totalPrice * (1 - voucher.discount);
-                        send_price_computed(producer, value);
+                        helper.send_price_computed(producer, value);
                     } else {
-                        send_price_computed(producer, totalPrice)
+                        value.price = totalPrice;
+                        helper.send_price_computed(producer, value)
                     }
                 } else {
                     value.price = totalPrice * (1 - voucher.discount);
-                    send_price_computed(producer, value);
+                    helper.send_price_computed(producer, value);
                 }
             }).catch(reason => {
                 console.log("Error when finding voucher", reason);
             })
         } else {
-            value.price = totalPrice;
-            send_price_computed(producer, value);
+            if (totalPrice !== 0) {
+                value.price = totalPrice;
+                helper.send_price_computed(producer, value);
+            }
         }
     }
 };

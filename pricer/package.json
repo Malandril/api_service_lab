@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "test": "node test/test_kafka.js",
+    "test": "jest",
     "start": "node src/server.js"
   },
   "dependencies": {
@@ -13,5 +13,8 @@
     "queue-fifo": "^0.2.5"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
 }
