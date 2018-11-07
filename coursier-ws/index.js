@@ -220,7 +220,7 @@ app.delete('/deliveries/:orderId', (req, res) => {
         orderId: orderId,
         coursierId: coursierId
     });
-    console.log("Send : order_delivered " + util.inspect(value));
+    console.log("Send : cancel_delivery " + util.inspect(value));
     producer.send({
         topic: "cancel_delivery",
         messages: [{
