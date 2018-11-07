@@ -14,7 +14,7 @@ const kafka = new Kafka({
 });
 const consumer = kafka.consumer({groupId: 'pricer'});
 const producer = kafka.producer();
-const consumers = ["create_order_request", "add_voucher", "list_vouchers"];
+const consumers = ["create_order", "add_voucher", "list_vouchers"];
 const run = async () => {
     await producer.connect();
     await consumer.connect();
@@ -27,7 +27,7 @@ const run = async () => {
             var data = JSON.parse(message.value.toString());
             console.log("Received from topic:", topic, data);
             switch (topic) {
-                case "create_order_request":
+                case "create_order":
                     await methods.createOrder(data, mongoHelper.db, producer);
                     break;
                 case "add_voucher":

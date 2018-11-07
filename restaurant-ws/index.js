@@ -155,17 +155,17 @@ app.get('/statistics/:restaurantId', (req, res) => {
         requestId: requestId,
         restaurantId: restaurantId
     });
-    console.log("Send get_statistics : " + util.inspect(value));
-
-    openConnections.set(requestId, function (topic, msg) {
-        res.send(msg);
-        return true;
-    });
     producer.send({
         topic: "get_statistics",
         messages: [{
             key: "", value: value
         }]
+    });
+
+    console.log("Send get_statistics : " + util.inspect(value));
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
     });
 });
 

@@ -53,13 +53,14 @@ const run = async () => {
     console.log("starting send");
     await producer.send(
         {
-            topic: "price_computed",
-            messages: [{key: "", value: JSON.stringify({orderId: message.order.id, price: 20})}]
+            topic: "submit_order", messages: [{key: "", value: JSON.stringify(message)}]
         });
     await producer.send(
         {
-            topic: "finalise_order", messages: [{key: "", value: JSON.stringify(message)}]
+            topic: "price_computed",
+            messages: [{key: "", value: JSON.stringify({orderId: message.order.id, price: 20})}]
         });
+
     timeout = setTimeout(() => {
         console.log("response timed out");
         process.exit(2);

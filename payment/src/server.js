@@ -12,8 +12,8 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'payment',
-    retry:{
-        retries:8
+    retry: {
+        retries: 8
     }
 });
 const consumer = kafka.consumer({groupId: 'payment'});
@@ -30,10 +30,10 @@ const run = async () => {
             console.log("Received from topic:", topic, data);
             switch (topic) {
                 case "submit_order":
-                    methods.finaliseOrder(data, mongoHelper.db, producer);
+                    methods.submitOrder(data, mongoHelper.db, producer);
                     break;
                 case "price_computed":
-                    methods.priceComputed(data, mongoHelper.db);
+                    methods.priceComputed(data, mongoHelper.db, producer);
                     break;
             }
         }

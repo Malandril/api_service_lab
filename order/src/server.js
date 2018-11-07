@@ -19,7 +19,7 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 const consumer = kafka.consumer({groupId:"order_consume"});
-const consumers = ["submit_order", "order_delivered", "payment_failed", "payment_succeeded", "payment_not_needed", "create_order_request", "assign_delivery", "meal_cooked"];
+const consumers = ["submit_order", "order_delivered", "payment_failed", "payment_succeeded", "create_order_request", "assign_delivery", "meal_cooked"];
 const TOPICS = ["create_order", "finalise_order"];
 
 const run = async () => {
@@ -46,9 +46,6 @@ const run = async () => {
                     break;
                 case "payment_failed":
                     methods.processPaymentResult(false, data, mongoHelper, producer);
-                    break;
-                case "payment_not_needed":
-                    //do nothing
                     break;
                 case "assign_delivery":
                     methods.logDeliveyAssignation(data,mongoHelper, producer);
