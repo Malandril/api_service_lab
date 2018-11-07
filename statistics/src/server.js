@@ -40,7 +40,6 @@ const run = async () => {
                     methods.putNewStatus(data,mongoHelper.db, "finalise_order");
                     break;
                 case "get_statistics":
-                    console.log("pull statistics");
                     methods.pullStatistics(data, mongoHelper.db, producer);
             }
         }}
