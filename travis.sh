@@ -13,4 +13,4 @@ sleep 20 # waiting for the webservice and kafka to be ready
 bash ./run.sh
 
 trap cleanup EXIT
-bash ./test.sh
+#bash ./test.sh

@@ -7,4 +7,5 @@ then
     echo "Test failed"
     exit 1
 fi
+docker-compose logs
 echo "Test succeeded"

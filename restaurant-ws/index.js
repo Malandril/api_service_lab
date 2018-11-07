@@ -5,7 +5,7 @@ const app = express();
 const port = 3000;
 const {Kafka, logLevel} = require('kafkajs');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 const uuidv4 = require('uuid/v4');
 
@@ -23,6 +23,7 @@ const kafka = new Kafka({
 const openConnections = new Map();
 const consumer = kafka.consumer({groupId: 'restaurant_consumer'});
 const producer = kafka.producer();
+
 function checkArgs(argName, request, errors) {
     if (!(argName in request)) {
         errors.push("Attribute '" + argName + "' needed");
@@ -32,6 +33,7 @@ function checkArgs(argName, request, errors) {
         return request[argName];
     }
 }
+
 const run = async () => {
     await producer.connect();
     await consumer.connect();
@@ -45,7 +47,7 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
-            console.log(topic,data);
+            console.log(topic, data);
             if ("requestId" in data) {
                 const el = openConnections.get(data.requestId);
                 console.log("Get connection " + data.requestId + " : " + el);
@@ -157,20 +159,20 @@ app.get('/statistics/:restaurantId', (req, res) => {
 
     const restaurantId = req.query.restaurantId;
     let value = JSON.stringify({
-        requestId:requestId,
+        requestId: requestId,
         restaurantId: restaurantId
-    });
-    console.log("Send get_statistics : " + util.inspect(value));
-
-    openConnections.set(requestId, function (topic, msg) {
-        res.send(msg);
-        return true;
     });
     producer.send({
         topic: "get_statistics",
         messages: [{
             key: "", value: value
         }]
+    });
+
+    console.log("Send get_statistics : " + util.inspect(value));
+    openConnections.set(requestId, function (topic, msg) {
+        res.send(msg);
+        return true;
     });
 });
 
@@ -209,8 +211,9 @@ app.post('/vouchers/', (req, res) => {
     const code = checkArgs("code", req.body, errors);
     const discount = checkArgs("discount", req.body, errors);
     const expirationDate = checkArgs("expirationDate", req.body, errors);
+    const neededCategories = checkArgs("neededCategories", req.body, errors);
     if (errors.length !== 0) {
-        res.statusCode = 412;
+        res.statusCode = 400;
         res.send(errors.toString());
         return;
     }
@@ -218,7 +221,8 @@ app.post('/vouchers/', (req, res) => {
         restaurantId: restaurantId,
         code: code,
         discount: discount,
-        expirationDate: expirationDate
+        expirationDate: expirationDate,
+        neededCategories: neededCategories
     });
     producer.send({
         topic: "add_voucher",
@@ -232,7 +236,7 @@ app.get('/vouchers/', (req, res) => {
     var errors = [];
     const restaurantId = checkArgs("restaurantId", req.body, errors);
     if (errors.length !== 0) {
-        res.statusCode = 412;
+        res.statusCode = 400;
         res.send(errors.toString());
         return;
     }
@@ -252,7 +256,6 @@ app.get('/vouchers/', (req, res) => {
             key: "", value: value
         }]
     });
-
 });
 
 

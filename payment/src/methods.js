@@ -2,55 +2,76 @@
 const util = require('util');
 
 
-function payment_failed(producer, msg) {
+function payment_failed(producer, orderId) {
     console.log("payment failed");
     producer.send({
         topic: "payment_failed",
-        messages: [{key: "", value: {orderId: JSON.stringify(msg.orderId)}}]
+        messages: [{key: "", value: {orderId: orderId}}]
     });
 }
 
-let methods = {
-    finaliseOrder: function (msg, db, producer) {
-        console.log("processing order payment");
-        if (msg.creditCard) {
-            console.log(`contacting bank of ${msg.creditCard.name} ${msg.creditCard.number}`);
-            let collection = db.collection('payments');
+function pay(creditCard, price, orderId, producer) {
+    console.log("paying", creditCard, price, orderId, producer);
+    console.log(`Contacting bank of ${creditCard.name} ${creditCard.number}`);
+    console.log(`Payed ${price}`);
+    producer.send({
+        topic: "payment_succeeded",
+        messages: [{key: "", value: JSON.stringify({order: {id:orderId}})}]
+    }).catch(() => payment_failed(producer, orderId));
+}
 
-            let orderId = msg.order.id;
-            collection.findOne({"orderId": orderId}).then(value=> {
+let methods = {
+    submitOrder: function (msg, db, producer) {
+        console.log("processing order payment");
+        let orderId = msg.order.id;
+        if (msg.creditCard) {
+
+            let collection = db.collection('payments');
+            collection.findOne({"orderId": orderId}).then(value => {
                 console.log("found:", value);
                 if (!value) {
-                    payment_failed(producer, msg);
-                    return;
+                    collection.insertOne({
+                        orderId: msg.order.id,
+                        payed: false,
+                        creditCard: msg.creditCard
+                    })
+                } else if (!value.payed) {
+                    console.log("submit ordergetting in if", value, "msg", msg);
+                    pay(msg.creditCard, value.amount, orderId, producer);
+                    collection.findOneAndUpdate({"orderId": orderId}, {
+                        $set: {
+                            creditCard: msg.creditCard,
+                            payed: true
+                        }
+                    }).catch(() => payment_failed(producer, orderId));
                 }
-                collection.findOneAndUpdate({"orderId": orderId}, {
-                    $set: {
-                        from: msg.creditCard,
-                        payed: true
-                    }
-                }).then(value => {
-                        console.log(`payment of ${JSON.stringify(value)} euros succeeded`);
-                        producer.send({
-                            topic: "payment_succeeded",
-                            messages: [{key: "", value: JSON.stringify({order:{id: orderId}})}]
-                        }).catch(() => payment_failed(producer, msg));
-                    }
-                ).catch(() => payment_failed(producer, msg));
             })
 
 
         } else {
-            payment_failed(producer, msg);
+            payment_failed(producer, orderId);
         }
     },
-    priceComputed: function (msg, db) {
-        db.collection('payments').insertOne({
-            orderId: msg.orderId,
-            amount: msg.price,
-            payed: false
-        }, function (err, r) {
-            console.log("added : " + r);
+    priceComputed: function (msg, db, producer) {
+        let collection = db.collection('payments');
+        collection.findOne({"orderId": msg.orderId}).then(value => {
+            console.log("found:", value);
+            if (!value) {
+                collection.insertOne({
+                    orderId: msg.orderId,
+                    amount: msg.price,
+                    payed: false
+                });
+            } else if (!value.payed) {
+                console.log("getting in if", value, "msg", msg);
+                pay(value.creditCard, msg.price, msg.orderId, producer);
+                collection.findOneAndUpdate({"orderId": msg.orderId}, {
+                    $set: {
+                        amount: msg.price,
+                        payed: true
+                    }
+                }).catch(() => payment_failed(producer, msg.orderId));
+            }
         });
     }
 };

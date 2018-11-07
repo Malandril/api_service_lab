@@ -12,6 +12,8 @@ var order = null;
 var coursierId = 18;
 var restaurantId = 12;
 var orderId = null;
+var restaurantId = null;
+
 function coursierAction() {
     console.log("Un coursier du coin liste les orders");
     return new Promise(
@@ -50,12 +52,11 @@ function coursierAction() {
 }
 
 function restaurantAction() {
-    console.log("The restaurant lists his todo meals")
     return new Promise(
         function (resolve, reject) {
             request({
                 url: `${restaurant_url}/orders/`,
-                qs: {id: restaurantId, status: "todo"}
+                qs: {id: coursierId}
             }, function (error, response, body) {
             }).then(function (res) {
 
@@ -99,7 +100,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
         body: order,
         json: true
     }).then(function (resp) {
-        console.log("The ETA of Bob's order is  ", resp.eta, " minutes");
+        console.log("La commande de GAIL devrait arriver dan  ", resp.eta, " minutes");
         orderId = resp.orderId;
         var finalisation = {
             orderId: resp.orderId,
@@ -134,6 +135,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                 });
                 if (!commandFound) {
                     console.log("Le restaurateur ne trouve pas la commande de Gail oO");
+                    process.exit(1);
                 } else {
                     console.log("Jamie liste les commandes proches");
                     request({
@@ -141,7 +143,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                         qs: {id: coursierId, address: "3 Rue principale"}
                     }).then(function (res) {
                         var commandFound = false;
-                        var data= JSON.parse(res);
+                        var data = JSON.parse(res);
                         data.orders.forEach(order => {
                             console.log(order.id);
                             if (order.id === orderId) {
@@ -171,7 +173,12 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                     request({
                                         url: `${coursier_url}/geolocation`,
                                         method: 'PUT',
-                                        body: {orderId: orderId, coursierId: coursierId,timestamp: Math.round((Date.now()) / 1000),geolocation : {long: 12, lat: 42} },
+                                        body: {
+                                            orderId: orderId,
+                                            coursierId: coursierId,
+                                            timestamp: Math.round((Date.now()) / 1000),
+                                            geolocation: {long: 12, lat: 42}
+                                        },
                                         json: true
                                     }).then(function (res) {
                                         console.log("Gail traque Jamie");
@@ -189,7 +196,12 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                 request({
                                                     url: `${customer_ws}/feedbacks/`,
                                                     method: 'POST',
-                                                    body: {mealId: order.meals[0].id, rating: 4, customerId: client.id, desc: "Super Mac first !"},
+                                                    body: {
+                                                        mealId: order.meals[0].id,
+                                                        rating: 4,
+                                                        customerId: client.id,
+                                                        desc: "Super Mac first !"
+                                                    },
                                                     json: true
                                                 }).then(function (resp) {
                                                     console.log("Jordan consulte les avis sur les plats de son restaurant");
@@ -198,6 +210,8 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                         method: 'GET',
                                                         qs: {restaurantId: restaurantId}
                                                     }).then(function (res) {
+                                                        res=JSON.parse(res);
+                                                        console.log(res.meals.map(value => value.feedback));
                                                         console.log("Terry consulte les statistiques de son restaurant")
                                                         request({
                                                             url: `${restaurant_url}/statistics/${restaurantId}`,
@@ -205,14 +219,14 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                         }).then(function (res) {
                                                             console.log("Liste : " + res);
                                                         });
-                                                    }).catch(err=>{
+                                                    }).catch(err => {
                                                         throw  err;
                                                     });
                                                 });
                                             });
                                         });
-                                    }).catch(err=>{
-                                        console.log("Impossible de mettre à jour sa position : " , err);
+                                    }).catch(err => {
+                                        console.log("Impossible de mettre à jour sa position : ", err);
                                     })
                                 }).catch(function (err) {
                                     console.log("ERROR : " + err);

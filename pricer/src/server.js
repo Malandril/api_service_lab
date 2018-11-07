@@ -1,4 +1,3 @@
-'use strict';
 
 let methods = require('./methods');
 let config = require('./configuration');
@@ -29,74 +28,14 @@ const run = async () => {
             console.log("Received from topic:", topic, data);
             switch (topic) {
                 case "create_order":
-                    var orderId = data.orderId;
-                    var requestId = data.requestId;
-                    let value ={
-                        requestId: requestId,
-                        orderId: orderId,
-                    };
-                    const restaurantId = data.meals[0].restaurant.id;
-                    var totalPrice = 0;
-                    for (var i = 0; i< data.meals.length; i++){
-                        totalPrice += data.meals[i].price;
-                    }
-                    if("voucher"  in data && data["voucher"] !== ""){
-                        const code = data.voucher;
-                        mongoHelper.findVoucherByCodeRestaurant(restaurantId, code).then(val=>{
-                            if(!val){
-                                //TODO: manage voucher not found exception
-                                console.log("Voucher "+ code + " not found.");
-                                value.price =  totalPrice;
-                                producer.send({
-                                    topic: "price_computed",
-                                    messages: [{
-                                        key: "", value: JSON.stringify(value)
-                                    }]
-                                });
-                                return;
-                            }
-                            value.price =  totalPrice * (1 -  val.discount);
-                            producer.send({
-                                topic: "price_computed",
-                                messages: [{
-                                    key: "", value:  JSON.stringify(value)
-                                }]
-                            });
-                        })
-                    }else{
-                        value.price =  totalPrice;
-                        producer.send({
-                            topic: "price_computed",
-                            messages: [{
-                                key: "", value:  JSON.stringify(value)
-                            }]
-                        });
-                    }
+                    await methods.createOrder(data, mongoHelper.db, producer);
                     break;
                 case "add_voucher":
-                    mongoHelper.db.collection('vouchers').insertOne(data, function (err, r) {
-                        if (err) {
-                            console.log(util.inspect(err));
-                        } else {
-                            console.log("Add voucher "+data + " in db");
-                        }
-                    });
+                    methods.addVoucher(data, mongoHelper.db);
                     break;
                 case "list_vouchers":
-
-                    var vouchers = mongoHelper.db.collection('vouchers').find({restaurantId: data.restaurantId}).toArray();
-                    let result = {
-                        vouchers: vouchers,
-                        restaurantId: data.restaurantId,
-                        requestId: data.requestId
-                    };
-                    producer.send({
-                        topic: "vouchers_listed",
-                        messages: [{
-                            key: "", value:  JSON.stringify(result)
-                        }]
-                    });
-
+                    methods.listVouchers(data, mongoHelper.db, producer);
+                    break;
             }
         }
     });

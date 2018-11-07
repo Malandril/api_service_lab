@@ -172,13 +172,7 @@ app.post('/orders/', (req, res) => {
         meals: meals,
         customer: customer
     });
-    console.log("Send create_order_request :" + value);
-    producer.send({
-        topic: "create_order_request",
-        messages: [{
-            key: "", value: value
-        }]
-    });
+
     creationInstances.set(session, {
         clientResp: res,
         eta: null,
@@ -202,7 +196,13 @@ app.post('/orders/', (req, res) => {
             return b;
         }
     });
-
+    console.log("Send create_order_request :" + value);
+    producer.send({
+        topic: "create_order_request",
+        messages: [{
+            key: "", value: value
+        }]
+    });
 });
 
 app.put('/orders/:orderId', (req, res) => {

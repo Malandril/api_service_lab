@@ -40,7 +40,6 @@ const run = async () => {
                     methods.putNewStatus(data,mongoHelper.db, "finalise_order");
                     break;
                 case "get_statistics":
-                    console.log("pull statistics");
                     methods.pullStatistics(data, mongoHelper.db, producer);
             }
         }}
@@ -57,7 +56,6 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await getDeliverableOrders.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -68,7 +66,6 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await getDeliverableOrders.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
