@@ -12,8 +12,8 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'payment',
-    retry:{
-        retries:8
+    retry: {
+        retries: 8
     }
 });
 const consumer = kafka.consumer({groupId: 'payment'});
@@ -22,18 +22,18 @@ const producer = kafka.producer();
 const run = async () => {
     await producer.connect();
     await consumer.connect();
-    await consumer.subscribe({topic: "finalise_order"});
+    await consumer.subscribe({topic: "submit_order"});
     await consumer.subscribe({topic: "price_computed"});
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
             console.log("Received from topic:", topic, data);
             switch (topic) {
-                case "finalise_order":
-                    methods.finaliseOrder(data, mongoHelper.db, producer);
+                case "submit_order":
+                    methods.submitOrder(data, mongoHelper.db, producer);
                     break;
                 case "price_computed":
-                    methods.priceComputed(data, mongoHelper.db);
+                    methods.priceComputed(data, mongoHelper.db, producer);
                     break;
             }
         }

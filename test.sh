@@ -29,3 +29,12 @@ do
         cd ../..
     fi
 done
+
+
+for f in pricer
+do
+    echo $f
+    cd $f
+    npm test
+    cd ..
+done

@@ -33,7 +33,5 @@ module.exports = {
         };
         connectWithRetry()
     },
-    findVoucherByCodeRestaurant: function (restaurantId, code) {
-        return this.db. collection("vouchers").findOne({"restaurantId": restaurantId, "code": code});
-    }
+
 };
