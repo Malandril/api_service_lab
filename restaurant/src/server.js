@@ -27,6 +27,7 @@ const run = async () => {
     await consummer.subscribe({topic: "get_todo_meals"});
     await consummer.subscribe({topic: "order_delivered"});
     await consummer.subscribe({topic: "meal_cooked"});
+    await consummer.subscribe({topic: "cancel_delivery"});
 
 
     await consummer.run({
@@ -43,6 +44,10 @@ const run = async () => {
                     break;
                 case "meal_cooked":
                     methods.mealCooked(message.value.toString(), mongoHelper.db);
+                    break;
+                case "cancel_delivery":
+                    methods.orderCanceled(message.value.toString(), mongoHelper.db);
+                    break;
             }
         }
     });

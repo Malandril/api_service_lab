@@ -56,14 +56,18 @@ let methods = {
     },
     orderDelivered: function (msg_string, db) {
         var msg = JSON.parse(msg_string);
-        console.log("orderDelivered: " + msg_string);
-        if (!("order" in msg && "id" in msg.order)) {
-            console.log("Error : Malformed message");
-            return;
-        }
         db.collection('restaurants').findOneAndUpdate(
                 {"id": msg.order.id},
                 {$set: {status: "delivered"}}
+        );
+
+    },
+    orderCanceled: function (msg_string, db) {
+        var msg = JSON.parse(msg_string);
+        console.log("orderDelivered: " + msg_string);
+        db.collection('restaurants').findOneAndUpdate(
+            {"id": msg.orderId},
+            {$set: {status: "todo"}}
         );
     }
 };

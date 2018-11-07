@@ -9,7 +9,7 @@ mongoHelper.initialize(mongoHelper);
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'statistics',
@@ -41,6 +41,7 @@ const run = async () => {
                     break;
                 case "get_statistics":
                     methods.pullStatistics(data, mongoHelper.db, producer);
+                    break;
             }
         }}
     );
