@@ -33,7 +33,7 @@ let methods = {
                 coursier: message.coursierId,
             });
 
-        }
+        },
         processPaymentResult: function (succeed, message, dbHelper, producer) {
             let orderId = message.order.id;
             console.log("Payment of order " + orderId, "succeed : ", succeed);
