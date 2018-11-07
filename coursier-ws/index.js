@@ -138,12 +138,12 @@ app.post('/deliveries/', (req, res) => {
 
 app.put('/deliveries/:orderId', (req, res) => {
     if (!("orderId" in req.params)) {
-        res.sendStatus(400).send("Attribute 'orderId' needed");
+        res.status(400).send("Attribute 'orderId' needed");
         return;
     }
     const orderId = req.params.orderId;
     if (!("coursierId" in req.body)) {
-        res.sendStatus(400).send("Attribute 'coursierId' needed");
+        res.status(400).send("Attribute 'coursierId' needed");
         return;
     }
     const coursierId = req.body.coursierId;
@@ -200,6 +200,36 @@ app.put('/geolocation/', (req, res) => {
     res.send("ok");
 
 });
+
+
+app.delete('/deliveries/:orderId', (req, res) => {
+    console.log(req.params);
+    console.log(req.body);
+    console.log(req.query);
+    if (!("orderId" in req.params) && !("orderId" in req.body)) {
+        res.status(400).send("Attribute 'orderId' needed");
+        return;
+    }
+    const orderId = req.params.orderId || req.body.orderId;
+    if (!("coursierId" in req.body)) {
+        res.status(400).send("Attribute 'coursierId' needed");
+        return;
+    }
+    const coursierId =  req.body.coursierId;
+    let value = JSON.stringify({
+        orderId: orderId,
+        coursierId: coursierId
+    });
+    console.log("Send : order_delivered " + util.inspect(value));
+    producer.send({
+        topic: "cancel_delivery",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    res.sendStatus(200);
+});
+
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
