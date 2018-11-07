@@ -19,7 +19,8 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'coursier_consumer' });
 const producer = kafka.producer();
-const consumers = ["order_delivered","finalise_order","get_ordered_to_be_delivered","update_geoloc","get_coursier_geoloc"];
+const consumers = ["order_delivered","finalise_order","get_ordered_to_be_delivered","update_geoloc","get_coursier_geoloc",
+    "assign_delivery", "cancel_delivery"];
 const run = async () => {
     await producer.connect();
     await consumer.connect();
@@ -37,6 +38,12 @@ const run = async () => {
                     break;
                 case "finalise_order":
                     methods.addOrder(data, mongoHelper.db);
+                    break;
+                case "assign_delivery":
+                    methods.assign(data, mongoHelper.db);
+                    break;
+                case "cancel_delivery":
+                    methods.disassign(data, mongoHelper.db);
                     break;
                 case "order_delivered":
                     methods.deleteOrder(data, mongoHelper.db);
