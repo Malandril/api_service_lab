@@ -2,7 +2,7 @@
 const util = require('util');
 let methods = {
     addOrder : function (msg, db) {
-        msg.assigned = false;
+        msg.order.assigned = false;
         console.log("added : " +util.inspect(msg, {showHidden: false, depth: null}) )
         if(!("order" in msg) || !("meals" in msg.order)){
             console.log("Error : Not enough data")
@@ -16,7 +16,7 @@ let methods = {
         if("coursier" in msg &&"address" in msg.coursier){
             var id = msg.coursier.address.split(" ");
             var orders = [];
-            db.collection('orders').find({"assigned" : false}).limit(1000).each(function(err, doc) {
+            db.collection('orders').find({}).limit(1000).each(function(err, doc) {
                 console.log("found ",doc);
                 if(doc){
 
@@ -65,6 +65,8 @@ let methods = {
                 assigned: true
             }
         })
+            .then(val=>console.log("assign worked" + res))
+            .then(err=>{throw err});
     },
     disassign: function (msg, db) {
         db.collection('orders').findOneAndUpdate({"order.id": msg.orderId}, {
@@ -72,6 +74,8 @@ let methods = {
                 assigned: false
             }
         })
+            .then(val=>console.log("disassign worked" + res))
+            .then(err=>{throw err});
     },
 
 
