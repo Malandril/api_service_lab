@@ -8,7 +8,7 @@ let methods = {
             console.log("Error : Not enough data")
         }else{
             db.collection('orders').insertOne(msg.order, function(err, r) {
-               console.log("added : "+ r );
+               console.log("added : "+ r ,JSON.stringify(msg.order));
             });
         }
     },
@@ -19,7 +19,6 @@ let methods = {
             db.collection('orders').find({}).limit(1000).each(function(err, doc) {
                 console.log("found ",doc);
                 if(doc){
-
                     orders.push(doc);
                 }else{
                     let resp = {
@@ -65,7 +64,7 @@ let methods = {
                 assigned: true
             }
         })
-            .then(val=>console.log("assign worked" + res))
+            .then(val=>console.log("assign worked" + val))
             .then(err=>{throw err});
     },
     disassign: function (msg, db) {
@@ -74,7 +73,7 @@ let methods = {
                 assigned: false
             }
         })
-            .then(val=>console.log("disassign worked" + res))
+            .then(val=>console.log("disassign worked" + val))
             .then(err=>{throw err});
     },
 
