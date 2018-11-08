@@ -46,12 +46,13 @@ let methods = {
     },
 
     updateLocalisation: function (msg, db) {
+        console.log("Location updated with : ", msg);
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
     },
     getLocalisation: function (msg, db, producer) {
         db.collection('tracks').findOne({"orderId" : msg.orderId}, function(err, result) {
             if (err) throw err;
-            console.log(result);
+            console.log("Get location : ", result);
             producer.send({
                 topic:"order_tracker",
                 messages: [{key:"", value: JSON.stringify(result)}]
