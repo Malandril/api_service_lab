@@ -48,10 +48,6 @@ let methods = {
     updateLocalisation: function (msg, db) {
         console.log("Location updated with : ", msg);
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
-        db.collection('tracks').find({}, function (err, res) {
-            if (err) throw err;
-            console.log("DB contains : ", res)
-        });
     },
     getLocalisation: function (msg, db, producer) {
         console.log("Asking location and ETA for :", msg);
