@@ -115,7 +115,9 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                     }).then(function (res) {
                                         console.log("Gail traque Jamie");
                                         request({
-                                            url: `${customer_ws}/geolocation/${orderId}`
+                                            url: `${customer_ws}/geolocation/${orderId}`,
+                                            method: 'GET',
+                                            qs: {orderId: orderId}
                                         }).then(function (res) {
                                             console.log("Jamie vient de livrer la commande à Gail.", res);
                                             request({
