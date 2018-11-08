@@ -9,7 +9,7 @@ let coursier_url = "http://localhost:8099";
 // assumption: the client is already connected
 var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0608724762"};
 var order = null;
-var coursierId = 18;
+var coursierId = "18";
 var orderId = null;
 var restaurantId = null;
 
@@ -18,7 +18,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     restaurantId = data.restaurant.id;
-    console.log("Meals returned : " + parse.meals.length);
+    console.log("Meals returned : " + parse.meals.length, data);
     order = {
         meals: [data],
         customer: {
@@ -142,7 +142,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                         method: 'GET',
                                                         qs: {restaurantId: restaurantId}
                                                     }).then(function (res) {
-                                                        res=JSON.parse(res);
+                                                        res = JSON.parse(res);
                                                         console.log(res.meals.map(value => value.feedback));
                                                         console.log("Terry consulte les statistiques de son restaurant")
                                                         request({
