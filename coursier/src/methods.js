@@ -49,7 +49,7 @@ let methods = {
         console.log("Location updated with : ", msg);
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true}, function (err, result) {
             if (err) throw err;
-            console.log("Updated location : ",result);
+            console.log("DB contains : ", db.collection('tracks').find().toArray());
         });
     },
     getLocalisation: function (msg, db, producer) {
