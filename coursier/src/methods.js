@@ -50,10 +50,16 @@ let methods = {
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
     },
     getLocalisation: function (msg, db, producer) {
-        console.log("ASking location for :", msg);
+        console.log("Asking location for :", msg);
         db.collection('tracks').findOne({"orderId" : msg.orderId}, function(err, result) {
             if (err) throw err;
             console.log("Get location : ", result);
+            var x1 = parseFloat(msg.geoloc.lat);
+            var y1 = parseFloat(msg.geoloc.long);
+            var x2 = parseFloat(result.geoloc.lat);
+            var y2 = parseFloat(result.geoloc.long);
+            result.eta = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+            console.log("New ETA : ", result.eta);
             producer.send({
                 topic:"order_tracker",
                 messages: [{key:"", value: JSON.stringify(result)}]
