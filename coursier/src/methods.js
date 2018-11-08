@@ -50,7 +50,7 @@ let methods = {
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
     },
     getLocalisation: function (msg, db, producer) {
-        console.log("Asking location for :", msg);
+        console.log("Asking location and ETA for :", msg);
         db.collection('tracks').findOne({"orderId" : msg.orderId}, function(err, result) {
             if (err) throw err;
             console.log("Get location : ", result);
