@@ -45,7 +45,7 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             let data = JSON.parse(message.value.toString());
-            console.log("received", data);
+            console.log("received", topic, data);
             switch (topic) {
                 case "order_delivered":
                     methods.orderDelivered(data, mongoHelper.db);

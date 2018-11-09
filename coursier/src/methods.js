@@ -7,6 +7,7 @@ let methods = {
         if (!("order" in msg) || !("meals" in msg.order)) {
             console.log("Error : Not enough data")
         } else {
+            msg.geoloc = {lat: 0, long: 0};
             db.collection('orders').insertOne(msg.order, function (err, r) {
                 console.log("added : " + r, JSON.stringify(msg.order));
             });
@@ -39,18 +40,20 @@ let methods = {
     },
 
     deleteOrder: function (msg, db) {
-        db.collection('orders').deleteOne(msg, function (err, r) {
+        db.collection('orders').deleteOne({"id": msg.order.id}, function (err, r) {
             console.log("deleted : " + r);
         });
     },
 
     updateLocalisation: function (msg, db) {
         console.log(JSON.stringify(msg));
-        db.collection('tracks').findOneAndUpdate({"id": msg.orderId}, {$set: {geoloc: msg.geoloc}}, {"upsert": true});
+        db.collection('orders').findOneAndUpdate({"id": msg.orderId}, {$set: {geoloc: msg.geoloc}}, {"upsert": true}, (err, res) => {
+            console.log("lol", err, res);
+        })
     },
     getLocalisation: function (msg, db, producer) {
         console.log("Asking location and ETA for :", msg);
-        db.collection('tracks').findOne({"id": msg.orderId}, function (err, result) {
+        db.collection('orders').findOne({"id": msg.orderId}, function (err, result) {
             if (err) throw err;
             console.log("Get location : ", result);
             var x1 = parseFloat(msg.geoloc.lat);

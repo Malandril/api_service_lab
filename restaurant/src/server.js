@@ -37,6 +37,7 @@ const run = async () => {
 
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
+            console.log("Received", topic, message.value.toString());
             switch (topic) {
                 case "finalise_order":
                     methods.finaliseOrder(message.value.toString(), mongoHelper.db);

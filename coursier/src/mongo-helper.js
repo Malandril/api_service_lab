@@ -26,7 +26,7 @@ module.exports = {
                     obj.db = obj.client.db("coursier");
 
 
-                    obj.db.createCollection("orders", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("orders",
                         function (err, results) { }
                     );
 

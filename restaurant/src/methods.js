@@ -23,7 +23,7 @@ let methods = {
         db.collection('restaurants').insertOne(order);
         console.log("Inserted: " + JSON.stringify(order))
     },
-    getMeals: function (msg_string, producer, db) {
+     getMeals: function (msg_string, producer, db) {
         var msg = JSON.parse(msg_string);
         console.log("getMeals: " + msg_string);
 
