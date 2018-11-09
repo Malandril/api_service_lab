@@ -38,8 +38,6 @@ const run = async () => {
     await producer.connect();
     await consumer.connect();
     await consumer.subscribe({topic: "meals_getted"});
-    await consumer.subscribe({topic: "delivered_meals"});
-    // await consumer.subscribe({topic: "order_delivered"});
     await consumer.subscribe({topic: "statistics"});
     await consumer.subscribe({topic: "feedback_listed"});
     await consumer.subscribe({topic: "vouchers_listed"});

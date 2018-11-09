@@ -36,8 +36,8 @@ const run = async () => {
                 case "finalise_order":
                     methods.finaliseOrder(message.value.toString(), mongoHelper.db);
                     break;
-                case "get_todo_meals":
-                    methods.getTodoMeals(message.value.toString(), producer, mongoHelper.db);
+                case "get_meals":
+                    methods.getMeals(message.value.toString(), producer, mongoHelper.db);
                     break;
                 case "order_delivered":
                     methods.orderDelivered(message.value.toString(), mongoHelper.db);
