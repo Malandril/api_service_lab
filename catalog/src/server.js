@@ -81,32 +81,43 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'catalog',
 });
-const consummer = kafka.consumer({groupId: 'catalog'});
+const consumer = kafka.consumer({groupId: 'list_meals'});
+const addFeedback = kafka.consumer({groupId: 'add_feedback'});
+const listFeedback = kafka.consumer({groupId: 'list_feedback'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
 
-    await consummer.connect();
-    await consummer.subscribe({topic: "list_meals"});
-    await consummer.subscribe({topic: "add_feedback"});
-    await consummer.subscribe({topic: "list_feedback"});
-
     await consumer.connect();
-
-    await consummer.run({
+    await consumer.subscribe({topic: "list_meals"});
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            switch (topic) {
+            switch (topic){
                 case "list_meals":
-                    methods.listMeals(JSON.parse(message.value), producer, mongoHelper.db);
+
+                    console.log(topic,message.value.toString(), util.inspect(message), message.key.toString());
+                    methods.listMeals(message.value.toString(), producer, mongoHelper.db);
                     break;
-                case "add_feedback":
-                    methods.addFeedback(JSON.parse(message.value), producer, mongoHelper.db);
-                    break;
-                case "list_feedback":
-                    methods.listFeedback(JSON.parse(message.value), mongoHelper.db);
-                    break;
+                default:
+                    console.log("Unimplemented topic: "+ topic)
             }
+        }
+    });
+
+    await addFeedback.connect();
+    await addFeedback.subscribe({topic: "add_feedback"});
+    await addFeedback.run({
+        eachMessage: async ({topic, partition, message}) => {
+            methods.addFeedback(message.value.toString(), producer, mongoHelper.db);
+        }
+    });
+
+    await listFeedback.connect();
+    await listFeedback.subscribe({topic: "list_feedback"});
+    await listFeedback.run({
+        eachMessage: async ({topic, partition, message}) => {
+            methods.listFeedback(message.value.toString(), producer, mongoHelper.db);
         }
     });
 
