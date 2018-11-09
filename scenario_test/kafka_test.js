@@ -85,7 +85,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                         });
                         if (!commandFound) {
                             console.log("Jimmy ne trouve pas la commande");
-
+                            process.exit(1);
                         } else {
                             console.log("Jimmy s'occupe de la commande " + orderId);
                             request({
@@ -146,7 +146,9 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                     }).then(function (res) {
                                                         console.log("Gail traque Jamie");
                                                         request({
-                                                            url: `${customer_ws}/geolocation/${orderId}`
+                                                            url: `${customer_ws}/geolocation/${orderId}`,
+                                            method: 'GET',
+                                            qs: {orderId: orderId, lat: 19, long: 42}
                                                         }).then(function (res) {
                                                             console.log("Jamie vient de livrer la commande à Gail.", res);
                                                             request({

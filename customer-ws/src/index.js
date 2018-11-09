@@ -267,9 +267,20 @@ app.post('/feedbacks/', (req, res) => {
 
 app.get('/geolocation/:orderId', (req, res) => {
     const orderId = req.params.orderId;
-    console.log("Parsed : orderId=" + orderId);
+    if (!('long' in req.query)) {
+        res.send("Attribute 'long' for the longitude needed");
+        return;
+    }
+    const long = req.query.long;
+    if (!('lat' in req.query)) {
+        res.send("Attribute 'lat' for the latitude needed");
+        return;
+    }
+    const lat = req.query.lat;
+    console.log("Parsed : orderId=" + orderId + ", lat="+ lat +", long="+ long);
     let value = JSON.stringify({
-        orderId: orderId
+        orderId: orderId,
+        geoloc: {long: long, lat: lat}
     });
     console.log("Send get_coursier_geoloc : " + util.inspect(value));
     producer.send({
