@@ -4,7 +4,7 @@ const MAX_RETRY = 5;
 module.exports = {
     client: null,
     db: null,
-    initialize: function (obj) {
+    initialize: function (obj,seed_function) {
         obj.client = new MongoClient("mongodb://mongo_delivery_man:27017/", {useNewUrlParser: true});
         let count = 0;
         let connectWithRetry = function () {
@@ -22,9 +22,12 @@ module.exports = {
                     obj.db = obj.client.db("delivery_man_account");
 
 
-                    obj.db.createCollection("accounts", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("accounts",
                         function (err, results) {
                             console.log("Collection created.");
+                            if(!err){
+                                seed_function(obj.db);
+                            }
                         }
                     );
                 }
