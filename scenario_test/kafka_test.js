@@ -11,82 +11,15 @@ var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0
 var order = null;
 var coursierId = "18";
 var jimmyId = "19";
-var restaurantId = null;
 var orderId = null;
+var restaurantId = null;
 
-function coursierAction() {
-    console.log("Un coursier du coin liste les orders");
-    return new Promise(
-        function (resolve, reject) {
-            request({
-                url: `${coursier_url}/deliveries`,
-                qs: {id: coursierId, address: "3 Rue principale"}
-            }).then(function (res) {
-                console.log("Liste : " + res);
-                resolve(res);
-            }).catch(reject);
-        })
-        .then(function (e) {
-            var data = JSON.parse(e);
-
-            console.log("Il y a " + data.orders.length + " commandes proche à livrer");
-            let id = data.orders[data.orders.length - 1].id;
-            console.log("We chose to deliver order ", id);
-            request({
-                url: `${coursier_url}/deliveries`,
-                method: 'POST',
-                body: {orderId: id, coursierId: coursierId},
-                json: true
-            }).then(function (res) {
-                console.log("res1", res);
-                request({
-                    url: `${coursier_url}/deliveries/${id}`,
-                    method: 'PUT',
-                    body: {orderId: id, coursierId: coursierId},
-                    json: true
-                }).then(function (res) {
-                    console.log("end result " + res);
-                });
-            });
-        });
-}
-
-function restaurantAction() {
-    return new Promise(
-        function (resolve, reject) {
-            request({
-                url: `${restaurant_url}/orders/`,
-                qs: {id: coursierId}
-            }, function (error, response, body) {
-            }).then(function (res) {
-
-                resolve(res);
-            }).catch(reject);
-        })
-        .then(function (e) {
-            var data = JSON.parse(e);
-            request({
-                url: `${restaurant_url}/orders/${orderId}`,
-                method: 'PUT',
-                body: {orderId: orderId},
-                json: true
-            }).then(function (res) {
-                console.log("resp :" + res);
-            }).catch(function (err) {
-                console.log("ERROR : " + err);
-                process.exit(1)
-            });
-        }).catch(function (e) {
-            console.log(e);
-        });
-}
 
 request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     restaurantId = data.restaurant.id;
     console.log("Meals returned : " + parse.meals.length, data);
-    console.log("Bob order: " + JSON.stringify(data));
     order = {
         meals: [data],
         customer: {
@@ -129,7 +62,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                 var commandFound = false;
                 data.orders.forEach(o => {
                     console.log(o.orderId);
-                    if (o.orderId === orderId && o.status === "todo") {
+                    if (o.orderId === orderId) {
                         commandFound = true;
                     }
                 });
@@ -183,7 +116,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                         });
                                         if (!commandFound) {
                                             console.log("Jamie ne trouve pas la commande");
-                                            process.exit(1);
+
                                         } else {
                                             console.log("Jamie s'occupe de la commande " + orderId);
                                             request({
@@ -226,54 +159,34 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                             }).then(function () {
                                                                 console.log("Gail, contente de la qualité, décide de laisser un commentaire");
                                                                 request({
-                                                                    url: `${restaurant_url}/orders/`,
-                                                    qs: {id: restaurantId, status: "delivered"}
-                                                }).then(function (res) {
-                                                    const data = JSON.parse(res);
-                                                    console.log("Le restaurateur liste les commandes qui ont été livrées :");
-                                                    var commandFound = false;
-                                                    data.orders.forEach(o => {
-                                                        console.log(o.orderId);
-                                                        if (o.orderId === orderId && o.status === "delivered") {
-                                                            commandFound = true;
-                                                        }
-                                                    });
-                                                    if (!commandFound) {
-                                                        console.log("Le restaurateur ne trouve pas que la commande de Gail a été livrée");
-                                                        process.exit(1);
-                                                    } else {
-                                                        console.log("Jamie liste les commandes proches");
-                                                        request({
-                                                            url: `${customer_ws}/feedbacks/`,
-                                                            method: 'POST',
-                                                            body: {
-                                                                mealId: order.meals[0].id,
-                                                                rating: 4,
-                                                                customerId: client.id,
-                                                                desc: "Super Mac first !"
-                                                            },
-                                                            json: true
-                                                        }).then(function (resp) {
-                                                            console.log("Jordan consulte les avis sur les plats de son restaurant");
-                                                            request({
-                                                                url: `${restaurant_url}/feedbacks/${restaurantId}`,
-                                                                method: 'GET',
-                                                                qs: {restaurantId: restaurantId}
-                                                            }).then(function (res) {
-                                                                res = JSON.parse(res);
-                                                                console.log(res.meals.map(value => value.feedbacks));
-                                                                console.log("Terry consulte les statistiques de son restaurant")
-                                                                request({
-                                                                    url: `${restaurant_url}/statistics/${restaurantId}`,
-                                                                    qs: {restaurantId: restaurantId}
-                                                                }).then(function (res) {
-                                                                    console.log("Liste : " + res);
-                                                                });
-                                                            }).catch(err => {
-                                                                throw  err;
-                                                            });
-                                                        });
-                                                                    }
+                                                                    url: `${customer_ws}/feedbacks/`,
+                                                                    method: 'POST',
+                                                                    body: {
+                                                                        mealId: order.meals[0].id,
+                                                                        rating: 4,
+                                                                        customerId: client.id,
+                                                                        desc: "Super Mac first !"
+                                                                    },
+                                                                    json: true
+                                                                }).then(function (resp) {
+                                                                    console.log("Jordan consulte les avis sur les plats de son restaurant");
+                                                                    request({
+                                                                        url: `${restaurant_url}/feedbacks/${restaurantId}`,
+                                                                        method: 'GET',
+                                                                        qs: {restaurantId: restaurantId}
+                                                                    }).then(function (res) {
+                                                                        res = JSON.parse(res);
+                                                                        console.log(res.meals.map(value => value.feedbacks));
+                                                                        console.log("Terry consulte les statistiques de son restaurant")
+                                                                        request({
+                                                                            url: `${restaurant_url}/statistics/${restaurantId}`,
+                                                                            qs: {restaurantId: restaurantId}
+                                                                        }).then(function (res) {
+                                                                            console.log("Liste : " + res);
+                                                                        });
+                                                                    }).catch(err => {
+                                                                        throw  err;
+                                                                    });
                                                                 });
                                                             });
                                                         });
