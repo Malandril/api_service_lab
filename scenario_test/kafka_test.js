@@ -13,7 +13,6 @@ var coursierId = "18";
 var orderId = null;
 var restaurantId = null;
 
-
 request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
@@ -84,7 +83,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                         });
                         if (!commandFound) {
                             console.log("Jamie ne trouve pas la commande");
-
+                            process.exit(1);
                         } else {
                             console.log("Jamie s'occuper de la commande " + orderId);
                             request({

@@ -18,7 +18,7 @@ let methods = {
             .find(query)
             .project({_id: 0, feedback: 0})
             .toArray((err, res) => {
-                console.log("Send msg: " + JSON.stringify(res) + " id " + msg.requestId);
+                // console.log("Send msg: " + JSON.stringify(res) + " id " + msg.requestId);
                 producer.send({
                     "topic": "meals_listed",
                     "messages": [{"key": "", "value": JSON.stringify({"meals": res, requestId: msg.requestId})}]
@@ -40,7 +40,7 @@ let methods = {
             .project({_id: 0, eta: 0, price: 0, restaurant: 0})
             .toArray((err, res) => {
                 let value = JSON.stringify({"meals": res, requestId: msg.requestId});
-                console.log("Send msg: " + JSON.stringify(value));
+                // console.log("Send msg: " + JSON.stringify(value));
                 producer.send({
                     "topic": "feedback_listed",
                     "messages": [{"key": "", "value": value}]

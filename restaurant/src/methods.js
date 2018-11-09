@@ -35,7 +35,7 @@ let methods = {
                 .find({"restaurantId": msg.restaurantId, "status": "todo"})
                 .project({_id: 0, restaurantId: 0})
                 .toArray((err, res) => {
-                    console.log("Send msg: " + JSON.stringify(res));
+                    // console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
                         "topic":"todo_meals",
                         "messages": [{"key":"", "value": JSON.stringify({"orders": res, requestId:msg.requestId})}]

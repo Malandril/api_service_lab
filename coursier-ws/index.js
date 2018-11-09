@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'coursierws',
@@ -138,6 +138,7 @@ app.get('/deliveries/', (req, res) => {
         res: res,
         checkValidity: function (data) {
             delete data.requestId;
+            console.log("waow getting deliveries");
             res.send(data);
             return true;
         }
