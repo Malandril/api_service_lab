@@ -46,6 +46,7 @@ let methods = {
     },
 
     updateLocalisation: function (msg, db) {
+        console.log(JSON.stringify(msg));
         db.collection('tracks').replaceOne({"orderId" : msg.orderId}, msg,{"upsert": true});
     },
     getLocalisation: function (msg, db, producer) {
@@ -64,8 +65,8 @@ let methods = {
                 assigned: true
             }
         })
-            .then(val=>console.log("assign worked" + val))
-            .then(err=>{throw err});
+            .then(val=>console.log("assign worked" ,JSON.stringify(val)))
+            .then(err=>{console.log("assign worked err " ,JSON.stringify(err));throw err});
     },
     disassign: function (msg, db) {
         db.collection('orders').findOneAndUpdate({"order.id": msg.orderId}, {
@@ -73,8 +74,8 @@ let methods = {
                 assigned: false
             }
         })
-            .then(val=>console.log("disassign worked" + val))
-            .then(err=>{throw err});
+            .then(val=>console.log("disassign worked", JSON.stringify(val)))
+            .then(err=>{console.log("disassign worked",JSON.stringify(err));throw err});
     },
 
 

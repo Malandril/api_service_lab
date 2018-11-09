@@ -30,9 +30,6 @@ module.exports = {
                         function (err, results) { }
                     );
 
-                    obj.db.createCollection("tracks", {"capped": true, "size": 100000, "max": 5000},
-                        function (err, results) {}
-                    );
                 }
             });
         };
