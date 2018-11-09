@@ -53,6 +53,7 @@ const run = async () => {
                     break;
                 case "get_coursier_geoloc":
                     methods.getLocalisation(data, mongoHelper.db, producer);
+                    break;
             }
         }}
     );

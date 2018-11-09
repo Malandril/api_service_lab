@@ -33,7 +33,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
         body: order,
         json: true
     }).then(function (resp) {
-        console.log("La commande de GAIL devrait arriver dan  ", resp.eta, " minutes");
+        console.log("La commande de GAIL devrait arriver dans  ", resp.eta, " minutes");
         orderId = resp.orderId;
         var finalisation = {
             orderId: resp.orderId,
