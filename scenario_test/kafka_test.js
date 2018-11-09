@@ -183,7 +183,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                         });
                                         if (!commandFound) {
                                             console.log("Jamie ne trouve pas la commande");
-
+                                            process.exit(1);
                                         } else {
                                             console.log("Jamie s'occupe de la commande " + orderId);
                                             request({
