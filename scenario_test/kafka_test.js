@@ -11,7 +11,7 @@ var client = {id: 23, address: "742 Evergreen Terrace", name: "Homer", phone: "0
 var order = null;
 var coursierId = "18";
 var jimmyId = "19";
-var restaurantId = 12;
+var restaurantId = null;
 var orderId = null;
 
 function coursierAction() {
