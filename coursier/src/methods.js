@@ -75,6 +75,7 @@ let methods = {
                 assigned: false
             }
         })
+            
             .then(val=>console.log("disassign worked", JSON.stringify(val)))
             .catch(err=>{console.log("disassign didnt worked",JSON.stringify(err));throw err});
     },
