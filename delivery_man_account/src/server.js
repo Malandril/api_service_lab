@@ -28,6 +28,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'delivery_man_account',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 const consumer = kafka.consumer({groupId: 'delivery_man_account'});
 const producer = kafka.producer();

@@ -14,6 +14,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'coursierws',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 
 

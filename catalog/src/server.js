@@ -80,6 +80,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'catalog',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 const consumer = kafka.consumer({groupId: 'list_meals'});
 const addFeedback = kafka.consumer({groupId: 'add_feedback'});

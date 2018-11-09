@@ -13,6 +13,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'eta_calculator',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 const createOrderRequest = kafka.consumer({ groupId: 'create_order_request' });
 const producer = kafka.producer();
