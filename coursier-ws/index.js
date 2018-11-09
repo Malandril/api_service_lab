@@ -10,23 +10,24 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'coursierws',
 });
 
 
-const listResponse = kafka.consumer({groupId: 'list_orders_to_be_delivered'});
+const consumer = kafka.consumer({groupId: 'coursier_ws'});
 const producer = kafka.producer();
 
 const openConnections = new Map();
 const run = async () => {
     await producer.connect();
-    await listResponse.connect();
-    await listResponse.subscribe({topic: "list_orders_to_be_delivered"});
+    await consumer.connect();
+    await consumer.subscribe({topic: "list_orders_to_be_delivered"});
+    await consumer.subscribe({topic: "coursier_credits"});
 
-    await listResponse.run({
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
             console.log("Receive : " +message.value.toString()+ topic + data + data.requestId +openConnections.get(data.requestId) );
@@ -48,7 +49,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await listResponse.disconnect();
+            await consumer.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -58,12 +59,48 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await listResponse.disconnect();
+            await consumer.disconnect();
             await producer.disconnect();
         } finally {
             process.kill(process.pid, type)
         }
     })
+});
+
+
+app.get('/coursiers/:id/credits', (req, res) => {
+    console.log("Received : " + util.inspect(req.query));
+    if (!("id" in req.params)) {
+        res.send("Attribute 'id' needed");
+        return;
+    }
+    const coursierId = req.params.id;
+
+    console.log("Parsed : id=" + coursierId );
+
+    const uuid = uuidv4();
+    let value = JSON.stringify({
+        requestId: uuid,
+        coursierId:coursierId
+    });
+    console.log("Sent : " + util.inspect(value));
+    producer.send({
+        topic: "get_coursier_credits",
+        messages: [{
+            key: "", value: value
+        }]
+    });
+    openConnections.set(uuid, {
+        res: res,
+        checkValidity: function (data) {
+            delete data.requestId;
+            res.send(data);
+            return true;
+        }
+    });
+
+    console.log("put "+uuid+ " in openConnection" );
+
 });
 
 app.get('/deliveries/', (req, res) => {
@@ -101,6 +138,7 @@ app.get('/deliveries/', (req, res) => {
         res: res,
         checkValidity: function (data) {
             delete data.requestId;
+            console.log("waow getting deliveries");
             res.send(data);
             return true;
         }

@@ -21,7 +21,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
                             category: "burger",
                             eta: 4,
                             price: 1.0,
-                            feedback: [
+                            feedbacks: [
                                 {
                                     rating: 4,
                                     customerId: "15",
@@ -41,7 +41,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
                             category: "burger",
                             eta: 4,
                             price: 1.0,
-                            feedback: [
+                            feedbacks: [
                                 {
                                     rating: 4,
                                     customerId: "15",
@@ -61,7 +61,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
                             category: "burger",
                             eta: 4,
                             price: 1.0,
-                            feedback: [],
+                            feedbacks: [],
                             restaurant: {
                                 id: "25",
                                 name: "BurgerKing",

@@ -59,6 +59,7 @@ const run = async () => {
                     break;
                 case "cancel_delivery":
                     methods.cancelDelivery(data, mongoHelper);
+                    break;
                 default:
                     console.log("Unimplemented topic :" + topic);
                     break;

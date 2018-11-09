@@ -35,7 +35,7 @@ let methods = {
                 .find({"restaurantId": msg.restaurantId, "status": msg.status})
                 .project({_id: 0, restaurantId: 0})
                 .toArray((err, res) => {
-                    console.log("Send msg: " + JSON.stringify(res));
+                    // console.log("Send msg: " + JSON.stringify(res));
                     producer.send({
                         "topic":"meals_getted",
                         "messages": [{"key":"", "value": JSON.stringify({"orders": res, requestId:msg.requestId})}]
@@ -56,14 +56,18 @@ let methods = {
     },
     orderDelivered: function (msg_string, db) {
         var msg = JSON.parse(msg_string);
-        console.log("orderDelivered: " + msg_string);
-        if (!("order" in msg && "id" in msg.order)) {
-            console.log("Error : Malformed message");
-            return;
-        }
         db.collection('restaurants').findOneAndUpdate(
                 {"id": msg.order.id},
                 {$set: {status: "delivered"}}
+        );
+
+    },
+    orderCanceled: function (msg_string, db) {
+        var msg = JSON.parse(msg_string);
+        console.log("orderDelivered: " + msg_string);
+        db.collection('restaurants').findOneAndUpdate(
+            {"id": msg.orderId},
+            {$set: {status: "todo"}}
         );
     }
 };

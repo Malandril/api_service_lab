@@ -1,10 +1,26 @@
 'use strict';
 
 let methods = require('./methods');
-const { Kafka, logLevel } = require('kafkajs');
+const {Kafka, logLevel} = require('kafkajs');
 let mongoHelper = require("./mongo-helper");
 
-mongoHelper.initialize(mongoHelper);
+mongoHelper.initialize(mongoHelper, (db) => {
+
+    let accounts = [
+        {
+            name: "Jamie",
+            coursierId: '18',
+            credits: 0
+        },
+        {
+            name: "Fred",
+            coursierId: '19',
+            credits: 0
+        }
+    ];
+    console.log("seeding with", accounts);
+    db.collection("accounts").insertMany(accounts)
+});
 
 
 const kafka = new Kafka({
@@ -13,14 +29,27 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'delivery_man_account',
 });
-const orderDelivered = kafka.consumer({ groupId: 'order_delivered' });
+const consumer = kafka.consumer({groupId: 'delivery_man_account'});
+const producer = kafka.producer();
 
 const run = async () => {
-    await orderDelivered.connect();
-    await orderDelivered.subscribe({topic:"order_delivered"});
-    await orderDelivered.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            methods.orderDelivered(message.value.toString(),mongoHelper.db);
+    await producer.connect();
+    await consumer.connect();
+    await consumer.subscribe({topic: "order_delivered"});
+    await consumer.subscribe({topic: "get_coursier_credits"});
+    await consumer.run({
+        eachMessage: async ({topic, partition, message}) => {
+            let data = JSON.parse(message.value.toString());
+            console.log("received", data);
+            switch (topic) {
+                case "order_delivered":
+                    methods.orderDelivered(data, mongoHelper.db);
+                    break;
+                case "get_coursier_credits":
+                    await methods.getCredits(data, mongoHelper.db, producer);
+                    break;
+
+            }
         }
     });
 };
@@ -35,7 +64,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await orderDelivered.disconnect();
+            await consumer.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -46,7 +75,7 @@ errorTypes.map(type => {
 signalTraps.map(type => {
     process.once(type, async () => {
         try {
-            await orderDelivered.disconnect();
+            await consumer.disconnect();
         } finally {
             process.kill(process.pid, type)
         }
