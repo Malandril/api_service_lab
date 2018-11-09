@@ -8,7 +8,7 @@ let methods = {
             console.log("Error : Not enough data")
         } else {
             db.collection('orders').insertOne(msg.order, function (err, r) {
-                console.log("added : " + r,JSON.stringify(msg.order));
+                console.log("added : " + r, JSON.stringify(msg.order));
             });
         }
     },
@@ -66,25 +66,31 @@ let methods = {
         });
     },
     assign: function (msg, db) {
-        console.log( "msg order:",msg.orderId);
+        console.log("msg order:", msg.orderId);
         db.collection('orders').findOneAndUpdate({"id": msg.orderId}, {
             $set: {
                 assigned: true
             }
         })
-            .then(val=>console.log("assign worked" ,JSON.stringify(val)))
-            .catch(err=>{console.log("assign worked err " ,JSON.stringify(err));throw err});
+            .then(val => console.log("assign worked", JSON.stringify(val)))
+            .catch(err => {
+                console.log("assign worked err ", JSON.stringify(err));
+                throw err
+            });
     },
     disassign: function (msg, db) {
-        console.log( "msg order:",msg.orderId);
+        console.log("msg order:", msg.orderId);
         db.collection('orders').findOneAndUpdate({"id": msg.orderId}, {
             $set: {
                 assigned: false
             }
         })
 
-            .then(val=>console.log("disassign worked", JSON.stringify(val)))
-            .catch(err=>{console.log("disassign didnt worked",JSON.stringify(err));throw err});
+            .then(val => console.log("disassign worked", JSON.stringify(val)))
+            .catch(err => {
+                console.log("disassign didnt worked", JSON.stringify(err));
+                throw err
+            });
     },
 
 

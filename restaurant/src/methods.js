@@ -1,7 +1,7 @@
 'use strict';
 const util = require('util');
 let methods = {
-    finaliseOrder : function (msg_string, db) {
+    finaliseOrder: function (msg_string, db) {
         var msg = JSON.parse(msg_string);
         console.log("finaliseOrder: " + msg_string);
 
@@ -32,15 +32,14 @@ let methods = {
             return;
         }
         db.collection('restaurants')
-                .find({"restaurantId": msg.restaurantId, "status": msg.status})
-                .project({_id: 0, restaurantId: 0})
-                .toArray((err, res) => {
-                    // console.log("Send msg: " + JSON.stringify(res));
-                    producer.send({
-                        "topic":"meals_getted",
-                        "messages": [{"key":"", "value": JSON.stringify({"orders": res, requestId:msg.requestId})}]
-                    });
+            .find({"restaurantId": msg.restaurantId, "status": msg.status})
+            .toArray((err, res) => {
+                console.log("Send msg: " + JSON.stringify(res));
+                producer.send({
+                    "topic": "meals_getted",
+                    "messages": [{"key": "", "value": JSON.stringify({"orders": res, requestId: msg.requestId})}]
                 });
+            });
     },
     mealCooked: function (msg_string, db) {
         var msg = JSON.parse(msg_string);
@@ -50,15 +49,15 @@ let methods = {
             return;
         }
         db.collection('restaurants').findOneAndUpdate(
-                {"id": msg.order.id},
-                {$set: {status: "cooked"}}
+            {"orderId": msg.order.id},
+            {$set: {status: "cooked"}}
         );
     },
     orderDelivered: function (msg_string, db) {
         var msg = JSON.parse(msg_string);
         db.collection('restaurants').findOneAndUpdate(
-                {"id": msg.order.id},
-                {$set: {status: "delivered"}}
+            {"orderId": msg.order.id},
+            {$set: {status: "delivered"}}
         );
 
     },
@@ -66,7 +65,7 @@ let methods = {
         var msg = JSON.parse(msg_string);
         console.log("orderDelivered: " + msg_string);
         db.collection('restaurants').findOneAndUpdate(
-            {"id": msg.orderId},
+            {"orderId": msg.orderId},
             {$set: {status: "todo"}}
         );
     }

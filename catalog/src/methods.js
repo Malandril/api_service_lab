@@ -1,10 +1,9 @@
 'use strict';
 const util = require('util');
 let methods = {
-    listMeals: function (msg_string, producer, db) {
-        var msg = JSON.parse(msg_string);
+    listMeals: function (msg, producer, db) {
 
-        console.log("listMeals: " + msg_string);
+        console.log("listMeals: " + msg);
 
         var query = {};
 
@@ -25,10 +24,21 @@ let methods = {
                 });
             });
     },
-    listFeedback: function (msg_string, producer, db) {
-        var msg = JSON.parse(msg_string);
+    addFeedback: function (msg, db) {
+        console.log("addFeedback: " + msg);
 
-        console.log("listFeedback: " + msg_string);
+        if (!("mealId" in msg && "rating" in msg && "customerId" in msg && "desc" in msg)) {
+            console.log("Error : Malformed feedback");
+            return;
+        }
+        db.collection('meals').findOneAndUpdate(
+            {"id": msg.mealId},
+            {$push: {feedbacks: {"rating": msg.rating, "customerId": msg.customerId, "desc": msg.desc}}}
+        );
+    },
+    listFeedback: function (msg, producer, db) {
+
+        console.log("listFeedback: " + msg);
 
         if (!"restaurantId" in msg) {
             console.log("Error : Malformed message");
@@ -46,19 +56,6 @@ let methods = {
                     "messages": [{"key": "", "value": value}]
                 });
             });
-    },
-    addFeedback: function (msg_string, producer, db) {
-        var msg = JSON.parse(msg_string);
-        console.log("addFeedback: " + msg_string);
-
-        if (!("mealId" in msg && "rating" in msg && "customerId" in msg && "desc" in msg)) {
-            console.log("Error : Malformed feedback");
-            return;
-        }
-        db.collection('meals').findOneAndUpdate(
-            {"id": msg.mealId},
-            {$push: {feedbacks: {"rating": msg.rating, "customerId": msg.customerId, "desc": msg.desc}}}
-        );
     }
 };
 

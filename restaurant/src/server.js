@@ -21,21 +21,21 @@ const kafka = new Kafka({
         multiplier: 4
     }
 });
-const consummer = kafka.consumer({groupId: 'restaurant'});
+const consumer = kafka.consumer({groupId: 'restaurant'});
 const producer = kafka.producer();
 
 const run = async () => {
     await producer.connect();
 
-    await consummer.connect();
-    await consummer.subscribe({topic: "finalise_order"});
-    await consummer.subscribe({topic: "get_todo_meals"});
-    await consummer.subscribe({topic: "order_delivered"});
-    await consummer.subscribe({topic: "meal_cooked"});
-    await consummer.subscribe({topic: "cancel_delivery"});
+    await consumer.connect();
+    await consumer.subscribe({topic: "finalise_order"});
+    await consumer.subscribe({topic: "get_meals"});
+    await consumer.subscribe({topic: "order_delivered"});
+    await consumer.subscribe({topic: "meal_cooked"});
+    await consumer.subscribe({topic: "cancel_delivery"});
 
 
-    await consummer.run({
+    await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             switch (topic) {
                 case "finalise_order":

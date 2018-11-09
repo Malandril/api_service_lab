@@ -26,7 +26,7 @@ module.exports = {
                     obj.db = obj.client.db("restaurants");
 
 
-                    obj.db.createCollection("restaurants", {"capped": true, "size": 100000, "max": 5000},
+                    obj.db.createCollection("restaurants",
                         function (err, results) {
                             console.log("Collection created." + err + results);
                             //client.close();

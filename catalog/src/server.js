@@ -10,65 +10,65 @@ let mongoHelper = require("./mongo-helper");
 mongoHelper.initialize(mongoHelper, (db) => {
     console.log("in function");
     db.collection("meals").countDocuments().then((count) => {
-        if(count === 0) {
+        if (count === 0) {
             // Seed the database
             console.log("Seeding database");
             db.collection("meals").insertMany(
-                    [
-                        {
-                            id: "42",
-                            name: "Mac first",
-                            category: "burger",
-                            eta: 4,
-                            price: 1.0,
-                            feedbacks: [
-                                {
-                                    rating: 4,
-                                    customerId: "15",
-                                    desc: "Awesome"
+                [
+                    {
+                        id: "42",
+                        name: "Mac first",
+                        category: "burger",
+                        eta: 4,
+                        price: 1.0,
+                        feedbacks: [
+                            {
+                                rating: 4,
+                                customerId: "15",
+                                desc: "Awesome"
 
-                                }
-                            ],
-                            restaurant: {
-                                id: "12",
-                                name: "MacDo",
-                                address: "4 Privet Drive"
                             }
-                        },
-                        {
-                            id: "51",
-                            name: "Big Mac",
-                            category: "burger",
-                            eta: 4,
-                            price: 1.0,
-                            feedbacks: [
-                                {
-                                    rating: 4,
-                                    customerId: "15",
-                                    desc: "Awesome"
-
-                                }
-                            ],
-                            restaurant: {
-                                id: "12",
-                                name: "MacDo",
-                                address: "4 Privet Drive"
-                            }
-                        },
-                        {
-                            id: "69",
-                            name: "Whopper",
-                            category: "burger",
-                            eta: 4,
-                            price: 1.0,
-                            feedbacks: [],
-                            restaurant: {
-                                id: "25",
-                                name: "BurgerKing",
-                                address: "7 Privet Drive"
-                            }
+                        ],
+                        restaurant: {
+                            id: "12",
+                            name: "MacDo",
+                            address: "4 Privet Drive"
                         }
-                    ]
+                    },
+                    {
+                        id: "51",
+                        name: "Big Mac",
+                        category: "burger",
+                        eta: 4,
+                        price: 1.0,
+                        feedbacks: [
+                            {
+                                rating: 4,
+                                customerId: "15",
+                                desc: "Awesome"
+
+                            }
+                        ],
+                        restaurant: {
+                            id: "12",
+                            name: "MacDo",
+                            address: "4 Privet Drive"
+                        }
+                    },
+                    {
+                        id: "69",
+                        name: "Whopper",
+                        category: "burger",
+                        eta: 4,
+                        price: 1.0,
+                        feedbacks: [],
+                        restaurant: {
+                            id: "25",
+                            name: "BurgerKing",
+                            address: "7 Privet Drive"
+                        }
+                    }
+                ]
             )
         }
     });
@@ -80,15 +80,8 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'catalog',
-    retry: {
-        retries: 10,
-        factor: 0,
-        multiplier: 4
-    }
 });
-const consumer = kafka.consumer({groupId: 'list_meals'});
-const addFeedback = kafka.consumer({groupId: 'add_feedback'});
-const listFeedback = kafka.consumer({groupId: 'list_feedback'});
+const consumer = kafka.consumer({groupId: 'catalog'});
 const producer = kafka.producer();
 
 const run = async () => {
@@ -96,33 +89,25 @@ const run = async () => {
 
     await consumer.connect();
     await consumer.subscribe({topic: "list_meals"});
+    await consumer.subscribe({topic: "add_feedback"});
+    await consumer.subscribe({topic: "list_feedback"});
+
+    await consumer.connect();
+
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
-            switch (topic){
+            let data = JSON.parse(message.value.toString());
+            switch (topic) {
                 case "list_meals":
-
-                    console.log(topic,message.value.toString(), util.inspect(message), message.key.toString());
-                    methods.listMeals(message.value.toString(), producer, mongoHelper.db);
+                    methods.listMeals(data, producer, mongoHelper.db);
                     break;
-                default:
-                    console.log("Unimplemented topic: "+ topic)
+                case "add_feedback":
+                    methods.addFeedback(data, mongoHelper.db);
+                    break;
+                case "list_feedback":
+                    methods.listFeedback(data, producer, mongoHelper.db);
+                    break;
             }
-        }
-    });
-
-    await addFeedback.connect();
-    await addFeedback.subscribe({topic: "add_feedback"});
-    await addFeedback.run({
-        eachMessage: async ({topic, partition, message}) => {
-            methods.addFeedback(message.value.toString(), producer, mongoHelper.db);
-        }
-    });
-
-    await listFeedback.connect();
-    await listFeedback.subscribe({topic: "list_feedback"});
-    await listFeedback.run({
-        eachMessage: async ({topic, partition, message}) => {
-            methods.listFeedback(message.value.toString(), producer, mongoHelper.db);
         }
     });
 
@@ -138,8 +123,7 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await getDeliverableOrders.disconnect();
-            process.exit(0)
+            process.exit(1)
         } catch (_) {
             process.exit(1)
         }
