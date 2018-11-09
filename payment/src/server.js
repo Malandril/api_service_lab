@@ -13,7 +13,9 @@ const kafka = new Kafka({
     connectionTimeout: 3000,
     clientId: 'payment',
     retry: {
-        retries: 8
+        retries: 10,
+        factor: 0,
+        multiplier: 4
     }
 });
 const consumer = kafka.consumer({groupId: 'payment'});

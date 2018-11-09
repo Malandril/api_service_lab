@@ -9,6 +9,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'test_order',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 
 const submitOrder = kafka.consumer({groupId: 'order_test'});

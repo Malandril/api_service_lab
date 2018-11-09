@@ -20,6 +20,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'customerws',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 
 function checkArgs(argName, request, errors) {

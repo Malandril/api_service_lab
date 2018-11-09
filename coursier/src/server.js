@@ -15,6 +15,11 @@ const kafka = new Kafka({
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'coursier',
+    retry: {
+        retries: 10,
+        factor: 0,
+        multiplier: 4
+    }
 });
 
 const consumer = kafka.consumer({ groupId: 'coursier_consumer' });
