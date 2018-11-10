@@ -11,9 +11,9 @@ import org.json4s.jackson.JsonMethods._
 
 class CompleteScenario extends Simulation {
 
-    val Customer_url = "http://192.168.99.100:8097";
-    val Restaurant_url = "http://192.168.99.100:8098";
-    val Coursier_url = "http://192.168.99.100:8099";
+    val Customer_url = "http://localhost:8097";
+    val Restaurant_url = "http://localhost:8098";
+    val Coursier_url = "http://localhost:8099";
 
 	val httpConfig = http
 		.acceptEncodingHeader("gzip, deflate")
