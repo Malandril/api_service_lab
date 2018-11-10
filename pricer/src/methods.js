@@ -30,11 +30,13 @@ let methods = {
     createOrder: async function (data, db, producer) {
         const orderId = data.orderId;
         const requestId = data.requestId;
+        console.log("create_order", orderId, requestId);
         let value = {
             requestId: requestId,
             orderId: orderId,
         };
         if (!data.meals) {
+            console.log("create_order meals", data.meals);
             return;
         }
         const restaurantId = data.meals[0].restaurant.id;
@@ -44,6 +46,7 @@ let methods = {
                 totalPrice += data.meals[i].price;
             }
         }
+        console.log("create_order just after for");
         if (data.voucher) {
             const code = data.voucher;
             await helper.findVoucherByCodeRestaurant(db, restaurantId, code).then(voucher => {
@@ -56,7 +59,7 @@ let methods = {
                     console.log("voucher has categories");
                     let meal_categories = data.meals.map(meal => {
                         if (meal.type)
-                           return meal.type.toLowerCase();
+                            return meal.type.toLowerCase();
                     });
                     if (voucher.neededCategories.every(category => {
                         let b = meal_categories.includes(category);
@@ -76,6 +79,7 @@ let methods = {
                 console.log("Error when finding voucher", reason);
             })
         } else {
+            console.log("no voucher");
             if (totalPrice !== 0) {
                 value.price = totalPrice;
                 helper.send_price_computed(producer, value);

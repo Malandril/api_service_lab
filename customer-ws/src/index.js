@@ -11,8 +11,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
-const Queue = require('queue-fifo');
-const geoloQueue = new Queue();
 const creationInstances = new Map(); //sticky sessions
 const waitForOrderValidation = new Map();
 const kafka = new Kafka({
@@ -36,14 +34,7 @@ function checkArgs(argName, request, errors) {
         return request[argName];
     }
 }
-function dequeue(queue, msg) {
-    console.log("Deprecated. Use Map instead (Customer-ws::dequeue line 26)");
-    if (!queue.isEmpty()) {
-        queue.dequeue()(msg);
-    } else {
-        console.log("Unable to process " + topic + " response: " + message.value)
-    }
-}
+
 
 const consumer = kafka.consumer({groupId: 'customerwsconsumer'});
 const producer = kafka.producer();
@@ -63,13 +54,18 @@ const run = async () => {
             console.log("receive :" + util.inspect(data) + "in topic" + util.inspect(topic));
             switch (topic) {
                 case "order_tracker":
-                    dequeue(geoloQueue, message);
+                    const track = creationInstances.get(data.requestId);
+                    console.log("order_track", data, track);
+                    if (track.checkFinish(topic, message, data)) {
+                        console.log("should be ok now");
+                        creationInstances.delete(data.requestId);
+                    }
                     break;
                 case "price_computed":
                 case "eta_result":
                 case "meals_listed":
                     const element = creationInstances.get(data.requestId);
-                    console.log("request id",data.requestId);
+                    console.log("request id", data.requestId);
                     if (element.checkFinish(topic, message, data)) {
                         console.log("should be ok now");
                         creationInstances.delete(data.requestId);
@@ -101,7 +97,6 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await listResponse.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -121,26 +116,31 @@ signalTraps.map(type => {
 app.get('/meals/', (req, res) => {
 
     console.log("Received : " + util.inspect(req.query));
-    var categories = undefined;
-    var restaurants = undefined;
-    if ("categories" in req.query || "restaurants" in req.query) {
-        if ("categories" in req.query) {
-            categories = req.query.categories;
+    var category = undefined;
+    var restaurant = undefined;
+    if ("category" in req.query || "restaurant" in req.query) {
+        if ("category" in req.query) {
+            category = req.query.category;
+            if (!Array.isArray(category)) {
+                category = [category]
+            }
         }
-        if ("restaurants" in req.query) {
-            restaurants = req.query.restaurants;
+        if ("restaurant" in req.query) {
+            restaurant = req.query.restaurant;
+            if (!Array.isArray(restaurant)) {
+                restaurant = [restaurant]
+            }
         }
     } else {
-        res.send("Attribute 'categories' or 'restaurants' needed", 400);
+        res.send("Attribute 'category' or 'restaurant' needed", 400);
         return;
     }
-    console.log("Parsed : categories=" + categories + ", restaurants=" + restaurants);
+    console.log("Parsed : category=" + category + ", category=" + restaurant);
     let requestId = uuidv4();
-
     let value = JSON.stringify({
         requestId: requestId,
-        categories: categories,
-        restaurants: restaurants
+        categories: category,
+        restaurants: restaurant
     });
     creationInstances.set(requestId, {
         res: res,
@@ -239,7 +239,7 @@ app.put('/orders/:orderId', (req, res) => {
     });
 });
 
-app.post('/feedbacks/', (req, res) => {
+app.post('/feedbacks/', async (req, res) => {
     if (!("mealId" in req.body)) {
         res.send("Attribute 'mealId' needed");
         return;
@@ -249,7 +249,7 @@ app.post('/feedbacks/', (req, res) => {
     const customerId = checkArgs("customerId", req.body, errors);
     const rating = checkArgs("rating", req.body, errors);
     const desc = checkArgs("desc", req.body, errors);
-    if(errors.length !== 0){
+    if (errors.length !== 0) {
         res.statusCode = 412;
         res.send(errors.toString());
         return;
@@ -261,7 +261,7 @@ app.post('/feedbacks/', (req, res) => {
         desc: desc
     });
     console.log("Send add_feeback " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "add_feedback",
         messages: [{
             key: "", value: value
@@ -282,10 +282,12 @@ app.get('/geolocation/:orderId', (req, res) => {
         return;
     }
     const lat = req.query.lat;
-    console.log("Parsed : orderId=" + orderId + ", lat="+ lat +", long="+ long);
+    console.log("Parsed : orderId=" + orderId + ", lat=" + lat + ", long=" + long);
+    let requestId = uuidv4();
     let value = JSON.stringify({
         orderId: orderId,
-        geoloc: {long: long, lat: lat}
+        geoloc: {long: long, lat: lat},
+        requestId: requestId
     });
     console.log("Send get_coursier_geoloc : " + util.inspect(value));
     producer.send({
@@ -294,10 +296,15 @@ app.get('/geolocation/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    geoloQueue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+    creationInstances.set(requestId, {
+        res: res,
+        checkFinish: function (topic, message, data) {
+            console.log("get geolocation read " + topic);
+            res.send(data);
+            return true;
+        }
+
+    });
 });
 
 

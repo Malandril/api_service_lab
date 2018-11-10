@@ -4,7 +4,7 @@ let methods = {
     putNewStatus: function (msg, db, status) {
         msg.status = status;
         db.collection('orderStatus').findOne({status: status, 'order.id': msg.order.id}).then(value => {
-            console.log("found:", value);
+            console.log("putnewStatus found:", value);
             if (!value) {
                 msg.timestamp = msg.timestamp || Date.now();
                 db.collection('orderStatus').insertOne(msg, function (err, r) {

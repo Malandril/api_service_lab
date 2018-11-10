@@ -15,7 +15,7 @@ var orderId = null;
 var restaurantId = null;
 
 
-request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
+request({url: `${customer_ws}/meals`, qs: {category: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     restaurantId = data.restaurant.id;
@@ -194,7 +194,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                                         }).then(function (res) {
                                                                             res = JSON.parse(res);
                                                                             console.log(res.meals.map(value => value.feedbacks));
-                                                                            console.log("Terry consulte les statistiques de son restaurant")
+                                                                            console.log("Terry consulte les statistiques de son restaurant");
                                                                             request({
                                                                                 url: `${restaurant_url}/statistics/${restaurantId}`,
                                                                                 qs: {restaurantId: restaurantId}

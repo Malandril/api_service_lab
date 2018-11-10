@@ -7,7 +7,6 @@ let methods = {
         if (!("order" in msg) || !("meals" in msg.order)) {
             console.log("Error : Not enough data")
         } else {
-            msg.geoloc = {lat: 0, long: 0};
             db.collection('orders').insertOne(msg.order, function (err, r) {
                 console.log("added : " + r, JSON.stringify(msg.order));
             });
@@ -45,26 +44,37 @@ let methods = {
         });
     },
 
-    updateLocalisation: function (msg, db) {
+    updateLocalisation: async function (msg, db) {
         console.log(JSON.stringify(msg));
-        db.collection('orders').findOneAndUpdate({"id": msg.orderId}, {$set: {geoloc: msg.geoloc}}, {"upsert": true}, (err, res) => {
-            console.log("lol", err, res);
-        })
+        await db.collection('orders').findOneAndUpdate({"id": msg.orderId}, {$set: {geoloc: msg.geoloc}}, {"upsert": true}, (err, res) => {
+            console.log("update", err, res);
+        });
+        console.log("sent update");
+
     },
     getLocalisation: function (msg, db, producer) {
         console.log("Asking location and ETA for :", msg);
         db.collection('orders').findOne({"id": msg.orderId}, function (err, result) {
             if (err) throw err;
-            console.log("Get location : ", result);
-            var x1 = parseFloat(msg.geoloc.lat);
-            var y1 = parseFloat(msg.geoloc.long);
-            var x2 = parseFloat(result.geoloc.lat);
-            var y2 = parseFloat(result.geoloc.long);
-            result.eta = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+            console.log("Get location:", result);
+            let eta;
+            if (!result) {
+                var x1 = parseFloat(msg.geoloc.lat);
+                var y1 = parseFloat(msg.geoloc.long);
+                var x2 = parseFloat(result.geoloc.lat);
+                var y2 = parseFloat(result.geoloc.long);
+                eta = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+            } else {
+                eta = 99999;
+                result = {geoloc: {lat: 0, long: 0}}
+            }
             console.log("New ETA : ", result.eta);
             producer.send({
                 topic: "order_tracker",
-                messages: [{key: "", value: JSON.stringify(result)}]
+                messages: [{
+                    key: "",
+                    value: JSON.stringify({eta: eta, requestId: msg.requestId, geoloc: result.geoloc})
+                }]
             });
         });
     },
