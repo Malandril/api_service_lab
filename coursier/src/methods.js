@@ -7,7 +7,7 @@ let methods = {
         if (!("order" in msg) || !("meals" in msg.order)) {
             console.log("Error : Not enough data")
         } else {
-            msg.geoloc = {lat: 0, long: 0};
+            msg.order.geoloc = {lat: 0, long: 0};
             db.collection('orders').insertOne(msg.order, function (err, r) {
                 console.log("added : " + r, JSON.stringify(msg.order));
             });
