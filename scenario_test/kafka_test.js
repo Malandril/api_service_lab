@@ -15,7 +15,7 @@ var orderId = null;
 var restaurantId = null;
 
 
-request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(function (meals) {
+request({url: `${customer_ws}/meals`, qs: {category: ["burger"]}}).then(function (meals) {
     let parse = JSON.parse(meals);
     var data = parse.meals[0];
     restaurantId = data.restaurant.id;

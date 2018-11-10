@@ -36,6 +36,7 @@ function checkArgs(argName, request, errors) {
         return request[argName];
     }
 }
+
 function dequeue(queue, msg) {
     console.log("Deprecated. Use Map instead (Customer-ws::dequeue line 26)");
     if (!queue.isEmpty()) {
@@ -69,7 +70,7 @@ const run = async () => {
                 case "eta_result":
                 case "meals_listed":
                     const element = creationInstances.get(data.requestId);
-                    console.log("request id",data.requestId);
+                    console.log("request id", data.requestId);
                     if (element.checkFinish(topic, message, data)) {
                         console.log("should be ok now");
                         creationInstances.delete(data.requestId);
@@ -121,26 +122,32 @@ signalTraps.map(type => {
 app.get('/meals/', (req, res) => {
 
     console.log("Received : " + util.inspect(req.query));
-    var categories = undefined;
-    var restaurants = undefined;
-    if ("categories" in req.query || "restaurants" in req.query) {
-        if ("categories" in req.query) {
-            categories = req.query.categories;
+    var category = undefined;
+    var restaurant = undefined;
+    if ("category" in req.query || "restaurant" in req.query) {
+        if ("category" in req.query) {
+            category = req.query.category;
+            if (!Array.isArray(category)) {
+                category = [category]
+            }
         }
-        if ("restaurants" in req.query) {
-            restaurants = req.query.restaurants;
+        if ("restaurant" in req.query) {
+            restaurant = req.query.restaurant;
+            if (!Array.isArray(restaurant)) {
+                restaurant = [restaurant]
+            }
         }
     } else {
-        res.send("Attribute 'categories' or 'restaurants' needed", 400);
+        res.send("Attribute 'category' or 'restaurant' needed", 400);
         return;
     }
-    console.log("Parsed : categories=" + categories + ", restaurants=" + restaurants);
+    console.log("Parsed : category=" + category + ", category=" + restaurant);
     let requestId = uuidv4();
-
+    Array.isArray()
     let value = JSON.stringify({
         requestId: requestId,
-        categories: categories,
-        restaurants: restaurants
+        categories: category,
+        restaurants: restaurant
     });
     creationInstances.set(requestId, {
         res: res,
@@ -249,7 +256,7 @@ app.post('/feedbacks/', async (req, res) => {
     const customerId = checkArgs("customerId", req.body, errors);
     const rating = checkArgs("rating", req.body, errors);
     const desc = checkArgs("desc", req.body, errors);
-    if(errors.length !== 0){
+    if (errors.length !== 0) {
         res.statusCode = 412;
         res.send(errors.toString());
         return;
@@ -282,7 +289,7 @@ app.get('/geolocation/:orderId', (req, res) => {
         return;
     }
     const lat = req.query.lat;
-    console.log("Parsed : orderId=" + orderId + ", lat="+ lat +", long="+ long);
+    console.log("Parsed : orderId=" + orderId + ", lat=" + lat + ", long=" + long);
     let value = JSON.stringify({
         orderId: orderId,
         geoloc: {long: long, lat: lat}
