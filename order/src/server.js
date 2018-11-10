@@ -26,7 +26,6 @@ const producer = kafka.producer();
 const consumer = kafka.consumer({groupId:"order_consume"});
 const consumers = ["submit_order", "order_delivered", "payment_failed", "payment_succeeded", "create_order_request",
     "assign_delivery", "meal_cooked", "cancel_delivery"];
-const TOPICS = ["create_order", "finalise_order"];
 
 const run = async () => {
     await producer.connect();

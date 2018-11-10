@@ -239,7 +239,7 @@ app.put('/orders/:orderId', (req, res) => {
     });
 });
 
-app.post('/feedbacks/', (req, res) => {
+app.post('/feedbacks/', async (req, res) => {
     if (!("mealId" in req.body)) {
         res.send("Attribute 'mealId' needed");
         return;
@@ -261,7 +261,7 @@ app.post('/feedbacks/', (req, res) => {
         desc: desc
     });
     console.log("Send add_feeback " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "add_feedback",
         messages: [{
             key: "", value: value

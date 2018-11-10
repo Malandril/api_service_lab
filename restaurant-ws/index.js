@@ -132,7 +132,7 @@ app.get('/orders/', (req, res) => {
 
 });
 
-app.put('/orders/:orderId', (req, res) => {
+app.put('/orders/:orderId', async (req, res) => {
     if (!("orderId" in req.body)) {
         res.send("Attribute 'orderId' needed");
         return;
@@ -144,7 +144,7 @@ app.put('/orders/:orderId', (req, res) => {
         }
     });
     console.log("Send meal_cooked : " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "meal_cooked",
         messages: [{
             key: "", value: value
@@ -207,7 +207,7 @@ app.get('/feedbacks/:restaurantId', (req, res) => {
 });
 
 
-app.post('/vouchers/', (req, res) => {
+app.post('/vouchers/', async (req, res) => {
 
     var errors = [];
     const restaurantId = checkArgs("restaurantId", req.body, errors);
@@ -227,7 +227,7 @@ app.post('/vouchers/', (req, res) => {
         expirationDate: expirationDate,
         neededCategories: neededCategories
     });
-    producer.send({
+    await producer.send({
         topic: "add_voucher",
         messages: [{
             key: "", value: value

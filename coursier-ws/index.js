@@ -35,7 +35,7 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
-            console.log("Receive : " +message.value.toString()+ topic + data + data.requestId +openConnections.get(data.requestId) );
+            console.log("Receive : " + message.value.toString() + topic + data + data.requestId + openConnections.get(data.requestId));
             if (openConnections.get(data.requestId).checkValidity(data)) {
                 openConnections.delete(data.requestId);
             }
@@ -81,12 +81,12 @@ app.get('/coursiers/:id/credits', (req, res) => {
     }
     const coursierId = req.params.id;
 
-    console.log("Parsed : id=" + coursierId );
+    console.log("Parsed : id=" + coursierId);
 
     const uuid = uuidv4();
     let value = JSON.stringify({
         requestId: uuid,
-        coursierId:coursierId
+        coursierId: coursierId
     });
     console.log("Sent : " + util.inspect(value));
     producer.send({
@@ -104,7 +104,7 @@ app.get('/coursiers/:id/credits', (req, res) => {
         }
     });
 
-    console.log("put "+uuid+ " in openConnection" );
+    console.log("put " + uuid + " in openConnection");
 
 });
 
@@ -137,7 +137,7 @@ app.get('/deliveries/', (req, res) => {
             key: "", value: value
         }]
     });
-    console.log("put "+uuid+ " in openConnection" );
+    console.log("put " + uuid + " in openConnection");
 
     openConnections.set(uuid, {
         res: res,
@@ -151,7 +151,7 @@ app.get('/deliveries/', (req, res) => {
 
 });
 
-app.post('/deliveries/', (req, res) => {
+app.post('/deliveries/', async (req, res) => {
     res.send(util.inspect(req.body));
     if (!("orderId" in req.body)) {
         res.send("Attribute 'orderId' needed");
@@ -169,17 +169,17 @@ app.post('/deliveries/', (req, res) => {
         orderId: orderId
     });
     console.log("Send : assign_delivery " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "assign_delivery",
         messages: [{
             key: "", value: value
         }]
     });
-
+    // res.sendStatus(201)
 });
 
 
-app.put('/deliveries/:orderId', (req, res) => {
+app.put('/deliveries/:orderId', async (req, res) => {
     if (!("orderId" in req.params)) {
         res.status(400).send("Attribute 'orderId' needed");
         return;
@@ -197,7 +197,7 @@ app.put('/deliveries/:orderId', (req, res) => {
         coursierId: coursierId
     });
     console.log("Send : order_delivered " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "order_delivered",
         messages: [{
             key: "", value: value
@@ -206,7 +206,7 @@ app.put('/deliveries/:orderId', (req, res) => {
     res.sendStatus(200);
 });
 
-app.put('/geolocation/', (req, res) => {
+app.put('/geolocation/', async (req, res) => {
     if (!("timestamp" in req.body)) {
         res.send("Attribute 'timestamp' needed");
         return;
@@ -234,7 +234,7 @@ app.put('/geolocation/', (req, res) => {
         geoloc: geolocation
     });
     console.log("Send : update_geoloc " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "update_geoloc",
         messages: [{
             key: "", value: value
@@ -245,7 +245,7 @@ app.put('/geolocation/', (req, res) => {
 });
 
 
-app.delete('/deliveries/:orderId', (req, res) => {
+app.delete('/deliveries/:orderId', async (req, res) => {
     console.log(req.params);
     console.log(req.body);
     console.log(req.query);
@@ -258,13 +258,13 @@ app.delete('/deliveries/:orderId', (req, res) => {
         res.status(400).send("Attribute 'coursierId' needed");
         return;
     }
-    const coursierId =  req.body.coursierId;
+    const coursierId = req.body.coursierId;
     let value = JSON.stringify({
         orderId: orderId,
         coursierId: coursierId
     });
     console.log("Send : cancel_delivery " + util.inspect(value));
-    producer.send({
+    await producer.send({
         topic: "cancel_delivery",
         messages: [{
             key: "", value: value
@@ -272,7 +272,6 @@ app.delete('/deliveries/:orderId', (req, res) => {
     });
     res.sendStatus(200);
 });
-
 
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

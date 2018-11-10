@@ -194,7 +194,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                                         }).then(function (res) {
                                                                             res = JSON.parse(res);
                                                                             console.log(res.meals.map(value => value.feedbacks));
-                                                                            console.log("Terry consulte les statistiques de son restaurant")
+                                                                            console.log("Terry consulte les statistiques de son restaurant");
                                                                             request({
                                                                                 url: `${restaurant_url}/statistics/${restaurantId}`,
                                                                                 qs: {restaurantId: restaurantId}
