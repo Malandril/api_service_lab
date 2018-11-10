@@ -1,0 +1,41 @@
+version: '2'
+services:
+  kafka:
+    image: spotify/kafka
+    ports:
+      - "2181:2181"
+      - "9092:9092"
+    environment:
+      ADVERTISED_HOST: 127.0.0.1
+      ADVERTISED_PORT: 9092
+      TOPICS:
+  mongo_catalog:
+    image: mongo
+    expose:
+    - "27014"
+    ports:
+    - "27014:27017"
+  mongorestaurant:
+    image: mongo
+    expose:
+    - "27015"
+    ports:
+    - "27015:27017"
+  mongocoursier:
+   image: mongo
+   expose:
+        - "27016"
+   ports:
+        - "27016:27017"
+  mongo_delivery_man:
+    image: mongo
+    expose:
+    - "27018"
+    ports:
+    - "27018:27017"
+  mongo_payment:
+    image: mongo
+    expose:
+    - "27019"
+    ports:
+    - "27019:27017"

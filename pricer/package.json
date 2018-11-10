@@ -1,0 +1,20 @@
+{
+  "name": "pricer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "kafkajs": "^1.4.1",
+    "mongodb": "^3.1.8",
+    "queue-fifo": "^0.2.5"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  }
+}

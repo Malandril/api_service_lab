@@ -1,0 +1,9 @@
+FROM node
+RUN export NODE_ENV=production
+RUN mkdir /delivery_man_account
+COPY ./package.json /delivery_man_account/
+WORKDIR /delivery_man_account
+RUN npm install --production
+COPY ./src /delivery_man_account
+EXPOSE 9090
+ENTRYPOINT [ "node","server.js"]

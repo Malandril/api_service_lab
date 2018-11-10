@@ -3,6 +3,5 @@ RUN mkdir /coursier
 COPY ./package.json /coursier/
 WORKDIR /coursier
 RUN npm install --production
-COPY ./dist /coursier/dist
-EXPOSE 3000
-ENTRYPOINT [ "npm","start"]
+COPY ./src /coursier
+ENTRYPOINT [ "node","server.js"]

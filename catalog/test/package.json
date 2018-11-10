@@ -1,0 +1,14 @@
+{
+  "name": "test_catalog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "kafkajs": "^1.4.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

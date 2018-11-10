@@ -1,0 +1,27 @@
+{
+  "name": "customer-ws",
+  "version": "1.0.0",
+  "description": "- CANAVA Thomas aka Malandril\r - GARDAIRE Loïc aka T0shiro\r - JUNAC Jérémy aka Taken0711\r - MELKONIAN François aka arsebac",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Malandril/api_service_lab.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Malandril/api_service_lab/issues"
+  },
+  "homepage": "https://github.com/Malandril/api_service_lab#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "kafkajs": "^1.4.1",
+    "queue-fifo": "^0.2.5",
+    "uuid": "^3.3.2"
+  }
+}
