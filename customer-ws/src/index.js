@@ -11,8 +11,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 
-const Queue = require('queue-fifo');
-const geoloQueue = new Queue();
 const creationInstances = new Map(); //sticky sessions
 const waitForOrderValidation = new Map();
 const kafka = new Kafka({
@@ -37,14 +35,6 @@ function checkArgs(argName, request, errors) {
     }
 }
 
-function dequeue(queue, msg) {
-    console.log("Deprecated. Use Map instead (Customer-ws::dequeue line 26)");
-    if (!queue.isEmpty()) {
-        queue.dequeue()(msg);
-    } else {
-        console.log("Unable to process " + topic + " response: " + message.value)
-    }
-}
 
 const consumer = kafka.consumer({groupId: 'customerwsconsumer'});
 const producer = kafka.producer();
@@ -64,7 +54,12 @@ const run = async () => {
             console.log("receive :" + util.inspect(data) + "in topic" + util.inspect(topic));
             switch (topic) {
                 case "order_tracker":
-                    dequeue(geoloQueue, message);
+                    const track = creationInstances.get(data.requestId);
+                    console.log("order_track", data, track);
+                    if (track.checkFinish(topic, message, data)) {
+                        console.log("should be ok now");
+                        creationInstances.delete(data.requestId);
+                    }
                     break;
                 case "price_computed":
                 case "eta_result":
@@ -102,7 +97,6 @@ errorTypes.map(type => {
         try {
             console.log(`process.on ${type}`);
             console.error(e);
-            await listResponse.disconnect();
             process.exit(0)
         } catch (_) {
             process.exit(1)
@@ -143,7 +137,6 @@ app.get('/meals/', (req, res) => {
     }
     console.log("Parsed : category=" + category + ", category=" + restaurant);
     let requestId = uuidv4();
-    Array.isArray()
     let value = JSON.stringify({
         requestId: requestId,
         categories: category,
@@ -290,9 +283,11 @@ app.get('/geolocation/:orderId', (req, res) => {
     }
     const lat = req.query.lat;
     console.log("Parsed : orderId=" + orderId + ", lat=" + lat + ", long=" + long);
+    let requestId = uuidv4();
     let value = JSON.stringify({
         orderId: orderId,
-        geoloc: {long: long, lat: lat}
+        geoloc: {long: long, lat: lat},
+        requestId: requestId
     });
     console.log("Send get_coursier_geoloc : " + util.inspect(value));
     producer.send({
@@ -301,10 +296,15 @@ app.get('/geolocation/:orderId', (req, res) => {
             key: "", value: value
         }]
     });
-    geoloQueue.enqueue(function (msg) {
-        console.log("unqueue : " + msg.value);
-        res.send(msg.value.toString());
-    })
+    creationInstances.set(requestId, {
+        res: res,
+        checkFinish: function (topic, message, data) {
+            console.log("get geolocation read " + topic);
+            res.send(data);
+            return true;
+        }
+
+    });
 });
 
 

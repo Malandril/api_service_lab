@@ -10,11 +10,8 @@ app.use(bodyParser.json());
 const uuidv4 = require('uuid/v4');
 
 
-const Queue = require('queue-fifo');
-const queue = new Queue();
-
 const kafka = new Kafka({
-    logLevel: logLevel.NOTHING,
+    logLevel: logLevel.ERROR,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'restaurantws',
@@ -59,11 +56,7 @@ const run = async () => {
                 }
             } else {
 
-                if (!queue.isEmpty()) {
-                    queue.dequeue()(message);
-                } else {
-                    console.log("Unable to process " + topic + " response: " + message.value)
-                }
+                console.log("Unable to process " + topic + " response: " + data)
             }
         }
     });
@@ -111,10 +104,10 @@ app.get('/orders/', (req, res) => {
     const restaurantId = req.query.id;
     const requestId = uuidv4();
     const status = req.query.status;
-    console.log("Parsed : id=" + restaurantId + ", status="+status);
+    console.log("Parsed : id=" + restaurantId + ", status=" + status);
 
     let value = JSON.stringify({
-        "restaurantId" : restaurantId,
+        "restaurantId": restaurantId,
         "status": status,
         "requestId": requestId
     });

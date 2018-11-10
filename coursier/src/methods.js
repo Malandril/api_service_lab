@@ -60,6 +60,7 @@ let methods = {
             var y1 = parseFloat(msg.geoloc.long);
             var x2 = parseFloat(result.geoloc.lat);
             var y2 = parseFloat(result.geoloc.long);
+            result.requestId = msg.requestId;
             result.eta = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
             console.log("New ETA : ", result.eta);
             producer.send({
