@@ -13,11 +13,16 @@ let methods = {
             query["restaurant.name"] = {$in: msg.restaurants};
 
         console.log("Running query " + JSON.stringify(query));
+
         db.collection('meals')
             .find(query)
             .project({_id: 0, feedback: 0})
             .toArray((err, res) => {
                 // console.log("Send msg: " + JSON.stringify(res) + " id " + msg.requestId);
+                if (err) {
+                    console.log(err);
+                }
+                console.log(res)
                 producer.send({
                     "topic": "meals_listed",
                     "messages": [{"key": "", "value": JSON.stringify({"meals": res, requestId: msg.requestId})}]

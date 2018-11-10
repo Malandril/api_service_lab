@@ -1,9 +1,9 @@
 const request = require("request-promise");
 const assert = require("assert");
 
-let customer_ws = "http://localhost:8097";
-let restaurant_url = "http://localhost:8098";
-let coursier_url = "http://localhost:8099";
+let customer_ws = "http://192.168.99.100:8097";
+let restaurant_url = "http://192.168.99.100:8098";
+let coursier_url = "http://192.168.99.100:8099";
 
 
 // assumption: the client is already connected
