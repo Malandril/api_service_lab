@@ -150,6 +150,7 @@ request({url: `${customer_ws}/meals`, qs: {categories: ["burger"]}}).then(functi
                                                             method: 'GET',
                                                             qs: {orderId: orderId, lat: 19, long: 42}
                                                         }).then(function (res) {
+                                                            console.log("New ETA of Gail's order : ", res.eta);
                                                             console.log("Jamie vient de livrer la commande à Gail.", res);
                                                             request({
                                                                 url: `${coursier_url}/deliveries/${orderId}`,
