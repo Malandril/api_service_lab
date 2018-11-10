@@ -4,6 +4,7 @@
 
 set -e
 function cleanup {
+    docker-compose logs
     echo "cleaning up"
     docker-compose down
     }
