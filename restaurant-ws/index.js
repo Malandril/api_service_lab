@@ -228,9 +228,9 @@ app.post('/vouchers/', async (req, res) => {
     });
     res.send("ok");
 });
-app.get('/vouchers/', (req, res) => {
+app.get('/vouchers/:restaurantId', (req, res) => {
     var errors = [];
-    const restaurantId = checkArgs("restaurantId", req.body, errors);
+    const restaurantId = checkArgs("restaurantId", req.params, errors);
     if (errors.length !== 0) {
         res.statusCode = 400;
         res.send(errors.toString());

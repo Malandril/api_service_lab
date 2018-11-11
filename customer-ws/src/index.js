@@ -167,7 +167,8 @@ app.post('/orders/', (req, res) => {
     let value = JSON.stringify({
         requestId: session,
         meals: meals,
-        customer: customer
+        customer: customer,
+        voucher:req.body.voucher
     });
 
     creationInstances.set(session, {
