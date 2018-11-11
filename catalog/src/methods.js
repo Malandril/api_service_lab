@@ -22,6 +22,9 @@ let methods = {
             .project({_id: 0, feedback: 0})
             .toArray((err, res) => {
                 // console.log("Send msg: " + JSON.stringify(res) + " id " + msg.requestId);
+                if (err) {
+                    console.log(err);
+                }
                 producer.send({
                     "topic": "meals_listed",
                     "messages": [{"key": "", "value": JSON.stringify({"meals": res, requestId: msg.requestId})}]

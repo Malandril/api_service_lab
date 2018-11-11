@@ -8,6 +8,7 @@
   <version>3.0.0</version>
 
   <properties>
+    <scala.version>2.12</scala.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,6 +24,16 @@
       <version>${gatling.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.json4s</groupId>
+      <artifactId>json4s-native_${scala.version}</artifactId>
+      <version>3.2.11</version>
+    </dependency>
+    <dependency>
+    <groupId>org.json4s</groupId>
+    <artifactId>json4s-jackson_${scala.version}</artifactId>
+    <version>3.2.11</version>
+  </dependency>
   </dependencies>
 
   <build>
