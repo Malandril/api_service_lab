@@ -23,17 +23,31 @@ class CompleteScenario extends Simulation {
 
 	val coursierId = "18";
 
-	val consultMeals = scenario("Consult meals")
-		.exec(http("Get meals")
-			.get(s"$CustomerUrl/meals"))
+	val customerConsultsMeals = scenario("Customer onsult meals")
+		.exec(http("Customer gets meals")
+			.get(s"$CustomerUrl/meals")
+			.queryParam("category", "burger"))
+	
+	val couriserCheckNearbyOrders = scenario("Coursier lists nearby orders")
+		.exec(http("Coursier lists nearby orders")
+			.get(s"$CoursierUrl/deliveries")
+			.queryParam("id", "12")
+			.queryParam("address", "3 Rue principale"))
+	
+	val cookGetTodoMeals = scenario("Cook lists his todo meals")
+		.exec(http("Cook lists his todo meals")
+			.get(s"$RestaurantUrl/orders")
+			.queryParam("id", "25")
+			.queryParam("status", "todo"))
     
-    val order = scenario("Order")
+    val completeOrder = scenario("Complete order")
         .exec(http("Customer gets meals")
 			.get(s"$CustomerUrl/meals")
 			.queryParam("category", "burger")
 			.queryParam("restaurant", "MacDo")
 			.check(jsonPath("$.meals").saveAs("meals"))
-			.check(jsonPath("$.meals[0].restaurant.id").saveAs("restaurantId")))
+			.check(jsonPath("$.meals[0].restaurant.id").saveAs("restaurantId"))
+			.check(jsonPath("$.meals[0].id").saveAs("mealId")))
         .pause(1)
         .exec(http("Customer makes an order request")
 			.post(s"$CustomerUrl/orders")
@@ -63,7 +77,7 @@ class CompleteScenario extends Simulation {
 			.queryParam("id", "${restaurantId}")
 			.queryParam("status", "todo"))
 		.pause(1)
-		.exec(http("Couriser lists nearby orders")
+		.exec(http("Coursier lists nearby orders")
 			.get(s"$CoursierUrl/deliveries")
 			.queryParam("id", coursierId)
 			.queryParam("address", "3 Rue principale"))
@@ -93,8 +107,38 @@ class CompleteScenario extends Simulation {
 				.queryParam("long", "24"))
 			.pause(1)
 		}
+		.exec(http("Couriser delivers the order")
+			.put(s"$CoursierUrl/deliveries/" + "${orderId}")
+			.body(StringBody(session => compact(render(
+				("coursierId" -> coursierId))))))
+		.pause(1)
+		.exec(http("Customer leave a feedback")
+			.post(s"$CustomerUrl/feedbacks/")
+			.body(StringBody(session => compact(render(
+				("mealId" -> session("mealId").as[String]) ~ 
+				("rating" -> "4") ~ 
+				("customerId" -> "42") ~ 
+				("desc" -> "Super, j'adore !"))))))
+		.pause(1)
+		.exec(http("Cook lists his delivered meals")
+			.get(s"$RestaurantUrl/orders")
+			.queryParam("id", "${restaurantId}")
+			.queryParam("status", "delivered"))
+		.pause(1)
+		.exec(http("Cook lists his feedbacks")
+			.get(s"$RestaurantUrl/feedbacks/" + "${restaurantId}")
+			.queryParam("restaurantId", "${restaurantId}"))
+		.pause(1)
+		.exec(http("Cook lists his statistics")
+			.get(s"$RestaurantUrl/statistics/" + "${restaurantId}")
+			.queryParam("restaurantId", "${restaurantId}"))
 
 
 
-	setUp(order.inject(rampUsers(1) during (1 seconds))).protocols(httpConfig)
+	setUp(
+		customerConsultsMeals.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
+		couriserCheckNearbyOrders.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
+		cookGetTodoMeals.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
+		completeOrder.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
+	)
 }
