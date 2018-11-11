@@ -79,17 +79,21 @@ class CompleteScenario extends Simulation {
 			.body(StringBody(session => compact(render(
 				("orderId" -> session("orderId").as[String]))))))
 		.pause(1)
-		.exec(http("Coursier update is position")
-			.put(s"$CoursierUrl/geolocation/")
-			.body(StringBody(session => compact(render(
-				("orderId" -> session("orderId").as[String]) ~
-				("coursierId" -> coursierId))))))
-		.pause(1)
-		.exec(http("Customer check coursier position")
-			.get(s"$CustomerUrl/geolocation/" + "${orderId}")
-			.queryParam("orderId", session => session("orderId").as[String])
-			.queryParam("lat", "21")
-			.queryParam("long", "24"))
+		.repeat(5, "_") {
+			exec(http("Coursier update is position")
+				.put(s"$CoursierUrl/geolocation/")
+				.body(StringBody(session => compact(render(
+					("orderId" -> session("orderId").as[String]) ~
+					("coursierId" -> coursierId))))))
+			.pause(1)
+			.exec(http("Customer check coursier position")
+				.get(s"$CustomerUrl/geolocation/" + "${orderId}")
+				.queryParam("orderId", session => session("orderId").as[String])
+				.queryParam("lat", "21")
+				.queryParam("long", "24"))
+			.pause(1)
+		}
+
 
 
 	setUp(order.inject(rampUsers(1) during (1 seconds))).protocols(httpConfig)
