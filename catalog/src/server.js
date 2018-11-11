@@ -18,6 +18,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
                         id: "42",
                         name: "Mac first",
                         category: "burger",
+                        type: "burger",
                         eta: 4,
                         price: 1.0,
                         feedbacks: [
@@ -38,15 +39,31 @@ mongoHelper.initialize(mongoHelper, (db) => {
                         id: "51",
                         name: "Big Mac",
                         category: "burger",
+                        type: "burger",
                         eta: 4,
                         price: 1.0,
                         feedbacks: [
                             {
                                 rating: 4,
                                 customerId: "15",
-                                desc: "Awesome"
+                                desc: "Nice"
 
                             }
+                        ],
+                        restaurant: {
+                            id: "12",
+                            name: "MacDo",
+                            address: "4 Privet Drive"
+                        }
+                    },
+                    {
+                        id: "98",
+                        name: "McFlurry",
+                        category: "burger",
+                        type: "dessert",
+                        eta: 4,
+                        price: 1.0,
+                        feedbacks: [
                         ],
                         restaurant: {
                             id: "12",
@@ -59,6 +76,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
                         name: "Whopper",
                         category: "burger",
                         eta: 4,
+                        type: "burger",
                         price: 1.0,
                         feedbacks: [],
                         restaurant: {

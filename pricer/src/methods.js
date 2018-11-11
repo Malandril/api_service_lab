@@ -5,14 +5,14 @@ const helper = require('./helper');
 
 let methods = {
     addVoucher: function (data, db) {
-        db.collection('vouchers').insertOne(data, function (err, r) {
-            if (err) {
-                console.log(util.inspect(err));
-            }
-        });
+        db.collection("vouchers").findOneAndUpdate({
+            restaurantId: data.restaurantId,
+            "code": data.code
+        }, {$set: {...data}}, {upsert: true});
     },
-    listVouchers: function (data, db, producer) {
-        var vouchers = db.collection('vouchers').find({restaurantId: data.restaurantId}).toArray();
+    listVouchers: async function (data, db, producer) {
+        console.log("why is my life so bad", data.restaurantId);
+        var vouchers = await db.collection('vouchers').find({"restaurantId": data.restaurantId}, {_id: 0}).toArray();
         let result = {
             vouchers: vouchers,
             restaurantId: data.restaurantId,
