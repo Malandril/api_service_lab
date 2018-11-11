@@ -1,0 +1,34 @@
+RUN	uberoo.CompleteScenario	completescenario	1541943897424	 	3.0.0
+USER	Customer onsult meals	1	START	1541943898782	1541943898782
+USER	Coursier lists nearby orders	2	START	1541943898821	1541943898821
+USER	Cook lists his todo meals	3	START	1541943898822	1541943898822
+USER	Complete order	4	START	1541943898824	1541943898824
+REQUEST	3		Cook lists his todo meals	1541943898823	1541943898981	OK	 
+REQUEST	1		Customer gets meals	1541943898817	1541943898981	OK	 
+REQUEST	2		Coursier lists nearby orders	1541943898822	1541943898981	OK	 
+USER	Cook lists his todo meals	3	END	1541943898822	1541943899062
+USER	Customer onsult meals	1	END	1541943898782	1541943899062
+USER	Coursier lists nearby orders	2	END	1541943898821	1541943899062
+REQUEST	4		Customer gets meals	1541943898825	1541943899028	OK	 
+REQUEST	4		Customer makes an order request	1541943900138	1541943900280	OK	 
+REQUEST	4		Customer finalises his order	1541943901297	1541943901381	OK	 
+REQUEST	4		Cook lists his todo meals	1541943902378	1541943902399	OK	 
+REQUEST	4		Coursier lists nearby orders	1541943903401	1541943903422	OK	 
+REQUEST	4		Couriser assigns delivery	1541943904421	1541943904440	OK	 
+REQUEST	4		Cook finished the meals	1541943905427	1541943905454	OK	 
+REQUEST	4		Coursier update is position	1541943906472	1541943906475	OK	 
+REQUEST	4		Customer check coursier position	1541943907468	1541943907492	OK	 
+REQUEST	4		Coursier update is position	1541943908499	1541943908502	OK	 
+REQUEST	4		Customer check coursier position	1541943909512	1541943909530	OK	 
+REQUEST	4		Coursier update is position	1541943910517	1541943910520	OK	 
+REQUEST	4		Customer check coursier position	1541943911529	1541943911546	OK	 
+REQUEST	4		Coursier update is position	1541943912537	1541943912541	OK	 
+REQUEST	4		Customer check coursier position	1541943913550	1541943913564	OK	 
+REQUEST	4		Coursier update is position	1541943914558	1541943914562	OK	 
+REQUEST	4		Customer check coursier position	1541943915570	1541943915587	OK	 
+REQUEST	4		Couriser delivers the order	1541943916579	1541943916601	OK	 
+REQUEST	4		Customer leave a feedback	1541943917612	1541943917626	OK	 
+REQUEST	4		Cook lists his delivered meals	1541943918628	1541943978630	KO	i.g.h.c.i.RequestTimeoutException: Request timeout to localhost/127.0.0.1:8098 after 60000 ms
+REQUEST	4		Cook lists his feedbacks	1541943979626	1541943979644	OK	 
+REQUEST	4		Cook lists his statistics	1541943980646	1541943980675	OK	 
+USER	Complete order	4	END	1541943898824	1541943980676
