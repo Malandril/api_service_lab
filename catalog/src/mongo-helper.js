@@ -19,15 +19,11 @@ module.exports = {
                     count++;
                     setTimeout(connectWithRetry, 5000);
                 } else {
-                    console.log("Connected successfully to server");
                     obj.db = obj.client.db("catalog");
-
 
                     obj.db.createCollection("meals", {},
                         function (err, results) {
-                            console.log("Collection created." + err + results);
                             seed_function(obj.db);
-                            //client.close();
                         }
                     );
 

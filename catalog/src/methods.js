@@ -1,9 +1,13 @@
 'use strict';
 const util = require('util');
+const debug = false;
+function log(error, ...args){
+    if(debug || error){
+        console.log(args);
+    }
+}
 let methods = {
     listMeals: function (msg, producer, db) {
-
-        console.log("listMeals: " + msg);
 
         var query = {};
 
@@ -12,7 +16,7 @@ let methods = {
         if ("restaurants" in msg)
             query["restaurant.name"] = {$in: msg.restaurants};
 
-        console.log("Running query " + JSON.stringify(query));
+        log(false,"Running query ", JSON.stringify(query));
         db.collection('meals')
             .find(query)
             .project({_id: 0, feedback: 0})
@@ -25,10 +29,10 @@ let methods = {
             });
     },
     addFeedback: function (msg, db) {
-        console.log("addFeedback: " + msg);
+        log(false,"addFeedback: " + msg);
 
         if (!("mealId" in msg && "rating" in msg && "customerId" in msg && "desc" in msg)) {
-            console.log("Error : Malformed feedback");
+            log(true,"Error : Malformed feedback");
             return;
         }
         db.collection('meals').findOneAndUpdate(
@@ -38,10 +42,10 @@ let methods = {
     },
     listFeedback: function (msg, producer, db) {
 
-        console.log("listFeedback: " + msg);
+        log(false,"listFeedback: " + msg);
 
         if (!"restaurantId" in msg) {
-            console.log("Error : Malformed message");
+            log(true,"Error : Malformed message");
             return;
         }
 
@@ -50,7 +54,7 @@ let methods = {
             .project({_id: 0, eta: 0, price: 0, restaurant: 0})
             .toArray((err, res) => {
                 let value = JSON.stringify({"meals": res, requestId: msg.requestId});
-                // console.log("Send msg: " + JSON.stringify(value));
+                log(false,"Send msg: " + JSON.stringify(value));
                 producer.send({
                     "topic": "feedback_listed",
                     "messages": [{"key": "", "value": value}]
