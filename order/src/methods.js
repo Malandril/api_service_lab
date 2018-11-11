@@ -36,7 +36,6 @@ let methods = {
         },
         processPaymentResult: function (succeed, message, dbHelper, producer) {
             let orderId = message.order.id;
-            console.log("Payment of order " + orderId, "succeed : ", succeed);
             dbHelper.addEvent(orderId, {
                 event: "payment",
                 time: Math.round(new Date().getTime() / 1000),
@@ -71,19 +70,7 @@ let methods = {
             dbHelper.addEvent(msg.order.id, {event: "cooked", time: msg.time_stamp});
         },
         validateFinishOrder: function (msg, dbHelper) {
-            console.log("Id = " + msg.order.id);
             dbHelper.addEvent(msg.order.id, {event: "delivered", time: msg.time_stamp});
-            dbHelper.db.collection('orders')
-                .find({"_id": msg.order.id})
-                .forEach((err, res) => {
-                    console.log(res);
-                    if (err) {
-                        console.log(err);
-                    }
-                    else {
-                        console.log(res);
-                    }
-                });
         }
     }
 ;

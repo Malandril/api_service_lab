@@ -11,7 +11,7 @@ const uuidv4 = require('uuid/v4');
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.ERROR,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'restaurantws',
