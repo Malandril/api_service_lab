@@ -12,9 +12,9 @@ import org.json4s.jackson.JsonMethods._
 
 class CompleteScenario extends Simulation {
 
-    val CustomerUrl = "http://192.168.99.100:8097";
-    val RestaurantUrl = "http://192.168.99.100:8098";
-    val CoursierUrl = "http://192.168.99.100:8099";
+    val CustomerUrl = "http://localhost:8097";
+    val RestaurantUrl = "http://localhost:8098";
+    val CoursierUrl = "http://localhost:8099";
 
 	val httpConfig = http
 		.acceptEncodingHeader("gzip, deflate")
@@ -84,6 +84,12 @@ class CompleteScenario extends Simulation {
 			.body(StringBody(session => compact(render(
 				("orderId" -> session("orderId").as[String]) ~
 				("coursierId" -> coursierId))))))
+		.pause(1)
+		.exec(http("Customer check coursier position")
+			.get(s"$CustomerUrl/geolocation/" + "${orderId}")
+			.queryParam("orderId", session => session("orderId").as[String])
+			.queryParam("lat", "21")
+			.queryParam("long", "24"))
 
 
 	setUp(order.inject(rampUsers(1) during (1 seconds))).protocols(httpConfig)
