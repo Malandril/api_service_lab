@@ -8,8 +8,6 @@ let methods = {
         db.collection('vouchers').insertOne(data, function (err, r) {
             if (err) {
                 console.log(util.inspect(err));
-            } else {
-                console.log("Add voucher " + data + " in db");
             }
         });
     },
@@ -30,7 +28,6 @@ let methods = {
     createOrder: async function (data, db, producer) {
         const orderId = data.orderId;
         const requestId = data.requestId;
-        console.log("create_order", orderId, requestId);
         let value = {
             requestId: requestId,
             orderId: orderId,
@@ -46,7 +43,6 @@ let methods = {
                 totalPrice += data.meals[i].price;
             }
         }
-        console.log("create_order just after for");
         if (data.voucher) {
             const code = data.voucher;
             await helper.findVoucherByCodeRestaurant(db, restaurantId, code).then(voucher => {
@@ -56,7 +52,6 @@ let methods = {
                     helper.send_price_computed(producer, value);
                 }
                 else if (voucher.neededCategories && voucher.neededCategories.length !== 0) {
-                    console.log("voucher has categories");
                     let meal_categories = data.meals.map(meal => {
                         if (meal.type)
                             return meal.type.toLowerCase();

@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 const kafka = new Kafka({
-    logLevel: logLevel.ERROR,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'coursierws',

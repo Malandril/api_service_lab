@@ -11,7 +11,6 @@ function payment_failed(producer, orderId) {
 }
 
 function pay(creditCard, price, orderId, producer) {
-    console.log("paying", creditCard, price, orderId, producer);
     console.log(`Contacting bank of ${creditCard.name} ${creditCard.number}`);
     console.log(`Payed ${price}`);
     producer.send({
@@ -22,13 +21,11 @@ function pay(creditCard, price, orderId, producer) {
 
 let methods = {
     submitOrder: function (msg, db, producer) {
-        console.log("processing order payment");
         let orderId = msg.order.id;
         if (msg.creditCard) {
 
             let collection = db.collection('payments');
             collection.findOne({"orderId": orderId}).then(value => {
-                console.log("found:", value);
                 if (!value) {
                     collection.insertOne({
                         orderId: msg.order.id,
@@ -36,7 +33,6 @@ let methods = {
                         creditCard: msg.creditCard
                     })
                 } else if (!value.payed) {
-                    console.log("submit ordergetting in if", value, "msg", msg);
                     pay(msg.creditCard, value.amount, orderId, producer);
                     collection.findOneAndUpdate({"orderId": orderId}, {
                         $set: {
@@ -55,7 +51,6 @@ let methods = {
     priceComputed: function (msg, db, producer) {
         let collection = db.collection('payments');
         collection.findOne({"orderId": msg.orderId}).then(value => {
-            console.log("found:", value);
             if (!value) {
                 collection.insertOne({
                     orderId: msg.orderId,
@@ -63,7 +58,6 @@ let methods = {
                     payed: false
                 });
             } else if (!value.payed) {
-                console.log("getting in if", value, "msg", msg);
                 pay(value.creditCard, msg.price, msg.orderId, producer);
                 collection.findOneAndUpdate({"orderId": msg.orderId}, {
                     $set: {

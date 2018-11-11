@@ -19,7 +19,6 @@ module.exports = {
                     count++;
                     setTimeout(connectWithRetry, 15000);
                 } else {
-                    console.log("Connected successfully to server");
                     obj.db = obj.client.db("orders");
 
 

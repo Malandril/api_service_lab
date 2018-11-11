@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 const creationInstances = new Map(); //sticky sessions
 const waitForOrderValidation = new Map();
 const kafka = new Kafka({
-    logLevel: logLevel.ERROR,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'customerws',

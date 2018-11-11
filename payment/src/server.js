@@ -8,7 +8,7 @@ let mongoHelper = require("./mongo-helper");
 mongoHelper.initialize(mongoHelper);
 
 const kafka = new Kafka({
-    logLevel: logLevel.ERROR,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'payment',
@@ -29,7 +29,8 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             var data = JSON.parse(message.value.toString());
-            console.log("Received from topic:", topic, data);
+
+            console.log("Topic ", topic, "Event ", data);
             switch (topic) {
                 case "submit_order":
                     methods.submitOrder(data, mongoHelper.db, producer);
