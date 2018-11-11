@@ -5,23 +5,27 @@
 
 ```json
 {
-    orderId: 12
+    orderId: "uuid",
+    geoloc: {
+        lat: 12,
+        long: 32
+    }
 }
 ```
 #### add_feeback
 ```json
 {
-    mealId: 12,
+    mealId: "uuid",
     rating: 4,
-    customerId: 15,
-    desc: "Franchement c'est le feu mais c un arabe qui m'a servi"
+    customerId: "uuid",
+    desc: "Plat de très bonne qualité"
 }
 ```
 #### list_meals
 ```json
 {
     categories: ["asiatique","kebab"],
-    restaurants: ["mac do","la frite a Bernard"]
+    restaurants: ["mac do","L'Artdoise"]
 }
 ```
 #### create_order_request
@@ -33,8 +37,9 @@
             id: 34,
             name: "Mac fist",
             category: "burger",
-            eta: 4,
+            type:"dessert",
             price: 1.0,
+            eta: 4,
             restaurant: {
                 id: 12,
                 name: "mac do",
@@ -45,7 +50,8 @@
     customer: {
         name: "Mario",
         address : "3 Privet Drive",
-    }
+    },
+    voucher: "AZERTY"
 }
 ```
 #### submit_order
@@ -59,6 +65,7 @@
                 id: 34,
                 name: "Mac fist",
                 category: "burger",
+                type:"main course",
                 eta: 4,
                 price: 1.0,
                 restaurant: {
@@ -85,5 +92,8 @@
 
 ### Consume
 #### meals_listed
+#### price_computed
 #### eta_result
 #### order_tracker
+
+
