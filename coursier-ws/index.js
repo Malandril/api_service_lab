@@ -74,21 +74,18 @@ signalTraps.map(type => {
 
 
 app.get('/coursiers/:id/credits', (req, res) => {
-    console.log("Received : " + util.inspect(req.query));
     if (!("id" in req.params)) {
         res.send("Attribute 'id' needed");
         return;
     }
     const coursierId = req.params.id;
 
-    console.log("Parsed : id=" + coursierId);
 
     const uuid = uuidv4();
     let value = JSON.stringify({
         requestId: uuid,
         coursierId: coursierId
     });
-    console.log("Sent : " + util.inspect(value));
     producer.send({
         topic: "get_coursier_credits",
         messages: [{
@@ -104,12 +101,9 @@ app.get('/coursiers/:id/credits', (req, res) => {
         }
     });
 
-    console.log("put " + uuid + " in openConnection");
-
 });
 
 app.get('/deliveries/', (req, res) => {
-    console.log("Received : " + util.inspect(req.query));
     if (!("id" in req.query)) {
         res.send("Attribute 'id' needed");
         return;
@@ -130,20 +124,17 @@ app.get('/deliveries/', (req, res) => {
             address: address
         }
     });
-    console.log("Send : " + util.inspect(value));
     producer.send({
         topic: "get_ordered_to_be_delivered",
         messages: [{
             key: "", value: value
         }]
     });
-    console.log("put " + uuid + " in openConnection");
 
     openConnections.set(uuid, {
         res: res,
         checkValidity: function (data) {
             delete data.requestId;
-            console.log("waow getting deliveries");
             res.send(data);
             return true;
         }
@@ -168,7 +159,6 @@ app.post('/deliveries/', async (req, res) => {
         coursierId: coursierId,
         orderId: orderId
     });
-    console.log("Send : assign_delivery " + util.inspect(value));
     await producer.send({
         topic: "assign_delivery",
         messages: [{
@@ -196,7 +186,6 @@ app.put('/deliveries/:orderId', async (req, res) => {
         },
         coursierId: coursierId
     });
-    console.log("Send : order_delivered " + util.inspect(value));
     await producer.send({
         topic: "order_delivered",
         messages: [{
@@ -233,7 +222,6 @@ app.put('/geolocation/', async (req, res) => {
         coursierId: coursierId,
         geoloc: geolocation
     });
-    console.log("Send : update_geoloc " + util.inspect(value));
     await producer.send({
         topic: "update_geoloc",
         messages: [{
@@ -246,9 +234,6 @@ app.put('/geolocation/', async (req, res) => {
 
 
 app.delete('/deliveries/:orderId', async (req, res) => {
-    console.log(req.params);
-    console.log(req.body);
-    console.log(req.query);
     if (!("orderId" in req.params) && !("orderId" in req.body)) {
         res.status(400).send("Attribute 'orderId' needed");
         return;
@@ -263,7 +248,6 @@ app.delete('/deliveries/:orderId', async (req, res) => {
         orderId: orderId,
         coursierId: coursierId
     });
-    console.log("Send : cancel_delivery " + util.inspect(value));
     await producer.send({
         topic: "cancel_delivery",
         messages: [{
@@ -274,4 +258,4 @@ app.delete('/deliveries/:orderId', async (req, res) => {
 });
 
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`CoursierWS app listening on port ${port}!`));
