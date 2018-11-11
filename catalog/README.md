@@ -1,87 +1,48 @@
-# Catalog
-## Produce
-### meals_listed
+
+## Catalog
+### Produce
+#### meals_listed
 ```json
 {
     meals: [
         {
-            id: "34",
-            name: "Mac first",
-            category: "Burger",
+            id: 34,
+            name: "Mac fist",
+            category: "burger",
+            type:"main_course",
             eta: 4,
-            price: 1.0,
+            price: 1.0,            
             restaurant: {
                 id: 12,
-                name: "MacDo",
+                name: "mac do",
                 address: "4 Privet Drive"
             }
         }
     ]
 }
 ```
-### feedback_listed
+#### feedback_listed
 ```json
 {
-    id: "42",
-    name: "Mac first",
-    category: "Burger",
-    eta: 4,
-    price: 1.0,
-    feedback: [
+    meals: [
         {
-            rating: 4,
-            customerId: "15",
-            desc: "Awesome"
-
+            id: "id",
+            name: "Mac fist",
+            category: "burger",
+            type: "main_course",
+            feedback: [
+            {
+                rating: 4,
+                customerId: "id",
+                desc: "Très bon repas"
+                
+            }
+            ]
         }
-    ],
-    restaurant: {
-        id: "12",
-        name: "MacDo",
-        address: "4 Privet Drive"
-    }
+    ]
 }
 ```
-## Consume
-### list_meals
-```json
-{
-    categories: ["asian","kebab"],
-    restaurants: ["MacDo","BurgerKing"]
-}
-```
-### add_feedback
-```json
-{
-    mealId: "12",
-    rating: 4,
-    customerId: "15",
-    desc: "Awesome"
-}
-```
-### list_feeback
-```json
-{
-    restaurantId : "12"
-}
-```
-
-## Test
-
-### Scenario 1: Life Cycle
-
-
-#### List available meals
-kafka-console-producer --topic list_meals --list_meals-list=kafka:9092
->{}
->{"restaurant": ["MacDo"]}
->{"name": "BigMac", "Whopper"}
-
-
-#### Add a feedback
-kafka-console-producer --topic add_feedback --broker-list=kafka:9092
->{"mealId": "69", "rating": 4, "customerId": "15", "desc": "Awesome"}
-
-#### List feedback
-kafka-console-producer --topic list_feedback --broker-list=kafka:9092
->{"restaurantId": "12"}
+### Consume
+#### list_meals
+#### add_feeback
+#### list_feedback
