@@ -5,10 +5,10 @@ let methods = {
         msg.order.assigned = false;
         console.log("added : " + util.inspect(msg, {showHidden: false, depth: null}));
         if (!("order" in msg) || !("meals" in msg.order)) {
-            console.log("Error : Not enough data")
+            console.error("Error : Not enough data")
         } else {
             db.collection('orders').insertOne(msg.order, function (err, r) {
-                console.log("added : " + r, JSON.stringify(msg.order));
+                if(err) throw err;
             });
         }
     },
@@ -16,7 +16,6 @@ let methods = {
         if ("coursier" in msg && "address" in msg.coursier) {
             var orders = [];
             db.collection('orders').find({}).limit(1000).each(function (err, doc) {
-                console.log("getOrderedToBeDelivered found ", doc);
                 if (doc) {
                     orders.push(doc);
                 } else {
@@ -24,7 +23,6 @@ let methods = {
                         requestId: msg.requestId,
                         orders: orders
                     };
-                    console.log("send event to list_orders_to_be_delivered" + JSON.stringify(resp));
                     producer.send({
                         topic: "list_orders_to_be_delivered",
                         messages: [{key: "", value: JSON.stringify(resp)}]

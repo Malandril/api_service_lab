@@ -51,13 +51,12 @@ const run = async () => {
         eachMessage: async ({topic, partition, message}) => {
 
             var data = JSON.parse(message.value.toString());
-            console.log("receive :" + util.inspect(data) + "in topic" + util.inspect(topic));
+            console.log("Topic ", topic, "Event ", data);
+
             switch (topic) {
                 case "order_tracker":
                     const track = creationInstances.get(data.requestId);
-                    console.log("order_track", data, track);
                     if (track.checkFinish(topic, message, data)) {
-                        console.log("should be ok now");
                         creationInstances.delete(data.requestId);
                     }
                     break;
@@ -65,16 +64,13 @@ const run = async () => {
                 case "eta_result":
                 case "meals_listed":
                     const element = creationInstances.get(data.requestId);
-                    console.log("request id", data.requestId);
                     if (element.checkFinish(topic, message, data)) {
-                        console.log("should be ok now");
                         creationInstances.delete(data.requestId);
                     }
                     break;
                 case "finalise_order":
                     var el = waitForOrderValidation.get(data.order.id);
                     if (el.checkFinish(topic, message, data)) {
-                        console.log("received finalise");
                         waitForOrderValidation.delete(data.order.id);
                     }
                     break;
@@ -115,7 +111,6 @@ signalTraps.map(type => {
 
 app.get('/meals/', (req, res) => {
 
-    console.log("Received : " + util.inspect(req.query));
     var category = undefined;
     var restaurant = undefined;
     if ("category" in req.query || "restaurant" in req.query) {
@@ -145,13 +140,10 @@ app.get('/meals/', (req, res) => {
     creationInstances.set(requestId, {
         res: res,
         checkFinish: function (topic, message, data) {
-            console.log("read " + topic);
             res.send(data);
             return true;
         }
-
     });
-    console.log("Send list_meals : " + util.inspect(value));
     producer.send({
         topic: "list_meals",
         messages: [{
@@ -201,7 +193,6 @@ app.post('/orders/', (req, res) => {
             return b;
         }
     });
-    console.log("Send create_order_request :" + value);
     producer.send({
         topic: "create_order_request",
         messages: [{
@@ -282,14 +273,12 @@ app.get('/geolocation/:orderId', (req, res) => {
         return;
     }
     const lat = req.query.lat;
-    console.log("Parsed : orderId=" + orderId + ", lat=" + lat + ", long=" + long);
     let requestId = uuidv4();
     let value = JSON.stringify({
         orderId: orderId,
         geoloc: {long: long, lat: lat},
         requestId: requestId
     });
-    console.log("Send get_coursier_geoloc : " + util.inspect(value));
     producer.send({
         topic: "get_coursier_geoloc",
         messages: [{
@@ -299,7 +288,6 @@ app.get('/geolocation/:orderId', (req, res) => {
     creationInstances.set(requestId, {
         res: res,
         checkFinish: function (topic, message, data) {
-            console.log("get geolocation read " + topic);
             res.send(data);
             return true;
         }

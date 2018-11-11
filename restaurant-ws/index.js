@@ -48,7 +48,7 @@ const run = async () => {
         eachMessage: async ({topic, partition, message}) => {
             const data = JSON.parse(message.value.toString());
             console.log(topic, data);
-            if ("requestId" in data) {
+            if ("requestId" in data && openConnections.has(data.requestId)) {
                 const el = openConnections.get(data.requestId);
                 console.log("Get connection " + data.requestId + " : " + el);
                 if (el(topic, data)) {

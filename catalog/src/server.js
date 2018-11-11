@@ -8,7 +8,6 @@ const {Kafka, logLevel} = require('kafkajs');
 let mongoHelper = require("./mongo-helper");
 
 mongoHelper.initialize(mongoHelper, (db) => {
-    console.log("in function");
     db.collection("meals").countDocuments().then((count) => {
         if (count === 0) {
             // Seed the database
@@ -76,7 +75,7 @@ mongoHelper.initialize(mongoHelper, (db) => {
 
 
 const kafka = new Kafka({
-    logLevel: logLevel.INFO,
+    logLevel: logLevel.NOTHING,
     brokers: ["kafka:9092"],
     connectionTimeout: 3000,
     clientId: 'catalog',
@@ -102,7 +101,7 @@ const run = async () => {
     await consumer.run({
         eachMessage: async ({topic, partition, message}) => {
             let data = JSON.parse(message.value.toString());
-            console.log("Received ", topic, data);
+            console.log("Topic ", topic, "Event ", data);
             switch (topic) {
                 case "list_meals":
                     methods.listMeals(data, producer, mongoHelper.db);
