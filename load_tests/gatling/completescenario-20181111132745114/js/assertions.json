@@ -1,0 +1,10 @@
+{
+  "simulation": "uberoo.CompleteScenario",
+  "simulationId": "completescenario",
+  "start": 1541942865114,
+  "description": "",
+  "scenarios": ["Customer onsult meals", "Coursier lists nearby orders", "Cook lists his todo meals", "Complete order"],
+  "assertions": [
+
+  ]
+}

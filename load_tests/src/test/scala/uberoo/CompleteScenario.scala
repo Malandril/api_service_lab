@@ -134,11 +134,12 @@ class CompleteScenario extends Simulation {
 			.queryParam("restaurantId", "${restaurantId}"))
 
 
+	val duration = 60
 
 	setUp(
-		customerConsultsMeals.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
-		couriserCheckNearbyOrders.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
-		cookGetTodoMeals.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
-		completeOrder.inject(rampUsers(1) during (1 seconds)).protocols(httpConfig),
+		customerConsultsMeals.inject(rampUsers(50) during (duration seconds)).protocols(httpConfig),
+		couriserCheckNearbyOrders.inject(rampUsers(10) during (duration seconds)).protocols(httpConfig),
+		cookGetTodoMeals.inject(rampUsers(5) during (duration seconds)).protocols(httpConfig),
+		completeOrder.inject(rampUsers(5) during (duration seconds)).protocols(httpConfig),
 	)
 }
