@@ -1,10 +1,22 @@
-# Coursier Gateway
+## Gateway Coursier
 
-## Interface
 ### Produce
+#### update_geoloc
+```json
+{
+    timestamp: 1718293,
+    coursierId: "id",
+    orderId: "id",
+    geoloc: {
+        long:"43",
+        lat:"7"
+    }
+}
+```
 #### assign_delivery
 ```json
 {
+    timestamp: 1718293,
     orderId : "id",
     coursierId: "id"
 }
@@ -18,69 +30,23 @@
     }
 }
 ```
-    
+
 #### order_delivered
 ```json
 {
+    timestamp:1540319618,
+    coursierId: 56,
     order: {
         id: 12
     }
 }
 ```
-
-### Consume
-#### list_orders_to_be_delivered
-## Catalog
-### Produce
-#### meals_listed
+#### cancel_delivery
 ```json
 {
-    meals: [
-        {
-            id: 34,
-            name: "Mac fist",
-            eta: 4,
-            price: 1.0,            
-            restaurant: {
-                id: 12,
-                name: "mac do",
-                address: "4 Privet Drive"
-            }
-        }
-    ]
+    coursierId: "567",
+    orderId: "34567"
 }
 ```
 ### Consume
-#### list_meals
-
-## Routes
-
-### Search nearest order
-
-```
-    GET /deliveries/?address={address}&id={coursierId}
-```
-List nearest orders
-
-### Assign delivery 
-
-```
-    POST /deliveries/
-
-    {
-        "orderId": "{orderId}",
-        "coursierId": "{coursierId}"
-    }
-```
-OrderId is given by the nearest search
-
-
-### Notify order delivered
-
-```
-    POST /deliveries/
-
-    {
-        "orderId": "{orderId}"
-    }
-```
+#### list_orders_to_be_delivered
