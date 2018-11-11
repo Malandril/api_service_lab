@@ -5,6 +5,7 @@ import scala.concurrent.duration._
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import io.gatling.jdbc.Predef._
+import io.gatling.commons.validation._
 import org.json4s._
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
@@ -17,6 +18,8 @@ class CompleteScenario extends Simulation {
 
 	val httpConfig = http
 		.acceptEncodingHeader("gzip, deflate")
+		.header(HttpHeaderNames.ContentType, HttpHeaderValues.ApplicationJson)
+ 		.header(HttpHeaderNames.Accept, HttpHeaderValues.ApplicationJson)
 
 	val jsonContent = Map("Content-Type" -> "application/json")
 
@@ -26,34 +29,32 @@ class CompleteScenario extends Simulation {
     
     val order = scenario("Order")
         .exec(http("Get meals")
-			.get(s"$Customer_url/meals?categories=['burger']")
-			//.queryParam("categories", """["burger"]""")
-			.check(jsonPath("$").saveAs("meals")))
+			.get(s"$Customer_url/meals?category=burger")
+			.check(jsonPath("$.meals").saveAs("meals")))
         .pause(1)
         .exec(http("Order request")
 			.post(s"$Customer_url/orders")
-			.headers(jsonContent)
-			.body(StringBody(compact(render(
-				("meals" -> "${meals}") ~ 
+			.body(StringBody(session => compact(render(
+				("meals" -> parse(session("meals").as[String])) ~ 
 				("customer" -> 
 					("name" -> "Bob") ~ 
-					("address" -> "4 Privet Drive")))))))
-	/*		.check(jsonPath("$.orderId").saveAs("orderId")))
+					("address" -> "4 Privet Drive"))))))
+			.check(jsonPath("$.orderId").saveAs("orderId")))
 		.pause(1)
 		.exec(http("Finalise order")
-			.put(s"$Customer_url/orders/12")
-			.body(StringBody(compact(render(
+			.put(s"$Customer_url/orders/" + "${orderId}")
+			.body(StringBody(session => compact(render(
 				("orderId" -> "${orderId}") ~ 
 				("customer" -> 
 					("name" -> "Bob") ~ 
 					("address" -> "4 Privet Drive")) ~
-				("meals" -> "$meals") ~
+				("meals" -> parse(session("meals").as[String])) ~
 				("creditCard" ->
 					("name" -> "Bob") ~
 					("number" -> "551512348989") ~
 					("ccv" -> "775") ~
-					("limit" -> "07/19")))))))*/
+					("limit" -> "07/19")))))))
 
 
-	setUp(order.inject(rampUsers(1) during (1 seconds))).protocols(http.baseUrl(Customer_url))
+	setUp(order.inject(rampUsers(1) during (1 seconds))).protocols(httpConfig)
 }
